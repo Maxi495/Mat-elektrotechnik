@@ -85,10 +85,11 @@ LEBEN = """<svg class="fuss-leben" viewBox="0 0 1500 480" preserveAspectRatio="n
     (150, 412), (300, 428), (430, 406), (560, 432), (690, 414), (820, 402), (930, 430), (1050, 410), (1180, 426), (1290, 404), (380, 440), (760, 438), (1110, 440)])
 
 
-def fuss(kurz):
+def fuss(kurz, kontaktblock=True):
+    """Kontaktblock und Fuß. Auf der Kontaktseite selbst entfällt der Kontaktblock."""
     haelfte = (len(LEISTUNGEN) + 1) // 2
     spalte = lambda teil: ''.join('<li><a href="/leistungen/%s/">%s</a></li>' % (l['slug'], l['name']) for l in teil)
-    return '''<section class="kontakt%s" id="kontakt" data-fortschritt>
+    ganz = '''<section class="kontakt%s" id="kontakt" data-fortschritt>
   <svg class="strahlen" data-strahlen viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
   <div class="kontakt-mitte">
     <div class="kontakt-haupt">
@@ -146,9 +147,10 @@ def fuss(kurz):
   </div>
 </footer>''' % (' kurz' if kurz else '', TEL_LINK, TEL, SCHRAEG, PFEIL, MAIL, MAIL, KARTE, LEBEN,
               spalte(LEISTUNGEN[:haelfte]), spalte(LEISTUNGEN[haelfte:]), TEL_LINK, TEL, MAIL, MAIL, PFEIL)
+    return ganz if kontaktblock else ganz[ganz.index('<footer class="fuss">'):]
 
 
-def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html'):
+def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html', kontaktblock=True):
     """Schreibt eine Seite. pfad '' ist die Wurzel."""
     ganz = '''<!doctype html>
 <html lang="de" data-theme="light">
@@ -181,7 +183,7 @@ def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html'):
 <script src="/skript.js" defer></script>
 </body>
 </html>
-''' % (e(titel), e(beschreibung), kopf(aktiv), inhalt, fuss(kurz=pfad != ''))
+''' % (e(titel), e(beschreibung), kopf(aktiv), inhalt, fuss(kurz=pfad != '', kontaktblock=kontaktblock))
     ordner = os.path.join(WURZEL, pfad)
     os.makedirs(ordner, exist_ok=True)
     with open(os.path.join(ordner, datei), 'w', encoding='utf-8') as f:
@@ -487,32 +489,46 @@ def baue_referenzen():
 # ------------------------------------------------------------------ Kontakt
 
 def baue_kontakt():
-    inhalt = seitenkopf([('Kontakt', '/kontakt/')], ['Anrufen', 'Schreiben', 'Vorbeikommen'], 'So erreichen Sie <em>uns</em>',
-                        'Schildern Sie uns kurz, worum es geht und wo das Objekt liegt. Fotos vom Zählerschrank oder ein Plan helfen bei der Einschätzung.')
-    optionen = ''.join('<option>%s</option>' % l['name'] for l in LEISTUNGEN) + '<option>Reparatur oder Fehlersuche</option><option>Etwas anderes</option>'
-    formular = '''<form class="formular" data-anfrage>
-        <h2>Anfrage</h2>
-        <p>Das Formular öffnet Ihr E-Mail-Programm mit einer vorbereiteten Nachricht. Erst wenn Sie dort auf Senden drücken, erreicht uns Ihre Anfrage.</p>
+    """Kontaktseite: nur das Anfrageformular, Aufbau wie auf der webgipfel-Seite.
+
+    Der Versand ist noch nicht angeschlossen. Sobald es einen Endpunkt gibt, kommt seine
+    Adresse in data-endpunkt; bis dahin sendet das Formular nichts und sagt das auch.
+    """
+    themen = [l['name'] for l in LEISTUNGEN] + ['Etwas anderes']
+    wahl = ''.join('<label class="wahl"><input type="checkbox" name="thema" value="%s"><span>%s</span></label>' % (e(n), n) for n in themen)
+    inhalt = '''  <section class="anfrage">
+    <form class="formular ein" data-anfrage data-endpunkt="" novalidate>
+      <div class="formular-teil">
+        <!-- Honigtopf gegen Bots: außerhalb des Bildschirms, nicht im Tab-Lauf, bewusst nicht display:none -->
+        <div class="falle" aria-hidden="true"><label for="af-web">Webseite</label><input id="af-web" name="webseite" type="text" tabindex="-1" autocomplete="off"></div>
+        <h1 class="gross">Ihre <em>Anfrage</em></h1>
+        <fieldset class="themen">
+          <legend>Bereich <span class="frei">(mehrere möglich)</span></legend>
+          <div class="wahlen">%s</div>
+        </fieldset>
         <div class="felder">
-          <label>Name <input type="text" name="name" autocomplete="name" required></label>
-          <label>Telefon <input type="tel" name="telefon" autocomplete="tel"></label>
-          <label>Ort des Objekts <input type="text" name="ort" autocomplete="address-level2"></label>
-          <label>Anliegen <select name="anliegen">%s</select></label>
-          <label class="breit">Nachricht <textarea name="nachricht" rows="6" required></textarea></label>
+          <div class="eingabe"><label for="af-name">Name *</label><input id="af-name" name="name" type="text" autocomplete="name" required><span class="fehler">Bitte geben Sie Ihren Namen an.</span></div>
+          <div class="eingabe"><label for="af-mail">E-Mail *</label><input id="af-mail" name="email" type="email" autocomplete="email" required><span class="fehler">Bitte geben Sie eine gültige E-Mail-Adresse an.</span></div>
+          <div class="eingabe breit"><label for="af-tel">Telefon <span class="frei">(freiwillig)</span></label><input id="af-tel" name="telefon" type="tel" autocomplete="tel"></div>
+          <div class="eingabe breit"><label for="af-text">Nachricht *</label><textarea id="af-text" name="nachricht" rows="5" required placeholder="Was soll gemacht werden, und wo liegt das Objekt?"></textarea><span class="fehler">Bitte schreiben Sie uns kurz, worum es geht.</span></div>
         </div>
-        <button class="knopf" type="submit">E-Mail vorbereiten %s</button>
-      </form>''' % (optionen, SCHRAEG)
-    inhalt += '\n' + abschnitt('', '', '<div class="bento">%s%s%s%s%s</div>' % (
-        k('<p class="etikett etikett-punkt">Telefon</p><p class="zahl"><a href="%s">%s</a></p><p>Montag bis Freitag</p>' % (TEL_LINK, TEL), 6, 'k-rot'),
-        k('<p class="etikett etikett-punkt">E-Mail</p><p class="zahl klein"><a href="mailto:%s">%s</a></p><p>Für Anfragen, Pläne und Fotos</p>' % (MAIL, MAIL), 6),
-        k(formular, 7),
-        k('<p class="etikett etikett-punkt">Anschrift</p><h3>Mat-Elektrotechnik GmbH</h3><p>Industriestraße 12<br>82110 Germering</p><p>%s</p>' % knopf('Route planen', KARTE, schraeg=True)
-          + '<p class="etikett etikett-punkt" style="margin-top:1.5rem">Einzugsgebiet</p><p>Großraum München, angrenzendes Bayern und Österreich.</p>'
-          + '<p class="etikett etikett-punkt" style="margin-top:1.5rem">Facebook</p><p><a href="https://www.facebook.com/MAT.Elektrotechnik/" rel="noopener">facebook.com/MAT.Elektrotechnik</a></p>', 5),
-        k_bild('team-hof', 'Betriebsgebäude in der Industriestraße 12 mit Firmenfahrzeugen', 12)))
+        <label class="zustimmung"><input type="checkbox" name="datenschutz" required><span class="kasten" aria-hidden="true"></span><span>Ich habe die <a href="/datenschutz/">Datenschutzerklärung</a> gelesen und bin einverstanden, dass meine Angaben zur Bearbeitung meiner Anfrage verwendet werden. *</span></label>
+        <span class="fehler fehler-zustimmung">Bitte bestätigen Sie die Datenschutzerklärung.</span>
+        <div class="absenden">
+          <button class="knopf" type="submit">Anfrage senden %s</button>
+          <p class="meldung" role="status" aria-live="polite"></p>
+        </div>
+        <p class="direkt">Lieber anrufen? <a href="%s">%s</a></p>
+      </div>
+      <div class="gesendet" aria-live="polite">
+        <span class="gesendet-punkt" aria-hidden="true"></span>
+        <h2 tabindex="-1">Danke. Ihre Anfrage ist <em>angekommen</em>.</h2>
+      </div>
+    </form>
+  </section>''' % (wahl, PFEIL, TEL_LINK, TEL)
     seite('kontakt', 'Kontakt · Mat-Elektrotechnik GmbH',
           'Mat-Elektrotechnik GmbH, Industriestraße 12, 82110 Germering. Telefon 089 23750352, E-Mail info@mat-elektrotechnik.de.',
-          inhalt, '/kontakt/')
+          inhalt, '/kontakt/', kontaktblock=False)
 
 
 # ------------------------------------------------------------------ Recht

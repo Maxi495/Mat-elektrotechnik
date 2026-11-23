@@ -50,17 +50,65 @@
   addEventListener('resize', anstossen);
   rechnen();
 
-  /* ---------- Anfrageformular: öffnet das Mailprogramm, sendet nichts an einen Server ---------- */
+  /* ---------- Anfrageformular: Aufbau wie auf der webgipfel-Seite ----------
+     Der Versand ist noch nicht angeschlossen. Solange data-endpunkt am Formular leer ist,
+     wird NICHTS gesendet und es erscheint ein ehrlicher Hinweis, keine Erfolgsmeldung.
+     Die Danke-Ansicht lässt sich mit ?formdemo an der Adresse ansehen. */
   var formular = $('[data-anfrage]');
-  if (formular) formular.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var f = formular.elements, zeilen = [
-      'Name: ' + f.name.value, 'Telefon: ' + f.telefon.value, 'Ort des Objekts: ' + f.ort.value,
-      'Anliegen: ' + f.anliegen.value, '', f.nachricht.value
-    ];
-    location.href = 'mailto:info@mat-elektrotechnik.de?subject=' + encodeURIComponent('Anfrage: ' + f.anliegen.value) +
-      '&body=' + encodeURIComponent(zeilen.join('\n'));
-  });
+  if (formular) (function () {
+    var endpunkt = formular.getAttribute('data-endpunkt') || '';
+    var probe = /[?&]formdemo(=|&|$)/.test(location.search);
+    var teil = $('.formular-teil', formular), meldung = $('.meldung', formular), senden = $('button[type="submit"]', formular);
+    var zustimmung = formular.elements.datenschutz, zustimmungFehler = $('.fehler-zustimmung', formular);
+    var eingaben = $$('.eingabe', formular);
+    var gueltig = function (el) {
+      var w = el.value.trim();
+      return el.type === 'email' ? /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(w) : w !== '';
+    };
+    // Fehlertext mit dem Feld verknüpfen, damit Vorleseprogramme ihn ansagen
+    var markiere = function (el, fehler, falsch) {
+      el.setAttribute('aria-invalid', falsch ? 'true' : 'false');
+      if (falsch && fehler) el.setAttribute('aria-describedby', fehler.id); else el.removeAttribute('aria-describedby');
+    };
+    var pruefe = function (box) {
+      var el = $('[required]', box); if (!el) return true;
+      var gut = gueltig(el); box.classList.toggle('falsch', !gut); markiere(el, $('.fehler', box), !gut); return gut;
+    };
+    var pruefeZustimmung = function () {
+      zustimmungFehler.classList.toggle('zeigen', !zustimmung.checked); markiere(zustimmung, zustimmungFehler, !zustimmung.checked);
+      return zustimmung.checked;
+    };
+    eingaben.forEach(function (box, i) {
+      var fehler = $('.fehler', box); if (fehler) fehler.id = 'af-fehler-' + i;
+      $('input, textarea', box).addEventListener('input', function () { if (box.classList.contains('falsch')) pruefe(box); });
+    });
+    zustimmungFehler.id = 'af-fehler-zustimmung';
+    zustimmung.addEventListener('change', pruefeZustimmung);
+
+    var danke = function () {
+      formular.classList.add('ist-gesendet'); teil.setAttribute('inert', '');
+      var titel = $('.gesendet h2', formular); if (titel) titel.focus();
+    };
+    formular.addEventListener('submit', function (e) {
+      e.preventDefault(); meldung.textContent = '';
+      var felderGut = eingaben.map(pruefe).every(Boolean), hakenGut = pruefeZustimmung();
+      if (!felderGut || !hakenGut) { ($('.falsch input, .falsch textarea', formular) || zustimmung).focus(); return; }
+      if (!endpunkt) {
+        if (probe) danke();
+        else meldung.textContent = 'Das Formular wird gerade angeschlossen und sendet noch nicht. Bitte rufen Sie uns an: 089 23750352.';
+        return;
+      }
+      var daten = {};
+      ['name', 'email', 'telefon', 'nachricht', 'webseite'].forEach(function (n) { daten[n] = formular.elements[n].value; });
+      daten.thema = $$('[name="thema"]:checked', formular).map(function (c) { return c.value; });
+      daten.datenschutz = true;
+      senden.classList.add('beschaeftigt');
+      fetch(endpunkt, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(daten) })
+        .then(function (antwort) { if (!antwort.ok) throw new Error(antwort.status); danke(); })
+        .catch(function () { meldung.textContent = 'Das hat leider nicht geklappt. Bitte versuchen Sie es noch einmal oder rufen Sie uns an: 089 23750352.'; })
+        .then(function () { senden.classList.remove('beschaeftigt'); });
+    });
+  })();
 
   /* ---------- Wechselnde Zeile im Hero ---------- */
   var wechsel = $('[data-wechsel]');
