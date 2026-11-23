@@ -1,0 +1,8 @@
+# Interne Unterlagen: gehören nicht ins öffentliche Repo
+BRIEF-KONTEXT.md
+mat-palette.html
+_aufnahme/
+
+.DS_Store
+.claude/
+node_modules/
