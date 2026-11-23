@@ -70,9 +70,25 @@ def kopf(aktiv):
 </header>''' % (punkte, TEL_LINK, TEL, TEL, SCHRAEG)
 
 
+LEBEN = """<svg class="fuss-leben" viewBox="0 0 1500 480" preserveAspectRatio="none" aria-hidden="true">
+        <g class="wolken">
+          <path d="M0 40q4-16 22-14 8-16 28-10 16-10 28 6 18-2 20 18z"/>
+          <path d="M0 78q3-11 16-10 6-12 21-8 12-7 20 5 13-1 14 13z"/>
+          <path d="M0 26q3-10 14-9 5-10 18-6 10-6 17 4 11-1 12 11z"/>
+        </g>
+        <g class="rauch"><circle cx="139" cy="183" r="5"/><circle cx="139" cy="183" r="5"/><circle cx="139" cy="183" r="5"/><circle cx="139" cy="183" r="5"/></g>
+        <g class="laternen"><circle cx="333" cy="248" r="13"/><circle cx="713" cy="248" r="13"/><circle cx="1136" cy="258" r="13"/></g>
+        <circle class="turmlicht" cx="1293" cy="69" r="2.6"/>
+        <g class="strom"><circle cx="205" cy="349" r="9"/><circle cx="205" cy="349" r="3.4"/></g>
+        <g class="wellen">%s</g>
+      </svg>""" % ''.join('<g transform="translate(%d %d)"><path d="M0 0q9-4 18 0t18 0"/></g>' % xy for xy in [
+    (150, 412), (300, 428), (430, 406), (560, 432), (690, 414), (820, 402), (930, 430), (1050, 410), (1180, 426), (1290, 404), (380, 440), (760, 438), (1110, 440)])
+
+
 def fuss(kurz):
-    links = ''.join('<li><a href="%s">%s</a></li>' % (z, n) for n, z in NAV)
-    return '''<footer class="kontakt%s" id="kontakt" data-fortschritt>
+    haelfte = (len(LEISTUNGEN) + 1) // 2
+    spalte = lambda teil: ''.join('<li><a href="/leistungen/%s/">%s</a></li>' % (l['slug'], l['name']) for l in teil)
+    return '''<section class="kontakt%s" id="kontakt" data-fortschritt>
   <svg class="strahlen" data-strahlen viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
   <div class="kontakt-mitte">
     <div class="kontakt-haupt">
@@ -94,11 +110,42 @@ def fuss(kurz):
       <a href="%s" rel="noopener">Route planen</a>
     </div>
   </div>
-  <div class="kontakt-fuss">
-    <p>© 2026 Mat-Elektrotechnik GmbH</p>
-    <ul>%s<li><a href="/impressum/">Impressum</a></li><li><a href="/datenschutz/">Datenschutz</a></li></ul>
+</section>
+
+<footer class="fuss">
+  <div class="fuss-bild">
+    <div class="fuss-bild-innen">
+      <img src="/bilder/panorama.webp" srcset="/bilder/panorama-sm.webp 1344w, /bilder/panorama.webp 2688w" sizes="(min-width: 50rem) 100vw, 50rem"
+           alt="Gezeichnete Straße mit Wohnhaus, Wallbox, Mehrfamilienhaus, rotem Firmenbus und Gewerbehalle mit Photovoltaik, dahinter München und die Alpen" width="2688" height="860" loading="lazy">
+      %s
+    </div>
   </div>
-</footer>''' % (' kurz' if kurz else '', TEL_LINK, TEL, SCHRAEG, PFEIL, MAIL, MAIL, KARTE, links)
+  <div class="fuss-raster">
+    <div class="fuss-marke">
+      <a class="logo" href="/" aria-label="Mat-Elektrotechnik, Startseite"><img src="/bilder/logo-mat.svg" alt="mat" width="1184" height="619" loading="lazy"></a>
+      <p>Elektro-Meisterbetrieb in Germering bei München. Wir planen, installieren und prüfen elektrische Anlagen, seit 2010.</p>
+      <p>Industriestraße 12<br>82110 Germering</p>
+    </div>
+    <nav class="fuss-spalte fuss-leistungen" aria-label="Leistungen">
+      <p class="etikett">Leistungen</p>
+      <div><ul>%s</ul><ul>%s</ul></div>
+    </nav>
+    <nav class="fuss-spalte" aria-label="Unternehmen">
+      <p class="etikett">Unternehmen</p>
+      <ul><li><a href="/unternehmen/">Über uns</a></li><li><a href="/referenzen/">Referenzen</a></li><li><a href="/karriere/">Karriere</a></li><li><a href="/kontakt/">Kontakt</a></li></ul>
+    </nav>
+    <div class="fuss-spalte">
+      <p class="etikett">Kontakt</p>
+      <ul><li><a href="%s">%s</a></li><li><a href="mailto:%s">%s</a></li><li>Montag bis Freitag</li></ul>
+      <a class="knopf" href="/kontakt/">Anfrage stellen %s</a>
+    </div>
+  </div>
+  <div class="fuss-leiste">
+    <ul><li><a href="/impressum/">Impressum</a></li><li><a href="/datenschutz/">Datenschutz</a></li><li><a href="https://www.facebook.com/MAT.Elektrotechnik/" rel="noopener">Facebook</a></li></ul>
+    <p>© 2026 Mat-Elektrotechnik GmbH · Umsetzung: webgipfel</p>
+  </div>
+</footer>''' % (' kurz' if kurz else '', TEL_LINK, TEL, SCHRAEG, PFEIL, MAIL, MAIL, KARTE, LEBEN,
+              spalte(LEISTUNGEN[:haelfte]), spalte(LEISTUNGEN[haelfte:]), TEL_LINK, TEL, MAIL, MAIL, PFEIL)
 
 
 def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html'):
