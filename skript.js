@@ -191,6 +191,35 @@
     gehe(0); takt();
   });
 
+  /* ---------- Leistungskacheln: immer genau eine ist offen ----------
+     Breit: Zeigen mit der Maus, Fokus oder Klick öffnet eine Kachel und schließt die bisherige.
+     Schmal (untereinander): Tippen öffnet, ein zweiter Tipp auf die offene schließt sie wieder. */
+  var kacheln = $$('.lk-teil');
+  if (kacheln.length) {
+    var breit = matchMedia('(min-width: 62rem)'), zeiger = matchMedia('(hover: hover) and (pointer: fine)'), zoegern = 0;
+    var oeffne = function (ziel) {
+      kacheln.forEach(function (el) {
+        var an = el === ziel;
+        el.classList.toggle('ist-offen', an);
+        $('.lk-kopf', el).setAttribute('aria-expanded', an ? 'true' : 'false');
+      });
+    };
+    kacheln.forEach(function (el) {
+      var kopf = $('.lk-kopf', el);
+      kopf.addEventListener('click', function () {
+        oeffne(!breit.matches && el.classList.contains('ist-offen') ? null : el);
+      });
+      kopf.addEventListener('focus', function () { if (breit.matches) oeffne(el); });
+      el.addEventListener('mouseenter', function () {
+        if (!breit.matches || !zeiger.matches) return;
+        clearTimeout(zoegern);
+        zoegern = setTimeout(function () { oeffne(el); }, 90);
+      });
+    });
+    // Beim Wechsel auf die breite Ansicht muss eine Kachel offen sein
+    breit.addEventListener('change', function () { if (breit.matches && !$('.lk-teil.ist-offen')) oeffne(kacheln[0]); });
+  }
+
   /* ---------- Strahlen im Kontakt ---------- */
   var st = $('[data-strahlen]');
   if (st) {

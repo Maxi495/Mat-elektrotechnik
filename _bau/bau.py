@@ -293,6 +293,39 @@ LEISTUNGEN = [
 ]
 
 
+# Strichzeichnung je Leistung für die aufklappenden Kacheln der Startseite (viewBox 600 x 340)
+ZEICHNUNG = {
+    'elektroinstallation': '<rect x="300" y="80" width="130" height="130" rx="14"/><circle cx="365" cy="145" r="42"/><circle cx="348" cy="145" r="5"/><circle cx="382" cy="145" r="5"/><rect x="450" y="80" width="130" height="130" rx="14"/><rect x="480" y="105" width="70" height="80" rx="6"/><path d="M515 105v80"/><path d="M365 210v70H140"/><path d="M515 210v100H90"/>',
+    'ladeinfrastruktur': '<rect x="440" y="40" width="110" height="160" rx="16"/><path d="M465 75h60"/><circle cx="495" cy="140" r="24"/><path d="M495 164c0 80-70 30-100 76"/><path d="M90 300h30m60 0h110m60 0h46v-38l-52-16-38-46H172l-46 50-36 12z"/><circle cx="150" cy="300" r="30"/><circle cx="320" cy="300" r="30"/><path d="M186 246h124"/>',
+    'blitzschutz': '<path d="M250 330V170l130-90 130 90v160z"/><path d="M225 188 380 80l155 108"/><path d="M380 80V22"/><path d="M510 170v160"/><path d="M490 330h60M505 340h30"/><rect x="345" y="230" width="70" height="100"/><path d="M476 8l-34 60h30l-26 56"/>',
+    'netzwerktechnik': '<rect x="330" y="40" width="230" height="260" rx="12"/><path d="M330 100h230M330 160h230M330 220h230"/><path d="M355 70h20M385 70h20M415 70h20M445 70h20M475 70h20M505 70h20"/><path d="M355 130h20M385 130h20M415 130h20M445 130h20"/><circle cx="520" cy="130" r="6"/><circle cx="520" cy="190" r="6"/><path d="M355 190h120"/><path d="M365 250h160"/><path d="M330 130h-90l-60 60M330 190H180M330 250h-90l-60-60"/><circle cx="160" cy="190" r="20"/>',
+    'verteilerbau': '<rect x="290" y="30" width="270" height="290" rx="10"/><path d="M380 30v290"/><rect x="305" y="55" width="60" height="70" rx="4"/><rect x="305" y="145" width="60" height="70" rx="4"/><path d="M400 80h140M400 140h140M400 200h140M400 260h140"/><path d="M410 62v36M430 62v36M450 62v36M470 62v36M490 62v36M510 62v36M530 62v36M410 122v36M430 122v36M450 122v36M470 122v36M410 182v36M430 182v36M450 182v36M470 182v36M490 182v36M410 242v36M430 242v36M450 242v36"/>',
+    'antennentechnik': '<path d="M300 250a140 140 0 0 1 200-190z"/><path d="M400 155l70-70"/><circle cx="478" cy="77" r="10"/><path d="M380 232v88M330 320h100"/><path d="M505 40a60 60 0 0 1 40 40M520 10a100 100 0 0 1 60 60"/>',
+    'pruefung-wartung': '<rect x="300" y="50" width="190" height="250" rx="12"/><rect x="355" y="34" width="80" height="34" rx="8"/><path d="M330 120l14 14 26-28M390 122h70M330 180l14 14 26-28M390 182h70M330 240h130"/><circle cx="520" cy="250" r="56"/><path d="M480 250a40 40 0 0 1 80 0"/><path d="M520 250l28-32"/>',
+    'photovoltaik': '<path d="M260 300l60-180h240l-20 180z"/><path d="M300 180h254M280 240h266M380 120l-40 180M460 120l-20 180"/><circle cx="210" cy="90" r="38"/><path d="M210 30V10M210 170v-20M150 90h-20M290 90h-20M168 48l-14-14M252 48l14-14M168 132l-14 14M252 132l14 14"/>',
+}
+
+
+def leistungs_aufklapper():
+    """Die acht Leistungen als hohe Kacheln nebeneinander; eine ist offen (skript.js: Leistungskacheln).
+    Auf schmalen Bildschirmen stehen sie untereinander und klappen nach unten auf."""
+    teile = ''
+    for i, l in enumerate(LEISTUNGEN, 1):
+        offen = i == 1
+        teile += '''      <article class="lk-teil%s">
+        <h3 class="lk-h"><button class="lk-kopf" type="button" aria-expanded="%s" aria-controls="lk-%d"><span class="lk-nr">%s</span><span class="lk-titel">%s</span></button></h3>
+        <div class="lk-auf" id="lk-%d"><div class="lk-inhalt">
+          <div class="lk-bild" aria-hidden="true"><svg viewBox="0 0 600 340" fill="none" stroke="url(#lk-verlauf-%d)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" preserveAspectRatio="xMaxYMid meet"><defs><linearGradient id="lk-verlauf-%d" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#850021"/><stop offset=".55" stop-color="#D70036"/><stop offset="1" stop-color="#F34974"/></linearGradient></defs>%s</svg></div>
+          <p class="lk-gross" aria-hidden="true">%s</p>
+          <p class="lk-text">%s</p>
+          <a class="lk-weiter" href="/leistungen/%s/"><span class="lk-rund" aria-hidden="true">%s</span>Mehr erfahren<span class="sr">: %s</span></a>
+        </div></div>
+      </article>
+''' % (' ist-offen' if offen else '', 'true' if offen else 'false', i, l['nr'], l['name'], i, i, i, ZEICHNUNG[l['slug']],
+       l['name'], l['text'], l['slug'], PFEIL, l['name'])
+    return '    <div class="lk">\n%s    </div>' % teile
+
+
 def leistungskachel(l, spanne=3):
     return ('<div class="k k-link ein s%d"><span class="nr">%s</span><h3><a href="/leistungen/%s/">%s</a></h3><p>%s</p>%s</div>'
             % (spanne, l['nr'], l['slug'], l['name'], l['kurz'], PFEIL))
@@ -555,6 +588,10 @@ def baue_404():
 def baue_start():
     with open(os.path.join(WURZEL, '_bau', 'start.html'), encoding='utf-8') as f:
         inhalt = f.read()
+    marke = '<!-- LEISTUNGSKACHELN -->'
+    if marke not in inhalt:
+        sys.exit('Marke fehlt in _bau/start.html: ' + marke)
+    inhalt = inhalt.replace(marke, leistungs_aufklapper())
     seite('', 'Mat-Elektrotechnik GmbH · Elektro-Meisterbetrieb in Germering bei München',
           'Elektroinstallation, Wallbox, Blitzschutz, Netzwerktechnik, Verteilerbau, Prüfung und Photovoltaik. Meisterbetrieb in Germering, seit 2010 im Großraum München tätig.',
           inhalt)
