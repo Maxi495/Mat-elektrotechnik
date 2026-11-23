@@ -27,7 +27,6 @@
       <li class="hat-unter"><a href="/leistungen/" aria-haspopup="true">Leistungen</a><div class="unter"><ul><li><a href="/leistungen/elektroinstallation/"><span>01</span>Elektroinstallation</a></li><li><a href="/leistungen/ladeinfrastruktur/"><span>02</span>Ladeinfrastruktur</a></li><li><a href="/leistungen/blitzschutz/"><span>03</span>Blitz- und Überspannungsschutz</a></li><li><a href="/leistungen/netzwerktechnik/"><span>04</span>Netzwerk- und IT-Infrastruktur</a></li><li><a href="/leistungen/verteilerbau/"><span>05</span>Verteiler- und Schaltschrankbau</a></li><li><a href="/leistungen/antennentechnik/"><span>06</span>Antennen- und Empfangstechnik</a></li><li><a href="/leistungen/pruefung-wartung/"><span>07</span>Prüfung und Wartung</a></li><li><a href="/leistungen/photovoltaik/"><span>08</span>Photovoltaik</a></li><li class="alle"><a href="/leistungen/">Alle Leistungen im Überblick <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5"/></svg></a></li></ul></div></li>
       <li><a href="/referenzen/">Referenzen</a></li>
       <li><a href="/unternehmen/">Unternehmen</a></li>
-      <li><a href="/karriere/">Karriere</a></li>
       <li><a href="/kontakt/">Kontakt</a></li>
     </ul>
   </nav>
@@ -43,7 +42,7 @@
 
 <main id="inhalt">
 
-  <!-- 1 · Hero: Textkachel mit Pixelfeld, drei Kacheln, die mit der Überschrift wechseln -->
+  <!-- 1 · Kopf: Textkachel mit Pixelfeld, zwei Fotos, die mit der Überschrift wechseln -->
   <section class="hero" id="top">
     <div class="hero-text">
       <div class="hero-hinten" data-satz aria-hidden="true"><img class="aktiv" src="/bilder/team-fahrzeuge.webp" alt="" width="730" height="547" loading="lazy"><img src="/bilder/elmar-2023.webp" alt="" width="1100" height="734" loading="lazy"><img src="/bilder/schaltschrank.webp" alt="" width="993" height="745" loading="lazy"></div>
@@ -57,25 +56,9 @@
     </div>
     <figure class="hero-foto hero-gross" data-satz><img class="aktiv" src="/bilder/team-fahrzeuge.webp" alt="Sieben Mitarbeiter von Mat-Elektrotechnik vor den Firmenfahrzeugen" width="730" height="547"><img src="/bilder/elmar-2023.webp" alt="Übergabe des ELMAR-Preises auf der Bühne" width="1100" height="734" loading="lazy"><img src="/bilder/schaltschrank.webp" alt="Geöffneter Verteilerschrank mit Zählerfeldern" width="993" height="745" loading="lazy"></figure>
     <figure class="hero-foto hero-klein" data-satz><img class="aktiv" src="/bilder/team-hof.webp" alt="Mitarbeiter neben einem roten Firmenbus vor dem Betriebsgebäude" width="730" height="547" loading="lazy"><img src="/bilder/team-studio.webp" alt="Sieben Mitarbeiter in Arbeitskleidung" width="730" height="547" loading="lazy"><img src="/bilder/photovoltaik-dach.webp" alt="Photovoltaikmodule auf einem Ziegeldach" width="745" height="745" loading="lazy"></figure>
-    <div class="hero-zahl" data-satz>
-      <p class="aktiv"><b>seit 2010</b><span>im Großraum München</span></p>
-      <p><b>ELMAR 2023</b><span>Markenpreis, Kategorie 1</span></p>
-      <p><b>8</b><span>Leistungsbereiche aus einem Betrieb</span></p>
-    </div>
   </section>
 
-  <!-- 2 · Aussage: gespreizte Zeile, Riesenzeile -->
-  <section class="aussage" id="aussage">
-    <p class="etikett spreiz spreiz-voll" data-fortschritt><span>Elektro</span><span>Meisterbetrieb</span><span>aus</span><span>Germering</span></p>
-    <h2 class="riesen" aria-label="Planen. Installieren. Prüfen.">
-      <span class="ein">Planen.</span>
-      <span class="ein" style="--v:.12s">Installieren.</span>
-      <span class="ein" style="--v:.24s"><em>Prüfen.</em></span>
-    </h2>
-    <p class="lauftext ein">Von der Unterverteilung im Einfamilienhaus bis zur Photovoltaik-Großanlage für einen Industriebetrieb.</p>
-  </section>
-
-  <!-- 3 · Leistungen: acht hohe Kacheln nebeneinander, eine ist offen (Inhalt aus _bau/bau.py) -->
+  <!-- 2 · Leistungen: acht hohe Kacheln nebeneinander, eine ist offen (Inhalt aus _bau/bau.py) -->
   <section class="leistungen" id="leistungen">
     <div class="lk-kopfzeile">
       <h2 class="gross ein">Acht Bereiche, <em>ein Betrieb</em></h2>
@@ -157,6 +140,30 @@
     </div>
   </section>
 
+  <!-- 3 · Vertrauen: zwei Belege, drei Kundenstimmen (Auszüge im Wortlaut, voll auf /referenzen/) -->
+  <section class="stimmen" id="stimmen">
+    <h2 class="gross ein">Unsere <em>Kunden</em></h2>
+    <div class="belege">
+      <p class="beleg ein"><b>Meisterbetrieb seit 2010</b><span>Geführt von Elektrotechnikermeister Miodrag Manojlovic.</span></p>
+      <p class="beleg ein" style="--v:.1s"><b>ELMAR 2023</b><span>Markenpreis der Elektrobranche, Kategorie 1.</span></p>
+    </div>
+    <div class="stimmen-raster">
+      <figure class="stimme stimme-gross ein">
+        <blockquote>„Vom ersten Vorgespräch, über die Planung und bis zur Ausführung der Arbeiten bin ich sehr zufrieden!“</blockquote>
+        <figcaption><b>Thomas Fuchsbichler</b><span>Erneuerung der Hauptverteilung mit Wallbox</span></figcaption>
+      </figure>
+      <figure class="stimme ein" style="--v:.1s">
+        <blockquote>„Alles wurde schnell und sauber installiert und das alles zu einem sehr fairen Preis.“</blockquote>
+        <figcaption><b>Margit Riepertinger</b><span>Erneuerung der Stromversorgung</span></figcaption>
+      </figure>
+      <figure class="stimme ein" style="--v:.2s">
+        <blockquote>„Wir haben uns jederzeit gut betreut gefühlt und es war immer jemand erreichbar!“</blockquote>
+        <figcaption><b>Kerstin Dausel</b><span>Komplettsanierung</span></figcaption>
+      </figure>
+    </div>
+    <p class="stimmen-knoepfe ein"><a class="knopf" href="/referenzen/">Alle Referenzen <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5"/></svg></a></p>
+  </section>
+
   <!-- 4 · Einblicke: Überschrift mit Stern, Karussell -->
   <section class="einblicke" id="einblicke">
     <div class="einblicke-kopf" data-fortschritt>
@@ -180,61 +187,18 @@
     </div>
   </section>
 
-  <!-- 5 · Unternehmen: Tafel, stehendes Bild, laufende Blöcke -->
+  <!-- 5 · Unternehmen kurz: ein Absatz, ein Foto -->
   <div class="ansatz-huelle" id="unternehmen">
     <section class="ansatz">
       <div class="ansatz-kopf">
         <p class="etikett spreiz" data-fortschritt><span>Wer</span><span>wir</span><span>sind</span></p>
         <h2 class="gross ein">Meister&shy;betrieb seit <em>2010</em></h2>
-        <p class="lauftext ein">Miodrag Manojlovic hat den Betrieb als Einzelunternehmen gegründet. Heute führt er ihn als Geschäftsführer und Elektrotechnikermeister.</p>
+        <p class="lauftext ein">Miodrag Manojlovic hat den Betrieb 2010 gegründet, seit 2019 ist er eine GmbH. Heute führt er als Elektrotechnikermeister ein Team aus Projektleitung, Obermonteuren, Monteuren und Auszubildenden.</p>
+        <p class="ein"><a class="knopf" href="/unternehmen/">Mehr über uns <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5"/></svg></a></p>
       </div>
-      <div class="trenner ecken ein"><i class="ecke ol"></i><i class="ecke or"></i></div>
-      <div class="zwei">
-        <div class="stand">
-          <img class="aktiv" src="/bilder/team-fahrzeuge.webp" alt="Sieben Mitarbeiter von Mat-Elektrotechnik vor den Firmenfahrzeugen" width="730" height="547" loading="lazy">
-          <img src="/bilder/elmar-2023.webp" alt="Übergabe des ELMAR-Preises auf der Bühne" width="1100" height="734" loading="lazy">
-          <img src="/bilder/team-hof.webp" alt="Mitarbeiter neben einem roten Firmenbus vor dem Betriebsgebäude" width="730" height="547" loading="lazy">
-        </div>
-        <div class="bloecke">
-          <div class="block aktiv">
-            <h3 class="etikett etikett-punkt">Woher wir kommen</h3>
-            <p class="lauftext">2010 gegründet, seit 2019 eine GmbH. Das Team besteht aus Projektleitung, Obermonteuren, Monteuren und Auszubildenden.</p>
-          </div>
-          <div class="block">
-            <h3 class="etikett etikett-punkt">Was uns auszeichnet</h3>
-            <p class="lauftext">Der Markenpreis ELMAR 2023 in Kategorie 1. Verliehen am 7. Dezember 2023 von „Elektromarken. Starke Partner.“</p>
-          </div>
-          <div class="block">
-            <h3 class="etikett etikett-punkt">Für wen wir arbeiten</h3>
-            <p class="lauftext">Privatkunden, Hausverwaltungen, Büros, Gewerbe und Industrie. Im Großraum München, im angrenzenden Bayern und in Österreich.</p>
-            <a class="knopf" href="/unternehmen/">Mehr über uns
-              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5"/></svg>
-            </a>
-          </div>
-        </div>
-      </div>
+      <figure class="ansatz-bild ein"><img src="/bilder/team-fahrzeuge.webp" alt="Sieben Mitarbeiter von Mat-Elektrotechnik vor den Firmenfahrzeugen" width="730" height="547" loading="lazy"></figure>
     </section>
   </div>
-
-  <!-- 6 · Kundenstimmen: ein großes Zitat, zwei kleinere (Auszüge im Wortlaut, voll auf /referenzen/) -->
-  <section class="stimmen" id="stimmen">
-    <h2 class="gross ein">Unsere <em>Kunden</em></h2>
-    <div class="stimmen-raster">
-      <figure class="stimme stimme-gross ein">
-        <blockquote>„Vom ersten Vorgespräch, über die Planung und bis zur Ausführung der Arbeiten bin ich sehr zufrieden!“</blockquote>
-        <figcaption><b>Thomas Fuchsbichler</b><span>Erneuerung der Hauptverteilung mit Wallbox</span></figcaption>
-      </figure>
-      <figure class="stimme ein" style="--v:.1s">
-        <blockquote>„Alles wurde schnell und sauber installiert und das alles zu einem sehr fairen Preis.“</blockquote>
-        <figcaption><b>Margit Riepertinger</b><span>Erneuerung der Stromversorgung</span></figcaption>
-      </figure>
-      <figure class="stimme ein" style="--v:.2s">
-        <blockquote>„Wir haben uns jederzeit gut betreut gefühlt und es war immer jemand erreichbar!“</blockquote>
-        <figcaption><b>Kerstin Dausel</b><span>Komplettsanierung</span></figcaption>
-      </figure>
-    </div>
-    <p class="stimmen-knoepfe ein"><a class="knopf" href="/referenzen/">Alle Referenzen <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5"/></svg></a></p>
-  </section>
 
 </main>
 

@@ -23,8 +23,7 @@ KARTE = 'https://www.google.com/maps/search/?api=1&amp;query=Industriestra%C3%9F
 PFEIL = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5"/></svg>'
 SCHRAEG = '<svg class="schraeg" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 11 11 3M4.5 3H11v6.5"/></svg>'
 
-NAV = [('Leistungen', '/leistungen/'), ('Referenzen', '/referenzen/'), ('Unternehmen', '/unternehmen/'),
-       ('Karriere', '/karriere/'), ('Kontakt', '/kontakt/')]
+NAV = [('Leistungen', '/leistungen/'), ('Referenzen', '/referenzen/'), ('Unternehmen', '/unternehmen/'), ('Kontakt', '/kontakt/')]
 
 
 def e(text):
@@ -153,7 +152,7 @@ def fuss(kurz):
               spalte(LEISTUNGEN[:haelfte]), spalte(LEISTUNGEN[haelfte:]), TEL_LINK, TEL, MAIL, MAIL, PFEIL)
 
 
-def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html'):
+def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html', kontakt=True):
     """Schreibt eine Seite. pfad '' ist die Wurzel."""
     ganz = '''<!doctype html>
 <html lang="de" data-theme="light">
@@ -186,7 +185,7 @@ def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html'):
 <script src="/skript.js" defer></script>
 </body>
 </html>
-''' % (e(titel), e(beschreibung), kopf(aktiv), inhalt, fuss(kurz=pfad != ''))
+''' % (e(titel), e(beschreibung), kopf(aktiv), inhalt, fuss(kurz=pfad != '') if kontakt else fuss(False)[fuss(False).index('<footer class="fuss">'):])
     ordner = os.path.join(WURZEL, pfad)
     os.makedirs(ordner, exist_ok=True)
     with open(os.path.join(ordner, datei), 'w', encoding='utf-8') as f:
@@ -194,17 +193,20 @@ def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html'):
     print('  /' + (pfad + '/' if pfad else '') + ('' if datei == 'index.html' else datei))
 
 
-def seitenkopf(pfad, worte, titel, text):
-    """Kopfkachel einer Unterseite. pfad: Liste (Name, Ziel) für die Brotkrumen."""
+def seitenkopf(pfad, worte, titel, text, anfrage=False):
+    """Kopfkachel einer Unterseite. pfad: Liste (Name, Ziel) für die Brotkrumen. anfrage: Knöpfe Anfrage und Anruf."""
     krumen = '<a href="/">Start</a>' + ''.join(' <span aria-hidden="true">/</span> <a href="%s">%s</a>' % (z, n) for n, z in pfad)
+    knoepfe = ''
+    if anfrage:
+        knoepfe = '\n      <p class="knopfzeile">%s <a class="knopf knopf-linie" href="%s">%s %s</a></p>' % (knopf('Anfrage stellen', '/kontakt/'), TEL_LINK, TEL, SCHRAEG)
     return '''  <section class="seitenkopf">
     <div class="feld" data-feld data-zelle="8"><canvas aria-hidden="true"></canvas></div>
     <div class="seitenkopf-innen">
       <nav class="pfad etikett" aria-label="Brotkrumen">%s</nav>
       <h1 class="gross">%s</h1>
-      <p class="lauftext">%s</p>
+      <p class="lauftext">%s</p>%s
     </div>
-  </section>''' % (krumen, titel, text)
+  </section>''' % (krumen, titel, text, knoepfe)
 
 
 def k(inhalt, spanne=12, art=''):
@@ -334,47 +336,65 @@ def leistungskachel(l, spanne=3):
             % (spanne, l['nr'], l['slug'], l['name'], l['kurz'], PFEIL))
 
 
+# Kundenstimmen, die zu einer Leistung gehören (Name aus STIMMEN)
+STIMME_ZU = {'elektroinstallation': ['Margit Riepertinger', 'Kerstin Dausel'], 'ladeinfrastruktur': ['Thomas Fuchsbichler'],
+             'verteilerbau': ['Thomas Fuchsbichler']}
+
+KUNDEN = [('Privatkunden', 'Neuinstallation, Sanierung alter Verteilungen, Wallbox, Beleuchtung und Sprechanlagen.'),
+          ('Hausverwaltungen', 'Prüfung und Wartung, Fehlersuche, Sprech- und Antennenanlagen in Wohnanlagen.'),
+          ('Büro und Gewerbe', 'Netzwerkverkabelung, Licht- und Kraftinstallation, Notbeleuchtung und Alarmsysteme.'),
+          ('Produktion und Industrie', 'Schaltschrankbau, Steuerverteiler, Blitzschutz und Photovoltaik-Großanlagen.')]
+
+
+def stimme(text, name, anlass, spanne):
+    return '<figure class="k stimme ein s%d"><blockquote>„%s“</blockquote><figcaption><b>%s</b><span>%s</span></figcaption></figure>' % (spanne, text, name, anlass)
+
+
 def baue_leistungen():
-    kacheln = ''.join(leistungskachel(l) for l in LEISTUNGEN)
-    inhalt = seitenkopf([('Leistungen', '/leistungen/')], ['Acht', 'Bereiche', 'ein', 'Betrieb'], 'Unsere <em>Leistungen</em>',
-                        'Planung, Ausführung und Prüfung liegen in einem Betrieb. Wählen Sie den Bereich, um den es geht.')
-    inhalt += '\n' + abschnitt('Übersicht', '', '<div class="bento">%s</div>' % kacheln)
-    inhalt += '\n' + abschnitt('Außerdem', 'Was sonst noch <em>anfällt</em>', '<div class="bento">%s%s%s</div>' % (
-        k('<h3>Kleinere Aufträge</h3><p>Nicht jeder Auftrag ist ein Projekt. Wir kommen auch für die Arbeiten, die zwischen zwei Baustellen liegen.</p>'
-          + haken(['Fehlersuche', 'Reparaturen', 'Wartung von Verteilersystemen', 'Licht- und Kraftinstallationen', 'Video- und Netzwerkverkabelung', 'Anlagenwartung']), 7),
-        k_bild('baustelle-3', 'Verlegearbeiten auf einer Rohbaudecke', 5),
-        k('<h3>Für wen wir arbeiten</h3><p>Privatkunden, Hausverwaltungen, Büros, Gewerbe, Produktion und Industrie. Im Großraum München, im angrenzenden Bayern und in Österreich.</p><p>%s</p>'
-          % knopf('Anfrage stellen', '/kontakt/'), 12, 'k-rot')))
+    # Übersicht: Was gibt es? Für wen? Auch Kleines?
+    inhalt = seitenkopf([('Leistungen', '/leistungen/')], [], 'Unsere <em>Leistungen</em>',
+                        'Acht Bereiche aus einem Betrieb. Wählen Sie den Bereich, um den es geht.')
+    inhalt += '\n' + abschnitt('', '', '<div class="bento">%s</div>' % ''.join(leistungskachel(l) for l in LEISTUNGEN))
+    inhalt += '\n' + abschnitt('', 'Für wen wir <em>arbeiten</em>', '<div class="bento">%s%s</div>' % (
+        ''.join(k('<h3>%s</h3><p>%s</p>' % kunde, 3) for kunde in KUNDEN),
+        k('<h3>Einzugsgebiet</h3><p>Großraum München, angrenzendes Bayern und Österreich.</p>', 12, 'k-dunkel')))
+    inhalt += '\n' + abschnitt('', 'Auch für <em>kleinere Aufträge</em>', '<div class="bento">%s%s</div>' % (
+        k('<p>Nicht jeder Auftrag ist ein Projekt. Wir kommen auch für die Arbeiten, die zwischen zwei Baustellen liegen.</p>'
+          + haken(['Fehlersuche', 'Reparaturen', 'Wartung von Verteilersystemen', 'Licht- und Kraftinstallationen', 'Video- und Netzwerkverkabelung', 'Anlagenwartung'])
+          + '<p>%s</p>' % knopf('Anfrage stellen', '/kontakt/'), 7),
+        k_bild('baustelle-3', 'Verlegearbeiten auf einer Rohbaudecke', 5)))
     seite('leistungen', 'Leistungen · Mat-Elektrotechnik GmbH',
           'Elektroinstallation, Ladeinfrastruktur, Blitzschutz, Netzwerktechnik, Verteilerbau, Antennentechnik, Prüfung und Photovoltaik aus einem Meisterbetrieb in Germering.',
           inhalt, '/leistungen/')
 
+    # Leistungsseiten: Kopf mit Anfrage, Leistungsumfang, Erklärung, Beispiele, Kundenstimme, weitere Leistungen
     for i, l in enumerate(LEISTUNGEN):
-        inhalt = seitenkopf([('Leistungen', '/leistungen/'), (l['name'], '/leistungen/%s/' % l['slug'])], l['worte'], l['titel'], l['text'])
-        teile = ''
+        inhalt = seitenkopf([('Leistungen', '/leistungen/'), (l['name'], '/leistungen/%s/' % l['slug'])], [], l['titel'], l['text'], anfrage=True)
         bilder = list(l['bilder'])
-        erster = l['bloecke'][0]
-        teile += k('<h2>%s</h2>%s' % (erster[0], ''.join('<p>%s</p>' % p for p in erster[1])), 7)
-        teile += k_bild(bilder[0][0], bilder[0][1], 5)
-        teile += k('<h3>%s</h3>%s' % (l['liste'][0], haken(l['liste'][1])), 5, 'k-dunkel')
-        if len(l['bloecke']) > 1:
-            zweiter = l['bloecke'][1]
-            teile += k('<h2>%s</h2>%s' % (zweiter[0], ''.join('<p>%s</p>' % p for p in zweiter[1])), 7)
-        elif len(bilder) > 1:
-            teile += k_bild(bilder[1][0], bilder[1][1], 7)
-            bilder = [bilder[0]] + bilder[2:]
+        teile = k('<h2>%s</h2>%s' % (l['liste'][0], haken(l['liste'][1])), 5, 'k-dunkel')
+        teile += k_bild(bilder[0][0], bilder[0][1], 7)
+        bilder = bilder[1:]
+        bloecke = l['bloecke']
+        text = lambda blk: '<h2>%s</h2>%s' % (blk[0], ''.join('<p>%s</p>' % absatz for absatz in blk[1]))
+        if len(bloecke) > 1:
+            teile += k(text(bloecke[0]), 7) + k(text(bloecke[1]), 5)
+        elif bilder:
+            teile += k(text(bloecke[0]), 7) + k_bild(bilder[0][0], bilder[0][1], 5)
+            bilder = bilder[1:]
         else:
-            teile += k('<h2>Sprechen wir darüber</h2><p>Schildern Sie uns kurz, worum es geht und wo das Objekt liegt. Wir melden uns bei Ihnen.</p><p>%s</p>' % knopf('Anfrage stellen', '/kontakt/'), 7)
+            teile += k(text(bloecke[0]), 12)
         inhalt += '\n' + abschnitt('', '', '<div class="bento">%s</div>' % teile)
-        rest = bilder[1:]
-        if rest:
-            spanne = {1: 12, 2: 6, 3: 4}[len(rest)]
-            inhalt += '\n' + abschnitt('Aus unserer Arbeit', 'Beispiele aus <em>Projekten</em>',
-                                       '<div class="bento">%s</div>' % ''.join(k_bild(n, a, spanne) for n, a in rest))
+        if bilder:
+            spanne = {1: 12, 2: 6, 3: 4}[len(bilder)]
+            inhalt += '\n' + abschnitt('', 'Beispiele aus <em>Projekten</em>', '<div class="bento">%s</div><p class="knopfzeile abstand">%s</p>' % (
+                ''.join(k_bild(n, a, spanne) for n, a in bilder), knopf('Alle Referenzen', '/referenzen/', linie=True)))
+        namen = STIMME_ZU.get(l['slug'], [])
+        if namen:
+            passend = [s for s in STIMMEN if s[3] in namen]
+            inhalt += '\n' + abschnitt('', 'Das sagen <em>Kunden</em>', '<div class="bento">%s</div>' % ''.join(
+                stimme(s[2], s[3], s[0] + ', ' + s[1], 12 // len(passend)) for s in passend))
         andere = [LEISTUNGEN[(i + d) % len(LEISTUNGEN)] for d in (1, 2, 3)]
-        inhalt += '\n' + abschnitt('Weiter', 'Weitere <em>Leistungen</em>',
-                                   '<div class="bento">%s%s</div>' % (''.join(leistungskachel(a, 3) for a in andere),
-                                                                     '<div class="k k-link k-rot ein s3"><span class="nr">Alle</span><h3><a href="/leistungen/">Alle acht Bereiche</a></h3><p>Zur Übersicht der Leistungen.</p>%s</div>' % PFEIL))
+        inhalt += '\n' + abschnitt('', 'Weitere <em>Leistungen</em>', '<div class="bento">%s</div>' % ''.join(leistungskachel(a, 4) for a in andere))
         seite('leistungen/' + l['slug'], '%s · Mat-Elektrotechnik GmbH' % l['name'], l['text'], inhalt, '/leistungen/')
 
 
@@ -396,32 +416,21 @@ TEAM = [('miodrag-manojlovic', 'Miodrag Manojlovic', 'Geschäftsführer, Elektro
 
 
 def baue_unternehmen():
-    inhalt = seitenkopf([('Unternehmen', '/unternehmen/')], ['Wer', 'wir', 'sind'], 'Meister&shy;betrieb seit <em>2010</em>',
-                        'Mat-Elektrotechnik ist ein Elektro-Meisterbetrieb in Germering bei München. Gegründet als Einzelunternehmen, heute eine GmbH mit eigenem Team und eigener Ausbildung.')
-    inhalt += '\n' + abschnitt('', '', '<div class="bento">%s%s%s%s%s%s</div>' % (
+    inhalt = seitenkopf([('Unternehmen', '/unternehmen/')], [], 'Meister&shy;betrieb seit <em>2010</em>',
+                        'Mat-Elektrotechnik ist ein Elektro-Meisterbetrieb in Germering bei München, mit eigenem Team und eigener Ausbildung.')
+    inhalt += '\n' + abschnitt('', '', '<div class="bento">%s%s</div>' % (
         k('<h2>Wie es begann</h2><p>2010 gründete Miodrag Manojlovic den Betrieb als Einzelunternehmen. Die Aufträge wurden mehr und größer, das Team wuchs mit. Seit 2019 ist Mat-Elektrotechnik eine GmbH.</p>'
           '<p>Der Name geht auf die frühere Firmierung zurück: Manojlovic Anlagen Technik.</p>'
           '<p>Miodrag Manojlovic führt den Betrieb als Geschäftsführer und Elektrotechnikermeister. Zum Team gehören Projektleitung, Obermonteure, Monteure und Auszubildende.</p>', 7),
-        k_bild('team-hof', 'Mitarbeiter neben einem roten Firmenbus vor dem Betriebsgebäude', 5),
-        k('<p class="zahl">2010</p><p>Gründung als Einzelunternehmen</p>', 3),
-        k('<p class="zahl">2019</p><p>Eintragung als GmbH beim Amtsgericht München</p>', 3),
-        k('<p class="zahl">2023</p><p>Markenpreis ELMAR, Kategorie 1</p>', 3, 'k-rot'),
-        k('<p class="zahl">8</p><p>Leistungsbereiche, von der Installation bis zur Photovoltaik</p>', 3)))
+        k_bild('team-hof', 'Mitarbeiter neben einem roten Firmenbus vor dem Betriebsgebäude', 5)))
     team = ''.join('<figure class="ein">%s<figcaption><b>%s</b><span>%s</span></figcaption></figure>' % (bild('team/' + d, 'Porträt von ' + n), n, r) for d, n, r in TEAM)
-    inhalt += '\n' + abschnitt('Team', 'Ihre <em>Ansprechpartner</em>', '<div class="team">%s</div>' % team)
-    inhalt += '\n' + abschnitt('Auszeichnung', 'ELMAR <em>2023</em>', '<div class="bento">%s%s%s</div>' % (
+    inhalt += '\n' + abschnitt('', 'Ihre <em>Ansprechpartner</em>', '<div class="team">%s</div>' % team)
+    inhalt += '\n' + abschnitt('', 'ELMAR <em>2023</em>', '<div class="bento">%s%s%s</div>' % (
         k('<h3>Markenpreis der Elektrobranche</h3><p>Am 7. Dezember 2023 wurde Mat-Elektrotechnik mit dem ELMAR 2023 in Kategorie 1 ausgezeichnet. Verliehen wird der Preis von „Elektromarken. Starke Partner.“</p>', 5),
         k_bild('elmar-2023', 'Übergabe des ELMAR-Preises auf der Bühne', 4),
         k_bild('elmar-foto', 'Zwei Personen vor der Sponsorenwand der ELMAR-Verleihung', 3)))
-    inhalt += '\n' + abschnitt('Kunden', 'Für wen wir <em>arbeiten</em>', '<div class="bento">%s%s%s%s</div>' % (
-        k('<h3>Privatkunden</h3><p>Neuinstallation, Sanierung alter Verteilungen, Wallbox, Beleuchtung und Sprechanlagen.</p>', 3),
-        k('<h3>Hausverwaltungen</h3><p>Prüfung und Wartung, Fehlersuche, Sprech- und Antennenanlagen in Wohnanlagen.</p>', 3),
-        k('<h3>Büro und Gewerbe</h3><p>Netzwerkverkabelung, Licht- und Kraftinstallation, Notbeleuchtung und Alarmsysteme.</p>', 3),
-        k('<h3>Produktion und Industrie</h3><p>Schaltschrankbau, Steuerverteiler, Blitzschutz und Photovoltaik-Großanlagen.</p>', 3)))
-    inhalt += '\n' + abschnitt('Weiter', '', '<div class="bento">%s%s%s</div>' % (
-        '<div class="k k-link ein s4"><span class="nr">01</span><h3><a href="/leistungen/">Leistungen</a></h3><p>Die acht Bereiche im Überblick.</p>%s</div>' % PFEIL,
-        '<div class="k k-link ein s4"><span class="nr">02</span><h3><a href="/referenzen/">Referenzen</a></h3><p>Kundenstimmen und Fotos aus Projekten.</p>%s</div>' % PFEIL,
-        '<div class="k k-link ein s4"><span class="nr">03</span><h3><a href="/karriere/">Karriere</a></h3><p>Offene Stellen und Ausbildung.</p>%s</div>' % PFEIL))
+    inhalt += '\n' + abschnitt('', '', '<div class="bento">%s</div>' % k(
+        '<h2>Wir suchen Verstärkung</h2><p>%s.</p><p>%s</p>' % ('<br>'.join(STELLEN), knopf('Zur Karriere', '/karriere/')), 12, 'k-rot'))
     seite('unternehmen', 'Unternehmen · Mat-Elektrotechnik GmbH',
           'Mat-Elektrotechnik: Elektro-Meisterbetrieb in Germering, 2010 gegründet von Miodrag Manojlovic, seit 2019 GmbH. Team, Geschichte und Auszeichnung.',
           inhalt, '/unternehmen/')
@@ -434,22 +443,21 @@ STELLEN = ['Elektroinstallateur (m/w/d)', 'Projektleiter / Elektromeister (m/w/d
 
 
 def baue_karriere():
-    inhalt = seitenkopf([('Karriere', '/karriere/')], ['Arbeiten', 'bei', 'Mat'], 'Kommen Sie ins <em>Team</em>',
-                        'Wir suchen Menschen, die ihr Handwerk können und den Kontakt mit Kunden mögen. Kein Projekt gleicht dem anderen.')
+    inhalt = seitenkopf([('Unternehmen', '/unternehmen/'), ('Karriere', '/karriere/')], [], 'Kommen Sie ins <em>Team</em>',
+                        'Wir suchen Menschen, die ihr Handwerk können und den Kontakt mit Kunden mögen.')
     stellen = ''.join('<li class="ein"><span class="nr">%02d</span><h3>%s</h3><a class="knopf" href="mailto:%s?subject=%s">Bewerben %s</a></li>'
                       % (i + 1, s, MAIL, e('Bewerbung: ' + s).replace(' ', '%20'), SCHRAEG) for i, s in enumerate(STELLEN))
-    inhalt += '\n' + abschnitt('', '', '<div class="bento">%s%s</div>' % (
+    inhalt += '\n' + abschnitt('', 'Wen wir <em>suchen</em>', '<ol class="stellen">%s</ol>' % stellen)
+    inhalt += '\n' + abschnitt('', '', '<div class="bento">%s%s%s</div>' % (
         k('<h2>Was Sie bei uns erwartet</h2><p>Sie arbeiten an Elektroinstallationen, Verteilerbau, Netzwerktechnik, Blitzschutz und Photovoltaik. Die Baustellen reichen vom Einfamilienhaus bis zum Industriebetrieb.</p>'
           '<p>Wir bilden selbst aus und schulen unser Team laufend weiter.</p>', 7),
-        k_bild('team-studio', 'Sieben Mitarbeiter von Mat-Elektrotechnik in Arbeitskleidung', 5)))
-    inhalt += '\n' + abschnitt('Offene Stellen', 'Wen wir <em>suchen</em>', '<ol class="stellen">%s</ol>' % stellen)
-    inhalt += '\n' + abschnitt('', '', '<div class="bento">%s</div>' % k(
-        '<h2>So bewerben Sie sich</h2><p>Schreiben Sie uns eine E-Mail oder rufen Sie an. Ein kurzer Lebenslauf genügt für den Anfang.</p>'
-        '<p class="knopfzeile"><a class="knopf" href="mailto:%s?subject=Bewerbung">%s %s</a> <a class="knopf" href="%s">%s %s</a></p>'
-        % (MAIL, MAIL, SCHRAEG, TEL_LINK, TEL, SCHRAEG), 12, 'k-rot'))
+        k_bild('team-studio', 'Sieben Mitarbeiter von Mat-Elektrotechnik in Arbeitskleidung', 5),
+        k('<h2>So bewerben Sie sich</h2><p>Schreiben Sie uns eine E-Mail oder rufen Sie an. Ein kurzer Lebenslauf genügt für den Anfang.</p>'
+          '<p class="knopfzeile"><a class="knopf" href="mailto:%s?subject=Bewerbung">%s %s</a> <a class="knopf" href="%s">%s %s</a></p>'
+          % (MAIL, MAIL, SCHRAEG, TEL_LINK, TEL, SCHRAEG), 12, 'k-rot')))
     seite('karriere', 'Karriere · Mat-Elektrotechnik GmbH',
           'Offene Stellen bei Mat-Elektrotechnik in Germering: Elektroinstallateur, Projektleiter und Ausbildung zum Elektroniker für Energie- und Gebäudetechnik.',
-          inhalt, '/karriere/')
+          inhalt, '/unternehmen/', kontakt=False)
 
 
 # ------------------------------------------------------------------ Referenzen
@@ -473,15 +481,29 @@ GALERIE = [
 ]
 
 
+# Zu welcher Leistung eine Fotogruppe führt
+GRUPPE_ZU = {'Verteiler und Schaltschränke': 'verteilerbau', 'Netzwerk': 'netzwerktechnik', 'Licht': 'elektroinstallation',
+             'Sprechanlagen': 'elektroinstallation', 'Photovoltaik': 'photovoltaik'}
+
+
 def baue_referenzen():
-    inhalt = seitenkopf([('Referenzen', '/referenzen/')], ['Stimmen', 'und', 'Projekte'], 'Unsere <em>Referenzen</em>',
+    inhalt = seitenkopf([('Referenzen', '/referenzen/')], [], 'Unsere <em>Referenzen</em>',
                         'Was Kunden nach dem Auftrag sagen, und Fotos von Anlagen, die wir geplant und gebaut haben.')
     stimmen = ''.join('<figure class="stimme ein"><blockquote>„%s“</blockquote><figcaption><b>%s</b><span>%s</span></figcaption></figure>'
                       % (t, n, a + ', ' + b) for a, b, t, n in STIMMEN)
     inhalt += '\n  <section class="stimmen stimmen-seite"><div class="abschnittskopf"><h2 class="ein">Nach dem <em>Auftrag</em></h2></div><div class="stimmen-liste">%s</div></section>' % stimmen
-    for titel, fotos in GALERIE:
-        inhalt += '\n' + abschnitt('Projektfotos', titel, '<div class="galerie">%s</div>' % ''.join(
-            '<figure class="ein">%s<figcaption>%s</figcaption></figure>' % (bild(n, a), a) for n, a in fotos))
+    namen = dict((l['slug'], l['name']) for l in LEISTUNGEN)
+    knoepfe = '<button class="knopf knopf-linie" type="button" aria-pressed="true" data-gruppe="">Alle</button>'
+    fotos = ''
+    for nr, (titel, bilder) in enumerate(GALERIE, 1):
+        ziel = GRUPPE_ZU.get(titel, '')
+        knoepfe += '<button class="knopf knopf-linie" type="button" aria-pressed="false" data-gruppe="g%d" data-ziel="%s" data-zielname="%s">%s</button>' % (
+            nr, '/leistungen/%s/' % ziel if ziel else '', namen.get(ziel, ''), titel)
+        fotos += ''.join('<figure class="ein" data-gruppe="g%d">%s<figcaption>%s</figcaption></figure>' % (nr, bild(n, a), a) for n, a in bilder)
+    inhalt += '\n' + abschnitt('', 'Fotos aus <em>Projekten</em>',
+                               '<div class="filter" data-filter role="group" aria-label="Projektfotos nach Bereich filtern">%s</div>'
+                               '<p class="filter-ziel" hidden><a class="knopf" href="/leistungen/">Zur Leistung %s</a></p>'
+                               '<div class="galerie">%s</div>' % (knoepfe, PFEIL, fotos))
     seite('referenzen', 'Referenzen · Mat-Elektrotechnik GmbH',
           'Kundenstimmen und Projektfotos von Mat-Elektrotechnik: Verteiler, Netzwerktechnik, Beleuchtung, Sprechanlagen und Photovoltaik.',
           inhalt, '/referenzen/')
@@ -490,7 +512,7 @@ def baue_referenzen():
 # ------------------------------------------------------------------ Kontakt
 
 def baue_kontakt():
-    inhalt = seitenkopf([('Kontakt', '/kontakt/')], ['Anrufen', 'Schreiben', 'Vorbeikommen'], 'So erreichen Sie <em>uns</em>',
+    inhalt = seitenkopf([('Kontakt', '/kontakt/')], [], 'So erreichen Sie <em>uns</em>',
                         'Schildern Sie uns kurz, worum es geht und wo das Objekt liegt. Fotos vom Zählerschrank oder ein Plan helfen bei der Einschätzung.')
     optionen = ''.join('<option>%s</option>' % l['name'] for l in LEISTUNGEN) + '<option>Reparatur oder Fehlersuche</option><option>Etwas anderes</option>'
     formular = '''<form class="formular" data-anfrage>
@@ -503,19 +525,17 @@ def baue_kontakt():
           <label>Anliegen <select name="anliegen">%s</select></label>
           <label class="breit">Nachricht <textarea name="nachricht" rows="6" required></textarea></label>
         </div>
-        <button class="knopf" type="submit">E-Mail vorbereiten %s</button>
+        <button class="knopf" type="submit">Anfrage stellen %s</button>
       </form>''' % (optionen, SCHRAEG)
-    inhalt += '\n' + abschnitt('', '', '<div class="bento">%s%s%s%s%s</div>' % (
-        k('<p class="etikett etikett-punkt">Telefon</p><p class="zahl"><a href="%s">%s</a></p><p>Montag bis Freitag</p>' % (TEL_LINK, TEL), 6, 'k-rot'),
-        k('<p class="etikett etikett-punkt">E-Mail</p><p class="zahl klein"><a href="mailto:%s">%s</a></p><p>Für Anfragen, Pläne und Fotos</p>' % (MAIL, MAIL), 6),
+    inhalt += '\n' + abschnitt('', '', '<div class="bento">%s%s%s%s</div>' % (
+        k('<p class="etikett">Telefon</p><p class="zahl"><a href="%s">%s</a></p><p>Montag bis Freitag</p>' % (TEL_LINK, TEL), 6, 'k-rot'),
+        k('<p class="etikett">E-Mail</p><p class="zahl klein"><a href="mailto:%s">%s</a></p><p>Für Anfragen, Pläne und Fotos</p>' % (MAIL, MAIL), 6),
         k(formular, 7),
-        k('<p class="etikett etikett-punkt">Anschrift</p><h3>Mat-Elektrotechnik GmbH</h3><p>Industriestraße 12<br>82110 Germering</p><p>%s</p>' % knopf('Route planen', KARTE, schraeg=True)
-          + '<p class="etikett etikett-punkt" style="margin-top:1.5rem">Einzugsgebiet</p><p>Großraum München, angrenzendes Bayern und Österreich.</p>'
-          + '<p class="etikett etikett-punkt" style="margin-top:1.5rem">Facebook</p><p><a href="https://www.facebook.com/MAT.Elektrotechnik/" rel="noopener">facebook.com/MAT.Elektrotechnik</a></p>', 5),
-        k_bild('team-hof', 'Betriebsgebäude in der Industriestraße 12 mit Firmenfahrzeugen', 12)))
+        k('<h2>Anschrift</h2><p>Mat-Elektrotechnik GmbH<br>Industriestraße 12<br>82110 Germering</p><p>%s</p>' % knopf('Route planen', KARTE, schraeg=True, linie=True)
+          + '<h3 class="abstand">Einzugsgebiet</h3><p>Großraum München, angrenzendes Bayern und Österreich.</p>', 5)))
     seite('kontakt', 'Kontakt · Mat-Elektrotechnik GmbH',
           'Mat-Elektrotechnik GmbH, Industriestraße 12, 82110 Germering. Telefon 089 23750352, E-Mail info@mat-elektrotechnik.de.',
-          inhalt, '/kontakt/')
+          inhalt, '/kontakt/', kontakt=False)
 
 
 # ------------------------------------------------------------------ Recht

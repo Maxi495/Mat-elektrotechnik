@@ -74,6 +74,23 @@
       '&body=' + encodeURIComponent(zeilen.join('\n'));
   });
 
+  /* ---------- Projektfotos nach Bereich filtern ---------- */
+  var filter = $('[data-filter]');
+  if (filter) {
+    var wahl = $$('button', filter), fotos = $$('.galerie figure'), ziel = $('.filter-ziel'), zielLink = ziel && $('a', ziel);
+    wahl.forEach(function (knopf) {
+      knopf.addEventListener('click', function () {
+        var gruppe = knopf.dataset.gruppe;
+        wahl.forEach(function (k) { k.setAttribute('aria-pressed', k === knopf ? 'true' : 'false'); });
+        fotos.forEach(function (f) { f.hidden = !!gruppe && f.dataset.gruppe !== gruppe; });
+        if (ziel) {
+          ziel.hidden = !knopf.dataset.ziel;
+          if (knopf.dataset.ziel) { zielLink.href = knopf.dataset.ziel; zielLink.firstChild.nodeValue = 'Zur Leistung ' + knopf.dataset.zielname + ' '; }
+        }
+      });
+    });
+  }
+
   /* ---------- Wechselnde Zeile im Hero ---------- */
   var wechsel = $('[data-wechsel]');
   if (wechsel && !ruhig) {
