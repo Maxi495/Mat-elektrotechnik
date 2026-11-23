@@ -152,7 +152,7 @@ def fuss(kurz):
               spalte(LEISTUNGEN[:haelfte]), spalte(LEISTUNGEN[haelfte:]), TEL_LINK, TEL, MAIL, MAIL, PFEIL)
 
 
-def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html', kontakt=True):
+def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html', kontakt=True, vorab=''):
     """Schreibt eine Seite. pfad '' ist die Wurzel."""
     ganz = '''<!doctype html>
 <html lang="de" data-theme="light">
@@ -182,10 +182,10 @@ def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html', konta
 
 %s
 
-<script src="/skript.js" defer></script>
+%s<script src="/skript.js" defer></script>
 </body>
 </html>
-''' % (e(titel), e(beschreibung), kopf(aktiv), inhalt, fuss(kurz=pfad != '') if kontakt else fuss(False)[fuss(False).index('<footer class="fuss">'):])
+''' % (e(titel), e(beschreibung), kopf(aktiv), inhalt, fuss(kurz=pfad != '') if kontakt else fuss(False)[fuss(False).index('<footer class="fuss">'):], vorab)
     ordner = os.path.join(WURZEL, pfad)
     os.makedirs(ordner, exist_ok=True)
     with open(os.path.join(ordner, datei), 'w', encoding='utf-8') as f:
@@ -617,7 +617,7 @@ def baue_start():
     inhalt = inhalt.replace(marke, leistungs_aufklapper())
     seite('', 'Mat-Elektrotechnik GmbH · Elektro-Meisterbetrieb in Germering bei München',
           'Elektroinstallation, Wallbox, Blitzschutz, Netzwerktechnik, Verteilerbau, Prüfung und Photovoltaik. Meisterbetrieb in Germering, seit 2010 im Großraum München tätig.',
-          inhalt)
+          inhalt, vorab='<script src="/gsap.min.js" defer></script>\n')
 
 
 if __name__ == '__main__':

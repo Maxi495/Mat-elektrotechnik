@@ -91,23 +91,54 @@
     });
   }
 
-  /* ---------- Wechselnde Zeile im Hero ---------- */
-  var wechsel = $('[data-wechsel]');
-  if (wechsel && !ruhig) {
-    var saetze = JSON.parse(wechsel.dataset.wechsel), nr = 0;
-    setInterval(function () {
-      if (document.hidden) return;
-      wechsel.classList.add('weg');
-      setTimeout(function () {
-        nr = (nr + 1) % saetze.length;
-        wechsel.textContent = saetze[nr][0] + ' ';
-        var em = document.createElement('em'); em.textContent = saetze[nr][1]; wechsel.appendChild(em);
-        wechsel.classList.remove('weg');
-        $$('[data-satz]').forEach(function (stapel) {
-          Array.prototype.forEach.call(stapel.children, function (kind, i) { kind.classList.toggle('aktiv', i === nr); });
-        });
-      }, 700);
-    }, 3800);
+  /* ---------- Haus im Kopf der Startseite ----------
+     Etiketten beim Zeigen oder Fokussieren eines Raums; Licht-Ablauf mit GSAP (gsap.min.js, nur opacity und transform). */
+  var haus = $('.haus');
+  if (haus) {
+    var zeigt = matchMedia('(hover: hover) and (pointer: fine)').matches;
+    $$('.raum', haus).forEach(function (raum) {
+      var schild = $('.h-schild[data-r="' + raum.dataset.r + '"]', haus);
+      var an = function (ja) { return function () { if (schild) schild.classList.toggle('an', ja); }; };
+      if (zeigt) { raum.addEventListener('pointerenter', an(true)); raum.addEventListener('pointerleave', an(false)); }
+      raum.addEventListener('focus', an(true)); raum.addEventListener('blur', an(false));
+    });
+
+    var gsap = window.gsap;
+    if (ruhig || !gsap) haus.classList.add('an');
+    else {
+      var lichter = $$('.haus-licht', haus), ablauf = gsap.timeline({ delay: 0.3 });
+      gsap.set(lichter, { opacity: 0 });
+      // Flackern: zwei, drei schnelle Wechsel, dann stabil
+      var flackern = function (ziele, wann) {
+        ablauf.to(ziele, { keyframes: [
+          { opacity: 1, duration: 0.05 }, { opacity: 0.2, duration: 0.05 }, { opacity: 0.85, duration: 0.06 },
+          { opacity: 0.35, duration: 0.05 }, { opacity: 1, duration: 0.09 }], ease: 'none' }, wann);
+      };
+      flackern($('.h-kasten-licht', haus), 0);
+      $$('.h-impuls', haus).forEach(function (punkt, i) {
+        var kurz = punkt.dataset.r, start = 0.25 + i * 0.35, lauf = 0.28;
+        var weg = punkt.dataset.weg.split(' ').map(function (p) { return p.split(',').map(Number); });
+        var strecke = 0, laengen = [];
+        for (var n = 1; n < weg.length; n++) { laengen.push(Math.abs(weg[n][0] - weg[n - 1][0]) + Math.abs(weg[n][1] - weg[n - 1][1])); strecke += laengen[n - 1]; }
+        ablauf.set(punkt, { opacity: 1 }, start);
+        var zeit = start;
+        for (n = 1; n < weg.length; n++) {
+          var dauer = lauf * laengen[n - 1] / strecke;
+          ablauf.to(punkt, { x: weg[n][0] - weg[0][0], y: weg[n][1] - weg[0][1], duration: dauer, ease: 'none' }, zeit);
+          zeit += dauer;
+        }
+        ablauf.set(punkt, { opacity: 0 }, start + lauf);
+        ablauf.to($('.h-draehte-an [data-r="' + kurz + '"]', haus), { opacity: 1, duration: 0.14, ease: 'none' }, start + 0.12);
+        flackern($$('.h-hell[data-r="' + kurz + '"], .h-schein[data-r="' + kurz + '"]', haus), start + lauf);
+      });
+      // Zum Schluss der Schein am Hauptknopf, danach ein sehr leichtes Pulsieren
+      var schein = $$('.h-schein', haus).concat($$('.hero .knopf-schein'));
+      ablauf.to('.hero .knopf-schein', { opacity: 1, duration: 0.6, ease: 'power2.out' });
+      ablauf.add(function () {
+        var puls = gsap.to(schein, { opacity: 0.72, duration: 2.6, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+        new IntersectionObserver(function (es) { if (es[0].isIntersecting) puls.resume(); else puls.pause(); }).observe(haus);
+      });
+    }
   }
 
   /* ---------- Pixelfeld: fließendes Rauschen als Punktraster ---------- */
