@@ -25,12 +25,11 @@
 
   /* ---------- Scrollgebundene Werte ---------- */
   var fort = $$('[data-fortschritt]'), hero = $('.hero'), bloecke = $$('.block'), standbilder = $$('.stand img');
-  var navlinks = $$('.nav a'), ziele = $$('[data-nav]');
   var wartet = false;
   function rechnen() {
     wartet = false;
     var vh = innerHeight;
-    hero.style.setProperty('--h', klemme(scrollY / (vh * 0.8)).toFixed(3));
+    if (hero) hero.style.setProperty('--h', klemme(scrollY / (vh * 0.8)).toFixed(3));
     fort.forEach(function (el) {
       var r = el.getBoundingClientRect();
       var p = klemme((vh - r.top) / (vh * 0.62));
@@ -45,17 +44,23 @@
     });
     bloecke.forEach(function (b, i) { b.classList.toggle('aktiv', i === best); });
     standbilder.forEach(function (b, i) { b.classList.toggle('aktiv', i === best); });
-    // aktiver Menüpunkt
-    var id = '';
-    ziele.forEach(function (z) { if (z.getBoundingClientRect().top < vh * 0.5) id = z.id; });
-    navlinks.forEach(function (a) {
-      if (a.getAttribute('href') === '#' + id) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
-    });
   }
   function anstossen() { if (!wartet) { wartet = true; requestAnimationFrame(rechnen); } }
   addEventListener('scroll', anstossen, { passive: true });
   addEventListener('resize', anstossen);
   rechnen();
+
+  /* ---------- Anfrageformular: öffnet das Mailprogramm, sendet nichts an einen Server ---------- */
+  var formular = $('[data-anfrage]');
+  if (formular) formular.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = formular.elements, zeilen = [
+      'Name: ' + f.name.value, 'Telefon: ' + f.telefon.value, 'Ort des Objekts: ' + f.ort.value,
+      'Anliegen: ' + f.anliegen.value, '', f.nachricht.value
+    ];
+    location.href = 'mailto:info@mat-elektrotechnik.de?subject=' + encodeURIComponent('Anfrage: ' + f.anliegen.value) +
+      '&body=' + encodeURIComponent(zeilen.join('\n'));
+  });
 
   /* ---------- Wechselnde Zeile im Hero ---------- */
   var wechsel = $('[data-wechsel]');

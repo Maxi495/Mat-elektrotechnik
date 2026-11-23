@@ -256,7 +256,7 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
   font: 500 0.75rem/1 var(--textschrift); letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--text); text-decoration: none; transition: color 0.3s;
 }
-.nav a:hover, .nav a[aria-current="true"] { color: var(--link); }
+.nav a:hover, .nav a[aria-current] { color: var(--link); }
 .menue-knopf { display: none; }
 
 @media (max-width: 61.99rem) {
@@ -324,7 +324,7 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
 /* ---------- Leistungen (Bento) ---------- */
 .leistungen { padding: clamp(4rem, 8vw, 7rem) var(--rand) 0; }
 .rahmen { display: grid; gap: var(--luft); }
-.raster { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--luft); }
+.raster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--luft); }
 .raster li {
   position: relative; min-height: 11rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 2rem;
   background: var(--kachel); border-radius: 1rem; transition: background-color 0.5s, color 0.5s;
@@ -339,7 +339,7 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
 .tafel .wort:nth-of-type(3) { left: 0; bottom: 0; } .tafel .wort:nth-of-type(4) { right: 0; bottom: 0; }
 @media (min-width: 62rem) {
   .rahmen { grid-template-columns: 3fr 2fr; }
-  .raster { grid-template-columns: repeat(4, 1fr); }
+  .raster { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .raster li { min-height: 16.25rem; padding: 1.5rem; }
   .raster p { opacity: 0; transform: translateY(0.5rem); transition: opacity 0.4s, transform 0.5s var(--weich); }
   .raster li:hover, .raster li:focus-within { background: var(--primary-soft); }
@@ -402,14 +402,14 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
 /* ---------- Stimmen ---------- */
 .stimmen { padding: calc(var(--abschnitt) + 4rem) var(--rand) var(--abschnitt); margin-top: clamp(4rem, 10vw, 9rem); }
 .stimmen-kopf { display: grid; justify-items: center; text-align: center; gap: 2rem; margin-bottom: clamp(3rem, 7vw, 6.5rem); }
-.stimmen ul { display: grid; gap: var(--luft); }
+.stimmen ul { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--luft); }
 .stimmen li { display: flex; flex-direction: column; background: var(--kachel); border-radius: var(--rund); padding: clamp(1.5rem, 2.4vw, 2.25rem); }
-.stimmen .zeile { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--linie); margin-bottom: 1.75rem; }
+.stimmen .zeile { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem 1rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--linie); margin-bottom: 1.75rem; }
 .stimmen .zeile span:last-child { color: var(--text-muted); }
 .stimmen blockquote { font: 400 clamp(1.1875rem, 1rem + 0.6vw, 1.4375rem)/1.32 var(--kopfschrift); letter-spacing: -0.01em; color: var(--text); text-wrap: pretty; }
 .stimmen cite { font-style: normal; margin-top: auto; padding-top: 1.75rem; color: var(--link); font: 400 1.0625rem/1.3 var(--kopfschrift); }
 .stimmen-knoepfe { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: clamp(3rem, 7vw, 6rem); }
-@media (min-width: 62rem) { .stimmen ul { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 62rem) { .stimmen ul { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 /* ---------- Kontakt ---------- */
 .kontakt { position: relative; margin: var(--luft); min-height: calc(100svh - var(--luft) * 2); display: grid; grid-template-rows: 1fr auto; overflow: clip; border-radius: var(--rund); background: var(--kachel); padding: 7rem var(--rand) 1.25rem; }
@@ -435,6 +435,119 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
   .kontakt-seite.links { justify-self: start; order: -1; }
   .kontakt-seite.rechts { justify-self: end; }
 }
+
+/* ================= Unterseiten ================= */
+.mitte { display: flex; justify-content: center; margin-top: 2.5rem; }
+.raster a, .k.k-link h3 a:not(.knopf) { color: inherit; text-decoration: none; }
+.raster a::after, .k-link h3 a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.kontakt.kurz { min-height: min(46rem, 80svh); }
+
+/* Kopfkachel */
+.seitenkopf { position: relative; margin: var(--luft); min-height: min(42rem, 72svh); display: flex; align-items: flex-end; overflow: clip; border-radius: var(--rund); background: var(--kachel); }
+.seitenkopf .feld { mask-image: linear-gradient(to left, #000 5%, transparent 62%); -webkit-mask-image: linear-gradient(to left, #000 5%, transparent 62%); }
+@media (max-width: 47.99rem) { .seitenkopf .feld { opacity: 0.4; mask-image: linear-gradient(to bottom, #000, transparent 55%); -webkit-mask-image: linear-gradient(to bottom, #000, transparent 55%); } }
+.seitenkopf-innen { position: relative; z-index: 1; width: 100%; padding: 9rem calc(var(--rand) - var(--luft)) clamp(2rem, 5vw, 4rem); display: grid; gap: 1.5rem; justify-items: start; }
+.seitenkopf h1 { font-family: var(--kopfschrift); font-weight: 300; color: var(--text); letter-spacing: -0.025em; max-width: 12em; text-wrap: balance; }
+.seitenkopf h1 em { font-style: normal; color: var(--hervor); }
+.seitenkopf .lauftext { max-width: 30em; text-wrap: pretty; }
+.spreiz-links { margin-inline: 0; width: auto; gap: clamp(1.5rem, 5vw, 4.5rem); justify-content: flex-start; flex-wrap: wrap; }
+.pfad { color: var(--text-muted); font-size: 0.6875rem; display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: clamp(1rem, 4vw, 3rem); }
+.pfad a { color: inherit; text-decoration: none; }
+.pfad a:hover, .pfad a:last-child { color: var(--text); }
+
+/* Abschnitt und Bento */
+.abschnitt { padding: clamp(2.5rem, 6vw, 5.5rem) var(--luft) 0; }
+.seitenkopf + .abschnitt { padding-top: 0; }
+.abschnittskopf { display: grid; gap: 1.25rem; padding-inline: calc(var(--rand) - var(--luft)); margin-bottom: clamp(1.75rem, 4vw, 3rem); }
+.abschnittskopf h2 { font-size: clamp(2rem, 1.2rem + 3vw, 3.75rem); line-height: 1.05; }
+.bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--luft); }
+.k { position: relative; grid-column: span 12; display: flex; flex-direction: column; gap: 1.125rem; background: var(--kachel); border-radius: var(--rund); padding: clamp(1.5rem, 3.2vw, 3rem); }
+.k h2 { font-size: clamp(1.75rem, 1.2rem + 1.9vw, 2.75rem); line-height: 1.08; margin-bottom: 0.5rem; }
+.k h3 { font: 400 clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem)/1.15 var(--kopfschrift); letter-spacing: -0.01em; color: var(--text); hyphens: manual; }
+.k p { max-width: 38em; }
+.k a:not(.knopf) { color: var(--link); text-underline-offset: 0.2em; }
+.k-bild { padding: 0; overflow: hidden; min-height: 16rem; }
+.k-bild img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.k-rot { background: var(--primary); color: var(--on-primary); --focus: var(--neutral-0); }
+.k-rot h2, .k-rot h3, .k-rot .etikett, .k-rot .zahl { color: inherit; }
+.k-rot a:not(.knopf) { color: inherit; }
+.k-rot .etikett-punkt::before { background: currentColor; }
+.k-rot .nr { color: inherit; }
+.k-rot .knopf:hover { background: var(--neutral-0); color: var(--red-700); }
+.k-dunkel { background: var(--neutral-900); color: var(--neutral-300); --linie: color-mix(in srgb, var(--neutral-0) 18%, transparent); }
+.k-dunkel h3 { color: var(--neutral-0); }
+.k .nr { font: 500 0.75rem/1 var(--textschrift); letter-spacing: 0.2em; color: var(--accent-text); }
+.k-link { min-height: 14rem; transition: background-color 0.4s; }
+.k-link h3 { margin-top: auto; }
+.k-link p { font-size: 0.9375rem; line-height: 1.45; }
+.k-link > svg { position: absolute; right: 1.5rem; top: 1.5rem; width: 1rem; height: 1rem; color: var(--primary); transition: transform 0.4s var(--weich); }
+.k-link:hover { background: var(--primary-soft); }
+.k-link:hover > svg { transform: translateX(4px); }
+.k-rot.k-link:hover { background: var(--primary-hover); }
+.k-rot.k-link > svg { color: currentColor; }
+.zahl { font: 300 clamp(2.5rem, 1.6rem + 3.4vw, 4.5rem)/1 var(--kopfschrift); letter-spacing: -0.02em; color: var(--text); }
+.zahl.klein { font-size: clamp(1.375rem, 1rem + 1.6vw, 2.25rem); overflow-wrap: anywhere; }
+.zahl a { color: inherit !important; text-decoration: none; }
+.knopfzeile { display: flex; flex-wrap: wrap; gap: 0.75rem; max-width: none; }
+.haken { display: grid; }
+.haken li { display: flex; gap: 0.875rem; padding: 0.8125rem 0; border-bottom: 1px solid var(--linie); line-height: 1.4; }
+.haken li:last-child { border-bottom: 0; }
+.haken li::before { content: ""; flex: none; width: 0.5rem; height: 0.5rem; margin-top: 0.45em; background: var(--primary); }
+@media (min-width: 48rem) {
+  .s3, .s4 { grid-column: span 6; }
+}
+@media (min-width: 62rem) {
+  .s3 { grid-column: span 3; } .s4 { grid-column: span 4; } .s5 { grid-column: span 5; }
+  .s6 { grid-column: span 6; } .s7 { grid-column: span 7; } .s8 { grid-column: span 8; }
+  .k-bild { min-height: 24rem; }
+}
+
+/* Team */
+.team { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr)); gap: var(--luft); }
+.team figure { background: var(--kachel); border-radius: 1rem; overflow: hidden; }
+.team img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.team figcaption { padding: 0.875rem 1rem 1.125rem; display: grid; gap: 0.25rem; }
+.team b { font: 500 1rem/1.25 var(--textschrift); color: var(--text); }
+.team span { font-size: 0.875rem; line-height: 1.35; }
+
+/* Stellen */
+.stellen { display: grid; gap: var(--luft); }
+.stellen li { display: grid; gap: 1rem; align-items: center; background: var(--kachel); border-radius: 1rem; padding: 1.5rem clamp(1.5rem, 3.2vw, 3rem); }
+.stellen .nr { font: 500 0.75rem/1 var(--textschrift); letter-spacing: 0.2em; color: var(--accent-text); }
+.stellen h3 { font: 400 clamp(1.25rem, 1.05rem + 0.9vw, 1.875rem)/1.15 var(--kopfschrift); letter-spacing: -0.01em; color: var(--text); }
+.stellen .knopf { justify-self: start; }
+@media (min-width: 48rem) { .stellen li { grid-template-columns: 3rem 1fr auto; } }
+
+/* Kundenstimmen als eigene Seite */
+.stimmen-seite { margin-top: 0; padding: clamp(2.5rem, 6vw, 5.5rem) var(--luft) 0; }
+.stimmen-seite blockquote { font-size: clamp(1.0625rem, 0.95rem + 0.45vw, 1.25rem); }
+
+/* Galerie */
+.galerie { columns: 2; column-gap: var(--luft); }
+.galerie figure { break-inside: avoid; margin-bottom: var(--luft); border-radius: 1rem; overflow: hidden; background: var(--kachel); }
+.galerie img { width: 100%; }
+.galerie figcaption { padding: 0.625rem 0.875rem 0.75rem; font-size: 0.8125rem; line-height: 1.35; }
+@media (min-width: 48rem) { .galerie { columns: 3; } }
+@media (min-width: 72rem) { .galerie { columns: 4; } }
+
+/* Formular */
+.formular { display: grid; gap: 1.25rem; }
+.felder { display: grid; gap: 1rem; }
+.formular label { display: grid; gap: 0.375rem; font: 500 0.8125rem/1.3 var(--textschrift); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+.formular input, .formular select, .formular textarea {
+  width: 100%; min-height: 3rem; padding: 0.75rem 0.875rem; font: 400 1rem/1.4 var(--textschrift); letter-spacing: 0; text-transform: none;
+  color: var(--text); background: var(--seite); border: 1px solid var(--border-strong); border-radius: 0.5rem;
+}
+.formular textarea { resize: vertical; }
+.formular .knopf { justify-self: start; }
+@media (min-width: 48rem) { .felder { grid-template-columns: 1fr 1fr; } .felder .breit { grid-column: 1 / -1; } }
+
+/* Rechtstexte */
+.recht { gap: 0.875rem; }
+.recht h2 { font: 400 1.375rem/1.2 var(--kopfschrift); letter-spacing: -0.01em; margin: 1.5rem 0 0; }
+.recht h2:first-child { margin-top: 0; }
+.recht p { max-width: 44em; }
+.offen { background: var(--amber-100); color: var(--neutral-900); padding: 0.1em 0.4em; border-radius: 0.25rem; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01s !important; animation: none !important; }
