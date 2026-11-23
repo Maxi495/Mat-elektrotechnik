@@ -258,6 +258,22 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
 }
 .nav a:hover, .nav a[aria-current] { color: var(--link); }
 .menue-knopf { display: none; }
+.nav li { position: relative; }
+.unter { display: none; }
+.nav .unter ul { display: grid; gap: 0.125rem; }
+.nav .unter a { text-transform: none; letter-spacing: 0; font: 400 1.0625rem/1.25 var(--kopfschrift); gap: 0.875rem; padding: 0 0.875rem; min-height: 2.875rem; border-radius: 0.5rem; }
+.nav .unter a span { font: 500 0.6875rem/1 var(--textschrift); letter-spacing: 0.18em; color: var(--accent-text); width: 1.25rem; flex: none; }
+.nav .unter a svg { width: 0.875rem; height: 0.875rem; color: var(--primary); margin-left: auto; }
+@media (min-width: 62rem) {
+  .hat-unter > a::after { content: ""; width: 0.375rem; height: 0.375rem; margin-left: 0.5rem; margin-top: -0.2rem; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; rotate: 45deg; transition: rotate 0.3s, margin 0.3s; }
+  .hat-unter:hover > a::after, .hat-unter:focus-within > a::after { rotate: 225deg; margin-top: 0.15rem; }
+  .unter { display: block; position: absolute; left: -0.5rem; top: 100%; padding-top: 1.125rem; opacity: 0; visibility: hidden; transform: translateY(-0.375rem); transition: opacity 0.25s, transform 0.35s var(--weich), visibility 0.25s; }
+  .hat-unter:hover .unter, .hat-unter:focus-within .unter { opacity: 1; visibility: visible; transform: none; }
+  .nav .unter ul { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 39rem; padding: 0.625rem; background: var(--seite); border: 1px solid var(--linie); border-radius: 1rem; box-shadow: 0 1.25rem 2.5rem -1.25rem color-mix(in srgb, var(--neutral-900) 30%, transparent); }
+  .nav .unter a:hover, .nav .unter a:focus-visible { background: var(--kachel); color: var(--text); }
+  .nav .unter .alle { grid-column: 1 / -1; margin-top: 0.375rem; padding-top: 0.375rem; border-top: 1px solid var(--linie); }
+  .nav .unter .alle a { font: 500 0.75rem/1 var(--textschrift); letter-spacing: 0.16em; text-transform: uppercase; }
+}
 
 @media (max-width: 61.99rem) {
   .kopf { gap: 0.5rem; inset: var(--luft) var(--luft) auto; padding-left: 1rem; }
@@ -278,7 +294,11 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
   }
   .nav.offen { opacity: 1; visibility: visible; }
   .nav ul { flex-direction: column; gap: 0; }
-  .nav a { padding: 0; min-height: 4rem; font: 300 2rem/1 var(--kopfschrift); letter-spacing: -0.02em; text-transform: none; border-bottom: 1px solid var(--linie); }
+  .nav { justify-content: flex-start; overflow-y: auto; }
+  .nav > ul > li > a { padding: 0; min-height: 3.5rem; font: 300 1.75rem/1 var(--kopfschrift); letter-spacing: -0.02em; text-transform: none; border-bottom: 1px solid var(--linie); }
+  .unter { display: block; padding: 0.375rem 0 0.75rem; border-bottom: 1px solid var(--linie); }
+  .nav .unter a { padding: 0; min-height: 2.5rem; font-size: 1.0625rem; color: var(--text-muted); }
+  .nav .unter .alle { display: none; }
 }
 
 /* ---------- Pixelfeld ---------- */
@@ -348,7 +368,7 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
   .aussage .lauftext { text-align: left; margin-inline: 0; }
 }
 
-/* ---------- Leistungen (Bento) ---------- */
+/* ---------- Leistungen (Bento): breite Zeilen, waagrecht lesbar ---------- */
 .leistungen { padding: clamp(4rem, 8vw, 7rem) var(--rand) 0; }
 /* Kopfzeile über den Kacheln */
 .lk-kopfzeile { display: grid; gap: 1.5rem; margin-bottom: clamp(2rem, 5vw, 4rem); }
@@ -359,8 +379,8 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
   .lk-kopfzeile > .etikett { grid-column: 1 / span 3; align-self: start; }
   .lk-kopfzeile > div { grid-column: 5 / span 8; }
 }
-/* Aufklappende Kacheln. Breit: acht hohe Kacheln nebeneinander, die offene ist breit und weiß,
-   die anderen schmal mit senkrechtem Titel; Zeigen, Fokus oder Klick öffnet (skript.js: Leistungskacheln).
+/* Aufklappende Leistungen. Breit: links die Liste mit waagrechten Titeln, rechts die offene Leistung;
+   Zeigen, Fokus oder Klick öffnet (skript.js: Leistungskacheln).
    Schmal und ohne JavaScript: untereinander, auf dem Handy öffnet ein Tipp nach unten. */
 .lk { display: grid; gap: var(--luft); }
 .lk-teil { position: relative; overflow: hidden; border-radius: var(--rund); background: var(--kachel); color: var(--text); transition: background-color 0.6s var(--weich), box-shadow 0.6s var(--weich), flex-grow 0.9s var(--weich); }
@@ -387,20 +407,23 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
 .lk-weiter:hover .lk-rund svg { transform: rotate(-45deg); }
 .lk-weiter:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 2rem; }
 @media (min-width: 62rem) {
-  .js .lk { display: flex; height: clamp(30rem, 42vw, 38rem); }
-  .js .lk-teil { flex: 1 1 0; min-width: 0; }
-  .js .lk-teil.ist-offen { flex-grow: 7; }
-  .js .lk-kopf { position: absolute; inset: 0; z-index: 1; flex-direction: column; align-items: flex-start; justify-content: space-between; height: 100%; padding: 1.75rem 0 1.75rem 1.5rem; }
-  .js .lk-nr { font-size: 0.8125rem; }
-  .js .lk-titel { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; font-size: clamp(1.125rem, 0.7rem + 0.7vw, 1.4375rem); transition: opacity 0.35s var(--weich); }
-  .js .lk-teil.ist-offen .lk-kopf { pointer-events: none; }
-  .js .lk-teil.ist-offen .lk-titel { opacity: 0; }
-  /* Der Inhalt hat immer die Breite der offenen Kachel, damit beim Aufgehen nichts umbricht */
-  .js .lk-auf { position: absolute; inset: 0; display: block; }
-  .js .lk-inhalt { width: calc((100vw - 2 * var(--rand) - 7 * var(--luft)) / 2); height: 100%; padding: 1.75rem clamp(1.5rem, 2.5vw, 2.5rem) 1.5rem; display: flex; flex-direction: column; justify-content: flex-end; }
-  .js .lk-teil.ist-offen .lk-inhalt { z-index: 2; }
-  .js .lk-bild { left: 12%; right: 0; top: 0; width: auto; height: clamp(9rem, 17vw, 19rem); opacity: 1; }
-  .js .lk-gross { display: block; position: relative; font: 300 clamp(1.875rem, 1rem + 1.9vw, 2.875rem)/1.08 var(--kopfschrift); letter-spacing: -0.01em; color: var(--text); margin-bottom: 1rem; hyphens: auto; }
+  /* Breit: links die acht Leistungen als Liste mit waagrechtem Titel, rechts die offene Leistung */
+  .js .lk { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); grid-template-rows: repeat(8, minmax(0, 1fr)); min-height: clamp(34rem, 44vw, 40rem); }
+  .js .lk-teil { display: contents; }
+  .js .lk-h { grid-column: 1; display: flex; }
+  .js .lk-kopf { align-items: center; min-height: 0; padding: 0.875rem 1.5rem; background: var(--kachel); border-radius: 1rem; transition: background-color 0.4s var(--weich), color 0.4s var(--weich); }
+  .js .lk-kopf::after { content: ""; margin-left: auto; width: 0.875rem; height: 0.875rem; flex: none; background: currentColor; opacity: 0; transform: translateX(-0.5rem); transition: opacity 0.4s, transform 0.4s var(--weich);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='black' stroke-width='1.5'%3E%3Cpath d='M2 7h10M7.5 2.5 12 7l-4.5 4.5'/%3E%3C/svg%3E") center / contain no-repeat;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='black' stroke-width='1.5'%3E%3Cpath d='M2 7h10M7.5 2.5 12 7l-4.5 4.5'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .js .lk-teil.ist-offen .lk-kopf { background: var(--neutral-900); color: var(--neutral-0); }
+  .js .lk-teil.ist-offen .lk-kopf::after { opacity: 1; transform: none; }
+  .js .lk-teil.ist-offen .lk-nr { color: var(--amber-400); }
+  .js .lk-titel { font-size: clamp(1.125rem, 0.9rem + 0.7vw, 1.4375rem); }
+  .js .lk-auf { grid-column: 2; grid-row: 1 / -1; display: block; position: relative; overflow: hidden; border-radius: var(--rund); background: var(--surface); box-shadow: inset 0 0 0 1px var(--border); opacity: 0; visibility: hidden; transition: opacity 0.5s var(--weich), visibility 0s 0.5s; }
+  .js .lk-teil.ist-offen .lk-auf { opacity: 1; visibility: visible; transition-delay: 0s, 0s; z-index: 1; }
+  .js .lk-inhalt { height: 100%; padding: 2rem clamp(1.5rem, 3vw, 3rem) 2rem; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; }
+  .js .lk-bild { left: 12%; right: 0; top: 0; width: auto; height: 58%; opacity: 1; }
+  .js .lk-gross { display: block; position: relative; font: 300 clamp(2rem, 1rem + 2.4vw, 3.25rem)/1.08 var(--kopfschrift); letter-spacing: -0.01em; color: var(--text); margin-bottom: 1rem; }
   .js .lk-weiter { margin-bottom: 0; }
 }
 
@@ -653,7 +676,7 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
 .recht h2 { font: 400 1.375rem/1.2 var(--kopfschrift); letter-spacing: -0.01em; margin: 1.5rem 0 0; }
 .recht h2:first-child { margin-top: 0; }
 .recht p { max-width: 44em; }
-.offen { background: var(--amber-100); color: var(--neutral-900); padding: 0.1em 0.4em; border-radius: 0.25rem; }
+.luecke { background: var(--amber-100); color: var(--neutral-900); padding: 0.1em 0.4em; border-radius: 0.25rem; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01s !important; animation: none !important; }

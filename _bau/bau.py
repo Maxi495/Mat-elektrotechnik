@@ -50,7 +50,13 @@ def knopf(text, ziel, schraeg=False, linie=False):
 def kopf(aktiv):
     punkte = ''
     for name, ziel in NAV:
-        punkte += '      <li><a href="%s"%s>%s</a></li>\n' % (ziel, ' aria-current="page"' if aktiv == ziel else '', name)
+        unter = ''
+        if ziel == '/leistungen/':
+            unter = '<div class="unter"><ul>%s<li class="alle"><a href="/leistungen/">Alle Leistungen im Überblick %s</a></li></ul></div>' % (
+                ''.join('<li><a href="/leistungen/%s/"><span>%s</span>%s</a></li>' % (l['slug'], l['nr'], l['name']) for l in LEISTUNGEN), PFEIL)
+        punkte += '      <li%s><a href="%s"%s%s>%s</a>%s</li>\n' % (
+            ' class="hat-unter"' if unter else '', ziel, ' aria-current="page"' if aktiv == ziel else '',
+            ' aria-haspopup="true"' if unter else '', name, unter)
     return '''<header class="kopf">
   <a class="logo" href="/" aria-label="Mat-Elektrotechnik, Startseite">
     <img src="/bilder/logo-mat.svg" alt="mat" width="1184" height="619">
@@ -518,7 +524,7 @@ def baue_kontakt():
 # ------------------------------------------------------------------ Recht
 
 def offen(text):
-    return '<mark class="offen">Angabe fehlt: %s</mark>' % text
+    return '<mark class="luecke">Angabe fehlt: %s</mark>' % text
 
 
 def baue_recht():
