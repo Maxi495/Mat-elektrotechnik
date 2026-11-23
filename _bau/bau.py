@@ -98,7 +98,6 @@ def fuss(kurz):
   <svg class="strahlen" data-strahlen viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
   <div class="kontakt-mitte">
     <div class="kontakt-haupt">
-      <p class="etikett etikett-punkt">Sagen Sie uns, was ansteht</p>
       <h2>Kontakt</h2>
       <div class="kontakt-knoepfe">
         <a class="knopf" href="%s">%s %s</a>
@@ -198,16 +197,14 @@ def seite(pfad, titel, beschreibung, inhalt, aktiv='', datei='index.html'):
 def seitenkopf(pfad, worte, titel, text):
     """Kopfkachel einer Unterseite. pfad: Liste (Name, Ziel) für die Brotkrumen."""
     krumen = '<a href="/">Start</a>' + ''.join(' <span aria-hidden="true">/</span> <a href="%s">%s</a>' % (z, n) for n, z in pfad)
-    spreiz = ''.join('<span>%s</span>' % w for w in worte)
     return '''  <section class="seitenkopf">
     <div class="feld" data-feld data-zelle="8"><canvas aria-hidden="true"></canvas></div>
     <div class="seitenkopf-innen">
       <nav class="pfad etikett" aria-label="Brotkrumen">%s</nav>
-      <p class="etikett spreiz spreiz-links">%s</p>
       <h1 class="gross">%s</h1>
       <p class="lauftext">%s</p>
     </div>
-  </section>''' % (krumen, spreiz, titel, text)
+  </section>''' % (krumen, titel, text)
 
 
 def k(inhalt, spanne=12, art=''):
@@ -225,7 +222,7 @@ def haken(punkte):
 def abschnitt(etikett, titel, inhalt, klasse=''):
     kopfzeile = ''
     if titel:
-        kopfzeile = '<div class="abschnittskopf"><p class="etikett etikett-punkt">%s</p><h2 class="ein">%s</h2></div>' % (etikett, titel)
+        kopfzeile = '<div class="abschnittskopf"><h2 class="ein">%s</h2></div>' % titel
     return '  <section class="abschnitt%s">%s%s</section>' % (' ' + klasse if klasse else '', kopfzeile, inhalt)
 
 
@@ -479,9 +476,9 @@ GALERIE = [
 def baue_referenzen():
     inhalt = seitenkopf([('Referenzen', '/referenzen/')], ['Stimmen', 'und', 'Projekte'], 'Unsere <em>Referenzen</em>',
                         'Was Kunden nach dem Auftrag sagen, und Fotos von Anlagen, die wir geplant und gebaut haben.')
-    stimmen = ''.join('<li class="ein"><p class="zeile etikett"><span class="etikett-punkt">%s</span><span>%s</span></p><blockquote>„%s“</blockquote><cite>%s</cite></li>'
-                      % (a, b, t, n) for a, b, t, n in STIMMEN)
-    inhalt += '\n  <section class="stimmen stimmen-seite"><div class="abschnittskopf"><p class="etikett etikett-punkt">Kundenstimmen</p><h2 class="ein">Nach dem <em>Auftrag</em></h2></div><ul>%s</ul></section>' % stimmen
+    stimmen = ''.join('<figure class="stimme ein"><blockquote>„%s“</blockquote><figcaption><b>%s</b><span>%s</span></figcaption></figure>'
+                      % (t, n, a + ', ' + b) for a, b, t, n in STIMMEN)
+    inhalt += '\n  <section class="stimmen stimmen-seite"><div class="abschnittskopf"><h2 class="ein">Nach dem <em>Auftrag</em></h2></div><div class="stimmen-liste">%s</div></section>' % stimmen
     for titel, fotos in GALERIE:
         inhalt += '\n' + abschnitt('Projektfotos', titel, '<div class="galerie">%s</div>' % ''.join(
             '<figure class="ein">%s<figcaption>%s</figcaption></figure>' % (bild(n, a), a) for n, a in fotos))

@@ -45,9 +45,21 @@
     bloecke.forEach(function (b, i) { b.classList.toggle('aktiv', i === best); });
     standbilder.forEach(function (b, i) { b.classList.toggle('aktiv', i === best); });
   }
-  function anstossen() { if (!wartet) { wartet = true; requestAnimationFrame(rechnen); } }
-  addEventListener('scroll', anstossen, { passive: true });
-  addEventListener('resize', anstossen);
+  /* Kein Scroll-Listener: Solange ein beobachtetes Element im Bild ist, rechnet eine Bild-für-Bild-Schleife;
+     sonst steht sie. Gerechnet wird nur, wenn sich die Scrolllage geändert hat. */
+  var imBild = new Set(), laeuft = 0, letzteLage = -1, letzteHoehe = -1;
+  function schleife() {
+    if (!imBild.size) { laeuft = 0; return; }
+    laeuft = requestAnimationFrame(schleife);
+    if (scrollY === letzteLage && innerHeight === letzteHoehe) return;
+    letzteLage = scrollY; letzteHoehe = innerHeight;
+    rechnen();
+  }
+  var waechter = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) imBild.add(e.target); else imBild.delete(e.target); });
+    if (imBild.size && !laeuft) { letzteLage = -1; laeuft = requestAnimationFrame(schleife); }
+  }, { rootMargin: '20% 0px' });
+  fort.concat(hero ? [hero] : [], $$('.zwei')).forEach(function (el) { waechter.observe(el); });
   rechnen();
 
   /* ---------- Anfrageformular: öffnet das Mailprogramm, sendet nichts an einen Server ---------- */
