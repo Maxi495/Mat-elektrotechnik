@@ -74,6 +74,9 @@
         wechsel.textContent = saetze[nr][0] + ' ';
         var em = document.createElement('em'); em.textContent = saetze[nr][1]; wechsel.appendChild(em);
         wechsel.classList.remove('weg');
+        $$('[data-satz]').forEach(function (stapel) {
+          Array.prototype.forEach.call(stapel.children, function (kind, i) { kind.classList.toggle('aktiv', i === nr); });
+        });
       }, 700);
     }, 3800);
   }

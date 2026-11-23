@@ -43,16 +43,29 @@
 
 <main id="inhalt">
 
-  <!-- 1 · Hero: Pixelfeld, wechselnde Zeile -->
+  <!-- 1 · Hero: Textkachel mit Pixelfeld, drei Kacheln, die mit der Überschrift wechseln -->
   <section class="hero" id="top">
-    <div class="feld" data-feld data-zelle="6"><canvas aria-hidden="true"></canvas></div>
-    <div class="hero-titel">
-      <h1 class="sr">Mat-Elektrotechnik: Elektro-Meisterbetrieb in Germering bei München, seit 2010. Elektrotechnik für Haus, Gewerbe und Industrie.</h1>
-      <p class="wechsel" aria-hidden="true" data-wechsel='[["Wir sind","Mat-Elektrotechnik"],["Meisterbetrieb seit","2010"],["Elektrotechnik für Haus, Gewerbe und","Industrie"]]'>Wir sind <em>Mat-Elektrotechnik</em></p>
+    <div class="hero-text">
+      <div class="hero-hinten" data-satz aria-hidden="true"><img class="aktiv" src="/bilder/team-fahrzeuge.webp" alt="" width="730" height="547" loading="lazy"><img src="/bilder/elmar-2023.webp" alt="" width="1100" height="734" loading="lazy"><img src="/bilder/schaltschrank.webp" alt="" width="993" height="745" loading="lazy"></div>
+      <div class="feld" data-feld data-zelle="6"><canvas aria-hidden="true"></canvas></div>
+      <div class="hero-inhalt">
+        <p class="etikett etikett-punkt">Elektro-Meisterbetrieb in Germering bei München</p>
+        <h1 class="sr">Mat-Elektrotechnik: Elektro-Meisterbetrieb in Germering bei München, seit 2010. Elektrotechnik für Haus, Gewerbe und Industrie.</h1>
+        <div class="wechsel-rahmen"><p class="wechsel" aria-hidden="true" data-wechsel='[["Wir sind","Mat-Elektrotechnik"],["Meisterbetrieb seit","2010"],["Elektrotechnik für Haus, Gewerbe und","Industrie"]]'>Wir sind <em>Mat-Elektrotechnik</em></p></div>
+        <p class="lauftext">Wir planen, installieren und prüfen elektrische Anlagen im Großraum München.</p>
+        <p class="knopfzeile"><a class="knopf" href="/kontakt/">Anfrage stellen <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5"/></svg></a> <a class="knopf knopf-linie" href="/leistungen/">Leistungen ansehen <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 7h10M7.5 2.5 12 7l-4.5 4.5"/></svg></a></p>
+      </div>
+      <a class="scroll-knopf" href="#aussage" aria-label="Weiter nach unten">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 2v10M2.5 7.5 7 12l4.5-4.5"/></svg>
+      </a>
     </div>
-    <a class="scroll-knopf" href="#aussage" aria-label="Weiter nach unten">
-      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 2v10M2.5 7.5 7 12l4.5-4.5"/></svg>
-    </a>
+    <figure class="hero-foto hero-gross" data-satz><img class="aktiv" src="/bilder/team-fahrzeuge.webp" alt="Sieben Mitarbeiter von Mat-Elektrotechnik vor den Firmenfahrzeugen" width="730" height="547"><img src="/bilder/elmar-2023.webp" alt="Übergabe des ELMAR-Preises auf der Bühne" width="1100" height="734" loading="lazy"><img src="/bilder/schaltschrank.webp" alt="Geöffneter Verteilerschrank mit Zählerfeldern" width="993" height="745" loading="lazy"></figure>
+    <figure class="hero-foto hero-klein" data-satz><img class="aktiv" src="/bilder/team-hof.webp" alt="Mitarbeiter neben einem roten Firmenbus vor dem Betriebsgebäude" width="730" height="547" loading="lazy"><img src="/bilder/team-studio.webp" alt="Sieben Mitarbeiter in Arbeitskleidung" width="730" height="547" loading="lazy"><img src="/bilder/photovoltaik-dach.webp" alt="Photovoltaikmodule auf einem Ziegeldach" width="745" height="745" loading="lazy"></figure>
+    <div class="hero-zahl" data-satz>
+      <p class="aktiv"><b>seit 2010</b><span>im Großraum München</span></p>
+      <p><b>ELMAR 2023</b><span>Markenpreis, Kategorie 1</span></p>
+      <p><b>8</b><span>Leistungsbereiche aus einem Betrieb</span></p>
+    </div>
   </section>
 
   <!-- 2 · Aussage: gespreizte Zeile, Riesenzeile -->

@@ -290,26 +290,53 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
   background-size: var(--zelle, 6px) var(--zelle, 6px);
 }
 
-/* ---------- Hero ---------- */
-.hero { position: relative; margin: var(--luft); height: calc(100svh - var(--luft) * 2); min-height: 34rem; max-height: 75rem; display: grid; place-items: center; overflow: clip; border-radius: var(--rund); background: var(--kachel); }
-.hero .feld { opacity: calc(1 - var(--h, 0) * 0.9); }
-.hero::after { content: ""; position: absolute; inset: auto 0 0 0; height: 40%; background: linear-gradient(transparent, var(--kachel)); pointer-events: none; }
-.hero-titel {
-  position: relative; z-index: 2; padding-inline: var(--rand); text-align: center;
-  opacity: calc(1 - var(--h, 0) * 1.6); filter: blur(calc(var(--h, 0) * 18px));
-  transform: translateY(calc(var(--h, 0) * -4rem)) scale(calc(1 - var(--h, 0) * 0.12));
+/* ---------- Hero: Bento aus Textkachel, zwei Fotos und einer Kennzahl ---------- */
+.hero { margin: var(--luft); display: grid; gap: var(--luft); }
+.hero-text { position: relative; overflow: clip; border-radius: var(--rund); background: var(--kachel); min-height: min(44rem, calc(100svh - var(--luft) * 2)); display: flex; align-items: flex-end; }
+.hero-text .feld { opacity: calc(1 - var(--h, 0) * 0.9); mask-image: linear-gradient(200deg, #000 18%, transparent 68%); -webkit-mask-image: linear-gradient(200deg, #000 18%, transparent 68%); }
+.hero-hinten { position: absolute; inset: 0; mask-image: linear-gradient(210deg, #000 10%, transparent 75%); -webkit-mask-image: linear-gradient(210deg, #000 10%, transparent 75%); }
+.hero-hinten img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; filter: saturate(0.5) blur(1.5px); transition: opacity 1.4s var(--weich); }
+.hero-hinten img.aktiv { opacity: 0.2; }
+.hero-inhalt {
+  position: relative; z-index: 2; width: 100%; display: grid; gap: 1.5rem; justify-items: start;
+  padding: 8.5rem calc(var(--rand) - var(--luft)) clamp(2rem, 4.5vw, 3.75rem);
+  opacity: calc(1 - var(--h, 0) * 1.4); filter: blur(calc(var(--h, 0) * 14px)); transform: translateY(calc(var(--h, 0) * -2.5rem));
 }
-.hero-titel::before { content: ""; position: absolute; inset: -60% -5%; z-index: -1; background: radial-gradient(closest-side, var(--kachel) 35%, transparent); }
-.wechsel { font-size: clamp(2.5rem, 1.2rem + 5.6vw, 6.25rem); line-height: 1.02; max-width: 15em; transition: opacity 0.7s var(--weich), filter 0.7s var(--weich), transform 0.7s var(--weich); }
+.wechsel-rahmen { font-size: clamp(2.5rem, 1.1rem + 4.3vw, 5.25rem); min-height: 3.06em; display: flex; align-items: flex-end; }
+.wechsel { font-size: 1em; line-height: 1.02; max-width: 11.5em; text-wrap: balance; transition: opacity 0.7s var(--weich), filter 0.7s var(--weich), transform 0.7s var(--weich); }
 .wechsel.weg { opacity: 0; filter: blur(16px); transform: translateY(0.5rem); }
+.hero-inhalt .lauftext { max-width: 24em; text-wrap: pretty; }
 .scroll-knopf {
-  position: absolute; z-index: 3; left: 50%; bottom: 2rem; translate: -50% 0;
-  width: 2.75rem; height: 2.75rem; display: grid; place-items: center;
+  position: absolute; z-index: 3; right: calc(var(--rand) - var(--luft)); bottom: clamp(2rem, 4.5vw, 3.75rem);
+  width: 2.75rem; height: 2.75rem; display: none; place-items: center;
   background: var(--seite); border: 1px solid var(--primary); border-radius: 0.5rem; color: var(--primary);
   opacity: calc(1 - var(--h, 0) * 4);
 }
 .scroll-knopf svg { width: 0.875rem; height: 0.875rem; animation: wippen 1.8s var(--weich) infinite; }
 @keyframes wippen { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
+
+.hero-foto { position: relative; overflow: hidden; border-radius: var(--rund); background: var(--kachel); aspect-ratio: 4 / 3; }
+.hero-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); transition: opacity 1.1s var(--weich), transform 1.8s var(--weich); }
+.hero-foto img.aktiv { opacity: 1; transform: none; }
+.hero-zahl { position: relative; border-radius: var(--rund); background: var(--primary); color: var(--on-primary); min-height: 11rem; }
+.hero-zahl p { position: absolute; inset: 0; padding: clamp(1.25rem, 2.4vw, 2rem); display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; max-width: none; opacity: 0; filter: blur(10px); transition: opacity 0.8s var(--weich), filter 0.8s var(--weich); }
+.hero-zahl p.aktiv { opacity: 1; filter: none; }
+.hero-zahl b { font: 300 clamp(1.875rem, 1.2rem + 2.2vw, 3.25rem)/1 var(--kopfschrift); letter-spacing: -0.02em; }
+.hero-zahl span { font-size: 0.9375rem; line-height: 1.35; }
+@media (max-width: 61.99rem) {
+  .hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .hero-text, .hero-gross { grid-column: 1 / -1; }
+  .hero-gross { aspect-ratio: 16 / 9; }
+  .hero-klein { aspect-ratio: auto; }
+}
+@media (min-width: 62rem) {
+  .hero { height: calc(100svh - var(--luft) * 2); min-height: 40rem; max-height: 62rem; grid-template-columns: 1.55fr 0.5fr 0.5fr; grid-template-rows: 1.55fr 1fr; }
+  .hero-text { grid-row: 1 / -1; min-height: 0; }
+  .hero-gross { grid-column: 2 / -1; }
+  .hero-foto { aspect-ratio: auto; }
+  .hero-zahl { min-height: 0; }
+  .scroll-knopf { display: grid; }
+}
 
 /* ---------- Aussage ---------- */
 .aussage { padding: clamp(6rem, 14vw, 12rem) var(--rand) 0; display: grid; gap: clamp(2rem, 4vw, 3rem); }
@@ -600,5 +627,5 @@ h2 em, .riesen em, .wechsel em { font-style: normal; color: var(--hervor); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01s !important; animation: none !important; }
   .js .ein { opacity: 1; filter: none; transform: none; }
-  .hero-titel { filter: none; transform: none; }
+  .hero-inhalt { filter: none; transform: none; opacity: 1; }
 }
