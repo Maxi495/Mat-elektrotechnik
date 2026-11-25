@@ -1,0 +1,1631 @@
+/* Bausteine nach Design.md, Abschnitt 9. Jedes Bedienelement hat sechs Zustände (9.17). */
+
+/* ---------- Schaltzeichen ---------- */
+
+.zeichen {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+
+/* Die Linie bleibt in jeder Größe 1,75 px stark. */
+.zeichen--gross {
+  width: 40px;
+  height: 40px;
+  stroke-width: 1.05;
+}
+
+.zeichen--klein {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.1;
+}
+
+/* Bewegliches Teil eines Schaltzeichens: schließt bei Maus darüber den Stromkreis. */
+.zeichen__teil {
+  transform-box: fill-box;
+  transition: transform var(--d-schnell) var(--k-feder), opacity var(--d-schnell) linear;
+}
+
+/* ---------- Knöpfe ---------- */
+
+.knopf {
+  --knopf-grund: var(--rot);
+  --knopf-fuellung: var(--rot-dunkel);
+  --knopf-text: #fff;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 28px;
+  border-radius: var(--r-rund);
+  background: var(--knopf-grund);
+  color: var(--knopf-text);
+  font-family: var(--schrift-text);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  translate: var(--mx, 0px) var(--my, 0px);
+  transition:
+    scale var(--d-sofort) var(--k-schalter),
+    translate var(--d-schnell) var(--k-schalter),
+    background-color var(--d-sofort) linear,
+    box-shadow var(--d-schnell) linear;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knopf::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--knopf-fuellung);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--d-schnell) var(--k-strom);
+}
+
+.knopf__text {
+  display: inline-block;
+  transition: transform var(--d-schnell) var(--k-schalter);
+}
+
+.knopf__stecker {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  opacity: 0;
+  transform: translateX(-22px);
+  transition:
+    transform var(--d-schnell) var(--k-schalter),
+    opacity var(--d-sofort) linear;
+}
+
+@media (hover: hover) {
+  .knopf:hover::before {
+    transform: scaleX(1);
+  }
+
+  .knopf--haupt:hover .knopf__text {
+    transform: translateX(8px);
+  }
+
+  .knopf--haupt:hover .knopf__stecker {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.knopf:focus-visible {
+  outline: 3px solid var(--rot);
+  outline-offset: 3px;
+  border-radius: var(--r-rund);
+}
+
+.knopf:active {
+  scale: 0.97;
+  background: var(--rot-dunkel);
+}
+
+.knopf[disabled],
+.knopf[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Zweitknopf: Umriss */
+.knopf--zweit {
+  --knopf-grund: transparent;
+  --knopf-fuellung: var(--rot-hell);
+  --knopf-text: var(--f-titel);
+  box-shadow: inset 0 0 0 1.5px var(--f-titel);
+}
+
+@media (hover: hover) {
+  .knopf--zweit:hover {
+    box-shadow: inset 0 0 0 1.5px var(--rot);
+  }
+}
+
+.knopf--zweit:active {
+  background: var(--rot-hell);
+}
+
+.dunkel .knopf--zweit,
+.abschnitt--dunkel .knopf--zweit {
+  --knopf-fuellung: rgba(215, 0, 54, 0.28);
+}
+
+/* Weißer Knopf im roten Abschluss-Band */
+.knopf--weiss {
+  --knopf-grund: #fff;
+  --knopf-fuellung: var(--rot-hell);
+  --knopf-text: var(--rot);
+}
+
+.knopf--weiss:active {
+  background: var(--rot-hell);
+}
+
+.knopf--weiss:focus-visible {
+  outline-color: #fff;
+}
+
+.knopf--klein {
+  min-height: var(--antippen);
+  padding: 0 22px;
+}
+
+.knopf--breit {
+  width: 100%;
+}
+
+/* Zustand "lädt": Ladekreis im Element, Text bleibt lesbar. */
+.knopf[data-laedt="true"] {
+  pointer-events: none;
+}
+
+.knopf[data-laedt="true"] .knopf__text {
+  transform: translateX(12px);
+}
+
+.knopf[data-laedt="true"]::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: ladekreis 700ms linear infinite;
+}
+
+@keyframes ladekreis {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Textlinks ---------- */
+
+.textlink {
+  display: inline;
+  padding-block: 2px;
+  color: var(--f-verweis);
+  font-weight: 600;
+  background-image: linear-gradient(var(--rot), var(--rot));
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  background-position: 100% 100%;
+  transition:
+    background-size var(--d-schnell) var(--k-strom),
+    color var(--d-sofort) linear;
+}
+
+@media (hover: hover) {
+  .textlink:hover {
+    background-size: 100% 2px;
+    background-position: 0 100%;
+  }
+}
+
+.textlink:active {
+  color: var(--rot-dunkel);
+}
+
+.dunkel .textlink:active,
+[data-licht="aus"] .textlink:active {
+  color: #fff;
+}
+
+/* Auf dunklem Grund trägt die rote Linie die Kennzeichnung, sie steht dort von Anfang an. */
+.dunkel .textlink,
+.abschnitt--dunkel .textlink,
+[data-licht="aus"] .textlink {
+  background-size: 100% 2px;
+  background-position: 0 100%;
+}
+
+/* Links im Fließtext: immer unterstrichen, weil Farbe allein nicht reicht. */
+.text a:not([class]),
+.vorspann a:not([class]),
+.fliesstext a {
+  color: var(--f-verweis);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--rot) 45%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color var(--d-sofort) linear, color var(--d-sofort) linear;
+}
+
+.dunkel .text a:not([class]),
+.dunkel .fliesstext a,
+[data-licht="aus"] .text a:not([class]),
+[data-licht="aus"] .fliesstext a {
+  text-decoration-color: var(--rot);
+}
+
+@media (hover: hover) {
+  .text a:not([class]):hover,
+  .vorspann a:not([class]):hover,
+  .fliesstext a:hover {
+    text-decoration-color: var(--rot);
+  }
+}
+
+.text a:not([class]):active,
+.fliesstext a:active {
+  color: var(--rot-dunkel);
+}
+
+/* ---------- Marken und Filter ---------- */
+
+.marke {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--r-klein);
+  border: 1px solid var(--f-linie);
+  background: transparent;
+  color: var(--f-text);
+  font-size: var(--gr-klein);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+a.marke {
+  position: relative;
+  transition: border-color var(--d-sofort) linear, color var(--d-sofort) linear;
+}
+
+/* Antippfläche 48 px, auch wenn die Marke 36 px hoch ist. */
+a.marke::after,
+.marke--filter::after {
+  content: "";
+  position: absolute;
+  inset: -6px 0;
+}
+
+@media (hover: hover) {
+  a.marke:hover {
+    border-color: var(--rot);
+    color: var(--f-titel);
+  }
+}
+
+a.marke:active {
+  scale: 0.97;
+}
+
+.marke--offen {
+  border-style: dashed;
+  background: var(--rot-hell);
+  color: var(--schwarz);
+}
+
+.marken {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-2);
+}
+
+.marke--filter {
+  position: relative;
+  cursor: pointer;
+  transition:
+    background-color var(--d-sofort) linear,
+    border-color var(--d-sofort) linear,
+    color var(--d-sofort) linear,
+    scale var(--d-sofort) var(--k-schalter);
+}
+
+.marke--filter .zeichen {
+  width: 0;
+  height: 16px;
+  opacity: 0;
+  margin-right: -6px;
+  transition: width var(--d-schnell) var(--k-schalter), opacity var(--d-sofort) linear;
+}
+
+@media (hover: hover) {
+  .marke--filter:hover {
+    border-color: var(--rot);
+  }
+}
+
+.marke--filter:active {
+  scale: 0.97;
+}
+
+.marke--filter[aria-pressed="true"],
+.wahlmarke input:checked + .marke {
+  background: var(--rot-hell);
+  border-color: var(--rot);
+  color: var(--rot);
+  font-weight: 600;
+}
+
+[data-licht="aus"] .marke--filter[aria-pressed="true"],
+[data-licht="aus"] .wahlmarke input:checked + .marke {
+  color: #fff;
+}
+
+.marke--filter[aria-pressed="true"] .zeichen,
+.wahlmarke input:checked + .marke .zeichen {
+  width: 16px;
+  opacity: 1;
+  margin-right: 0;
+}
+
+.marke--filter[disabled] {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ---------- Kippschalter ---------- */
+
+.kippschalter {
+  position: relative;
+  display: block;
+  width: 28px;
+  height: 44px;
+  border-radius: 9px;
+  border: 1.75px solid currentColor;
+  flex: none;
+}
+
+.kippschalter__hebel {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  height: 20px;
+  border-radius: 5px;
+  background: currentColor;
+  opacity: 0.55;
+  transition:
+    transform var(--d-schnell) var(--k-feder),
+    background-color var(--d-sofort) linear,
+    opacity var(--d-sofort) linear;
+}
+
+.kippschalter[data-an="true"] .kippschalter__hebel,
+[aria-expanded="true"] > .kippschalter .kippschalter__hebel,
+[aria-checked="true"] > .kippschalter .kippschalter__hebel,
+[aria-pressed="true"] > .kippschalter .kippschalter__hebel {
+  transform: translateY(-13px);
+  background: var(--rot);
+  opacity: 1;
+}
+
+/* ---------- Bilder: Licht aus, Licht an ---------- */
+
+.bildrahmen {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--r-gross);
+  background: var(--anthrazit-hell);
+}
+
+.bildrahmen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bildrahmen--4-5 {
+  aspect-ratio: 4 / 5;
+}
+
+.bildrahmen--16-10 {
+  aspect-ratio: 16 / 10;
+}
+
+.bildrahmen--1-1 {
+  aspect-ratio: 1 / 1;
+}
+
+/* "Licht aus": Bilder in Karten liegen zuerst etwas abgedunkelt (Design.md, Abschnitt 7). */
+.licht img {
+  filter: brightness(0.72) saturate(0.6);
+  transition: filter 500ms var(--k-schalter), transform var(--d-gross) var(--k-schalter);
+}
+
+.licht::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 260px at var(--licht-x, 50%) var(--licht-y, 40%),
+    rgba(255, 210, 122, 0.32),
+    rgba(255, 210, 122, 0) 70%
+  );
+  opacity: 0;
+  mix-blend-mode: soft-light;
+  transition: opacity 500ms var(--k-schalter);
+}
+
+.licht.ist-an img,
+.licht-an .licht img {
+  filter: none;
+}
+
+.licht.ist-an::after,
+.licht-an .licht::after {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  :is(a, article, li, figure):hover > .licht img,
+  .licht:hover img {
+    filter: none;
+  }
+
+  :is(a, article, li, figure):hover > .licht::after,
+  .licht:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Ohne Skript und bei reduzierter Bewegung sind Bilder von Anfang an hell. */
+html:not(.js) .licht img {
+  filter: none;
+}
+
+/* ---------- Karten ---------- */
+
+@property --umlauf {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+.karte {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--a-4);
+  padding: var(--a-6);
+  border-radius: var(--r-mittel);
+  background: var(--f-karte);
+  color: var(--f-text);
+  transition:
+    transform var(--d-ruhig) var(--k-schalter),
+    box-shadow var(--d-ruhig) var(--k-schalter);
+}
+
+/* Rote Linie, die einmal um den Rand läuft */
+.karte--umlauf::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(from 0deg, var(--rot) var(--umlauf), transparent 0);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
+  transition: --umlauf var(--d-gross) var(--k-strom);
+}
+
+@media (hover: hover) {
+  .karte--hebt:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--schein-rot);
+  }
+
+  .karte--umlauf:hover::before {
+    --umlauf: 100%;
+  }
+}
+
+.karte:focus-within {
+  box-shadow: var(--schein-rot);
+}
+
+.karte:has(.karte__verweis:active) {
+  transform: scale(0.985);
+}
+
+/* Der Link füllt die ganze Karte. */
+.karte__verweis::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-mittel);
+}
+
+.karte__verweis:focus-visible {
+  outline: none;
+}
+
+.karte:has(.karte__verweis:focus-visible) {
+  outline: 3px solid var(--rot);
+  outline-offset: 3px;
+}
+
+/* Leistungskarte (9.6) */
+.leistungskarte .zeichen {
+  color: var(--rot);
+}
+
+.leistungskarte h3 {
+  margin-top: var(--a-2);
+}
+
+.leistungskarte p {
+  color: var(--f-text);
+  flex: 1;
+}
+
+@media (hover: hover) {
+  .leistungskarte:hover .zeichen__teil--schliesst {
+    transform: rotate(var(--zu, 0deg));
+  }
+
+  .leistungskarte:hover .zeichen__teil--zuckt {
+    animation: zucken 420ms steps(2, jump-none) 1;
+  }
+
+  .leistungskarte:hover .zeichen__teil--fuellt {
+    fill: var(--rot);
+  }
+}
+
+@keyframes zucken {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  35% {
+    opacity: 0.15;
+  }
+  60% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.3;
+  }
+}
+
+.kartenraster {
+  display: grid;
+  gap: var(--spalte);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+}
+
+/* Referenzkarte (9.8) */
+.referenzkarte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--a-3);
+}
+
+.referenzkarte__bild {
+  position: relative;
+  display: block;
+  margin-bottom: var(--a-2);
+}
+
+.referenzkarte__bild img {
+  transition:
+    filter 500ms var(--k-schalter),
+    transform var(--d-gross) var(--k-schalter);
+}
+
+.referenzkarte__einschub {
+  position: absolute;
+  left: var(--a-4);
+  right: var(--a-4);
+  bottom: var(--a-4);
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-2);
+  transform: translateY(calc(100% + var(--a-5)));
+  transition: transform var(--d-ruhig) var(--k-schalter);
+}
+
+.referenzkarte__einschub span {
+  padding: 6px 10px;
+  border-radius: var(--r-klein);
+  background: #fff;
+  color: #000;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+@media (hover: hover) {
+  .referenzkarte:hover .referenzkarte__bild img {
+    filter: none;
+    transform: scale(1.04);
+  }
+
+  .referenzkarte:hover .licht::after {
+    opacity: 1;
+  }
+
+  .referenzkarte:hover .referenzkarte__einschub {
+    transform: translateY(0);
+  }
+}
+
+.referenzkarte a.referenzkarte__bild:active {
+  scale: 0.985;
+}
+
+.referenzkarte p {
+  color: var(--f-text);
+}
+
+.referenzkarte--leer {
+  justify-content: center;
+  gap: var(--a-4);
+  padding: var(--a-6);
+  border-radius: var(--r-gross);
+  border: 1.5px dashed var(--f-linie);
+  min-height: 240px;
+}
+
+.referenzraster {
+  display: grid;
+  gap: var(--a-7) var(--spalte);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}
+
+/* Genau drei Projekte nebeneinander, zum Beispiel auf der Startseite und auf Leistungsseiten */
+@media (min-width: 900px) {
+  .referenzraster--drei {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Zielgruppenkarte (9.7) */
+.zielgruppen {
+  display: grid;
+  gap: var(--spalte);
+  perspective: 1400px;
+}
+
+@media (min-width: 900px) {
+  .zielgruppen {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.zielgruppe {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-gross);
+  background: var(--f-karte);
+  overflow: hidden;
+  transform: rotateX(var(--neig-x, 0deg)) rotateY(var(--neig-y, 0deg));
+  transition: transform var(--d-ruhig) var(--k-schalter), box-shadow var(--d-ruhig) var(--k-schalter);
+  will-change: auto;
+}
+
+.zielgruppe .bildrahmen {
+  border-radius: 0;
+  aspect-ratio: 4 / 5;
+}
+
+@media (max-width: 899px) {
+  .zielgruppe .bildrahmen {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+.zielgruppe__inhalt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--a-4);
+  padding: var(--a-6);
+}
+
+.zielgruppe__aufgaben {
+  display: grid;
+  gap: var(--a-1);
+}
+
+.zielgruppe__aufgaben a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--antippen);
+  color: var(--f-titel);
+  font-weight: 500;
+  transition: color var(--d-sofort) linear, transform var(--d-schnell) var(--k-schalter);
+}
+
+.zielgruppe__aufgaben .zeichen {
+  color: var(--rot);
+}
+
+@media (hover: hover) {
+  .zielgruppe:hover {
+    box-shadow: var(--schein-rot);
+  }
+
+  .zielgruppe__aufgaben a:hover {
+    color: var(--f-verweis);
+    transform: translateX(4px);
+  }
+}
+
+.zielgruppe__aufgaben a:active {
+  color: var(--rot-dunkel);
+}
+
+/* Bewertungskarte (9.9) */
+.bewertung {
+  display: flex;
+  flex-direction: column;
+  gap: var(--a-4);
+  padding: var(--a-6);
+  border-radius: var(--r-mittel);
+  background: var(--f-karte);
+  transition: transform var(--d-ruhig) var(--k-schalter), box-shadow var(--d-ruhig) var(--k-schalter);
+}
+
+.abschnitt:not(.abschnitt--nebel):not(.abschnitt--dunkel) .bewertung {
+  background: var(--nebel);
+}
+
+.bewertung blockquote {
+  flex: 1;
+  color: var(--f-titel);
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.bewertung figcaption {
+  display: grid;
+  gap: 2px;
+}
+
+.bewertung__name {
+  color: var(--f-titel);
+  font-weight: 600;
+}
+
+.sterne {
+  display: flex;
+  gap: 2px;
+  color: var(--rot);
+}
+
+.sterne .zeichen {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  stroke-width: 1.25;
+}
+
+@media (hover: hover) {
+  .bewertung:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--schein-rot);
+  }
+
+  .bewertung:hover .sterne .zeichen {
+    animation: stern-fuellen 320ms var(--k-schalter) backwards;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+}
+
+@keyframes stern-fuellen {
+  from {
+    fill: transparent;
+    transform: scale(0.7);
+  }
+}
+
+.gesamtnote {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--a-5);
+  flex-wrap: wrap;
+}
+
+.gesamtnote__zahl {
+  font-family: var(--schrift-titel);
+  font-size: clamp(4rem, 9vw, 7rem);
+  font-weight: 600;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: var(--f-titel);
+  font-variant-numeric: tabular-nums;
+}
+
+.gesamtnote__rest {
+  display: grid;
+  gap: var(--a-2);
+  padding-bottom: 6px;
+}
+
+/* Laufband der Bewertungen */
+.laufband {
+  position: relative;
+}
+
+.laufband__bahn {
+  display: flex;
+  gap: var(--spalte);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  padding-block: var(--a-5) var(--a-7);
+  padding-inline: var(--inhalt-links) calc(var(--aussen) + var(--rand));
+  scroll-padding-inline: var(--inhalt-links);
+}
+
+.laufband__bahn::-webkit-scrollbar {
+  display: none;
+}
+
+.laufband__bahn > * {
+  flex: 0 0 min(84vw, 400px);
+  scroll-snap-align: start;
+}
+
+.laufband[data-laeuft="true"] .laufband__bahn {
+  scroll-snap-type: none;
+}
+
+.laufband__pfeile {
+  display: flex;
+  gap: var(--a-3);
+}
+
+.rundknopf {
+  display: grid;
+  place-items: center;
+  width: var(--antippen);
+  height: var(--antippen);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--f-titel);
+  color: var(--f-titel);
+  transition:
+    background-color var(--d-sofort) linear,
+    color var(--d-sofort) linear,
+    box-shadow var(--d-sofort) linear,
+    scale var(--d-sofort) var(--k-schalter);
+}
+
+@media (hover: hover) {
+  .rundknopf:hover {
+    background: var(--rot);
+    color: #fff;
+    box-shadow: inset 0 0 0 1.5px var(--rot);
+  }
+}
+
+.rundknopf:active {
+  scale: 0.97;
+  background: var(--rot-dunkel);
+  color: #fff;
+}
+
+.rundknopf[disabled] {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+.rundknopf--zurueck .zeichen {
+  transform: scaleX(-1);
+}
+
+/* Team-Porträt */
+.portraet {
+  position: relative;
+  display: block;
+}
+
+.portraet .bildrahmen img {
+  filter: grayscale(1) contrast(1.05);
+  transition: filter var(--d-ruhig) var(--k-schalter);
+}
+
+.portraet__text {
+  margin-top: var(--a-3);
+  display: grid;
+  gap: 2px;
+}
+
+.portraet__name {
+  color: var(--f-titel);
+  font-weight: 600;
+  transition: transform var(--d-ruhig) var(--k-schalter);
+}
+
+@media (hover: hover) {
+  .portraet:hover .bildrahmen img {
+    filter: none;
+  }
+
+  .portraet:hover .portraet__name {
+    transform: translateX(4px);
+  }
+}
+
+/* Am Handy kommen die Porträts beim Hineinscrollen in Farbe. */
+@media (hover: none) {
+  .portraet.ist-da .bildrahmen img {
+    filter: none;
+  }
+}
+
+html:not(.js) .portraet .bildrahmen img {
+  filter: none;
+}
+
+.teamraster {
+  display: grid;
+  gap: var(--a-6) var(--spalte);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .teamraster {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .teamraster {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .teamraster {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* Stellenzeile */
+.stellenliste {
+  border-top: 1px solid var(--f-linie);
+}
+
+.stellenzeile {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--a-2) var(--a-5);
+  padding: var(--a-5) var(--a-4);
+  margin-inline: calc(var(--a-4) * -1);
+  border-bottom: 1px solid var(--f-linie);
+  color: var(--f-titel);
+  overflow: hidden;
+  transition: color var(--d-sofort) linear;
+}
+
+.stellenzeile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--rot);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform var(--d-schnell) var(--k-strom);
+}
+
+.stellenzeile__titel {
+  font-family: var(--schrift-titel);
+  font-size: var(--gr-h3);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.stellenzeile__kurz {
+  grid-column: 1;
+  color: var(--f-leise);
+  transition: color var(--d-sofort) linear;
+}
+
+.stellenzeile__pfeil {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  transform: translateX(-12px);
+  opacity: 0.5;
+  transition: transform var(--d-schnell) var(--k-schalter), opacity var(--d-sofort) linear;
+}
+
+@media (hover: hover) {
+  .stellenzeile:hover {
+    color: #fff;
+  }
+
+  .stellenzeile:hover::before {
+    transform: scaleY(1);
+  }
+
+  .stellenzeile:hover .stellenzeile__kurz {
+    color: #fff;
+  }
+
+  .stellenzeile:hover .stellenzeile__pfeil {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.stellenzeile:focus-visible {
+  outline-offset: -3px;
+}
+
+.stellenzeile:active::before {
+  transform: scaleY(1);
+  background: var(--rot-dunkel);
+}
+
+.stellenzeile:active,
+.stellenzeile:active .stellenzeile__kurz {
+  color: #fff;
+}
+
+/* ---------- Vertrauensleiste (9.4) ---------- */
+
+.vertrauen {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--a-5);
+  margin: 0;
+  padding: var(--a-6) 0;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  border-block: 1px solid var(--f-linie);
+}
+
+.vertrauen::-webkit-scrollbar {
+  display: none;
+}
+
+.vertrauen li {
+  flex: none;
+  display: grid;
+  grid-template-columns: 24px auto;
+  align-items: start;
+  column-gap: var(--a-3);
+  scroll-snap-align: start;
+}
+
+.vertrauen .zeichen {
+  grid-row: span 2;
+  margin-top: 5px;
+  color: var(--rot);
+}
+
+.vertrauen__wert {
+  font-family: var(--schrift-titel);
+  font-size: clamp(1.25rem, 0.5vw + 1rem, 1.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--f-titel);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.vertrauen__text {
+  max-width: 20ch;
+  color: var(--f-leise);
+  font-size: var(--gr-klein);
+  line-height: 1.4;
+}
+
+/* Am Handy seitlich wischbar bis zum Bildschirmrand */
+@media (max-width: 1279px) {
+  .vertrauen {
+    margin-right: calc((var(--aussen) + var(--rand)) * -1);
+    padding-right: var(--rand);
+  }
+}
+
+/* ---------- Ablauf (9.10) ---------- */
+
+.ablauf {
+  --schritte: 4;
+  position: relative;
+}
+
+.ablauf__liste {
+  display: grid;
+  gap: var(--a-7) var(--spalte);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ablauf__schritt {
+  position: relative;
+  display: grid;
+  gap: var(--a-3);
+  align-content: start;
+  padding-left: var(--a-7);
+}
+
+.ablauf__ziffer {
+  font-family: var(--schrift-titel);
+  font-size: clamp(3.5rem, 6vw, 5.5rem);
+  font-weight: 600;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: var(--f-titel);
+  font-variant-numeric: tabular-nums;
+}
+
+.ablauf__knoten {
+  position: absolute;
+  left: 0;
+  top: 16px;
+  z-index: 1;
+}
+
+/* Verbindung am Handy: senkrecht links */
+.ablauf__bahn {
+  position: absolute;
+  left: 4px;
+  top: 24px;
+  bottom: 24px;
+  width: 2px;
+  background: var(--f-linie);
+  pointer-events: none;
+}
+
+.ablauf__strom {
+  position: absolute;
+  inset: 0;
+  background: var(--rot);
+  transform-origin: top;
+  transform: scaleY(var(--fortschritt, 1));
+}
+
+.ablauf__hinweis {
+  margin-top: var(--a-6);
+}
+
+@media (min-width: 900px) {
+  .ablauf {
+    padding-top: var(--a-7);
+  }
+
+  .ablauf__liste {
+    grid-template-columns: repeat(var(--schritte), minmax(0, 1fr));
+  }
+
+  .ablauf__schritt {
+    padding-left: 0;
+    padding-right: var(--a-4);
+  }
+
+  .ablauf__knoten {
+    left: 0;
+    top: calc(var(--a-7) * -1 - 4px);
+  }
+
+  .ablauf__bahn {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: auto;
+    width: auto;
+    height: 2px;
+  }
+
+  .ablauf__strom {
+    transform-origin: left;
+    transform: scaleX(var(--fortschritt, 1));
+  }
+}
+
+/* Ab Laptop beginnt die Verbindung an der Leitung im Kanal. */
+@media (min-width: 1024px) {
+  .ablauf__bahn {
+    left: calc(19px - var(--kanal));
+  }
+}
+
+/* ---------- Knotenpunkt der Leitung ---------- */
+
+.knoten {
+  position: relative;
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--rot);
+  background: var(--f-grund);
+  transition: background-color var(--d-schnell) linear;
+}
+
+.knoten::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--rot);
+  opacity: 0;
+}
+
+.knoten.ist-an,
+html:not(.js) .knoten {
+  background: var(--rot);
+}
+
+.knoten.ist-an::after {
+  animation: knoten-puls 700ms var(--k-schalter) 1;
+}
+
+@keyframes knoten-puls {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+/* ---------- Häufige Fragen (9.11) ---------- */
+
+.fragen {
+  border-top: 1px solid var(--f-linie);
+}
+
+.frage {
+  border-bottom: 1px solid var(--f-linie);
+}
+
+.frage summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--a-5);
+  padding: var(--a-5) var(--a-4);
+  margin-inline: calc(var(--a-4) * -1);
+  border-radius: var(--r-klein);
+  cursor: pointer;
+  list-style: none;
+  transition: background-color var(--d-sofort) linear;
+}
+
+.frage summary::-webkit-details-marker {
+  display: none;
+}
+
+.frage__titel {
+  font-size: var(--gr-h3);
+}
+
+.frage__plus {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  color: var(--rot);
+  transition: transform var(--d-ruhig) var(--k-schalter);
+}
+
+.frage__plus::before,
+.frage__plus::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.frage__plus::after {
+  transform: rotate(90deg);
+  transition: transform var(--d-ruhig) var(--k-schalter), opacity var(--d-schnell) linear;
+}
+
+.frage[open] .frage__plus::after {
+  transform: rotate(0deg);
+  opacity: 0;
+}
+
+.frage[open] .frage__plus {
+  transform: rotate(180deg);
+}
+
+@media (hover: hover) {
+  .frage summary:hover {
+    background: var(--f-karte);
+  }
+
+  .abschnitt:not(.abschnitt--nebel):not(.abschnitt--dunkel) .frage summary:hover {
+    background: var(--nebel);
+  }
+}
+
+.frage summary:active {
+  background: var(--rot-hell);
+}
+
+.frage summary:focus-visible {
+  outline-offset: -3px;
+}
+
+.frage__antwort {
+  max-width: 68ch;
+  padding: 0 0 var(--a-6);
+}
+
+.frage__antwort > * + * {
+  margin-top: var(--a-3);
+}
+
+/* Aufklappen mit Übergang, wo der Browser es kann. Sonst öffnet die Antwort ohne Übergang. */
+@supports (interpolate-size: allow-keywords) {
+  .frage {
+    interpolate-size: allow-keywords;
+  }
+
+  .frage::details-content {
+    block-size: 0;
+    overflow: clip;
+    opacity: 0;
+    transition:
+      block-size var(--d-ruhig) var(--k-schalter),
+      opacity var(--d-schnell) linear,
+      content-visibility var(--d-ruhig) allow-discrete;
+  }
+
+  .frage[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+}
+
+/* ---------- Brotkrumen-Pfad (9.16) ---------- */
+
+.brotkrumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  font-size: var(--gr-klein);
+  color: var(--f-leise);
+}
+
+.brotkrumen li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.brotkrumen li + li::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.7;
+}
+
+.brotkrumen a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--antippen);
+  transition: color var(--d-sofort) linear;
+}
+
+@media (hover: hover) {
+  .brotkrumen a:hover {
+    color: var(--f-verweis);
+    text-decoration: underline;
+    text-decoration-color: var(--rot);
+    text-underline-offset: 0.2em;
+  }
+}
+
+.brotkrumen a:active {
+  color: var(--rot-dunkel);
+}
+
+.brotkrumen [aria-current="page"] {
+  color: var(--f-titel);
+  font-weight: 500;
+}
+
+/* ---------- Abschluss-Band (9.14) ---------- */
+
+.band {
+  position: relative;
+  z-index: var(--z-inhalt);
+  padding-block: clamp(64px, 8vw, 120px);
+  background: var(--rot);
+  color: #fff;
+  text-align: center;
+}
+
+.band h2 {
+  color: #fff;
+  max-width: 20ch;
+  margin-inline: auto;
+}
+
+.band p {
+  max-width: 46ch;
+  margin: var(--a-5) auto 0;
+  font-size: var(--gr-vorspann);
+  line-height: 1.5;
+}
+
+.band .reihe-knoepfe {
+  justify-content: center;
+  margin-top: var(--a-6);
+}
+
+.band a:not(.knopf) {
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+
+/* Die Leitung endet oben im Band in einer Steckdose. */
+.band__dose {
+  position: absolute;
+  left: calc(var(--leitung-x) - 13px);
+  top: -14px;
+  width: 28px;
+  height: 28px;
+  display: none;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--rot);
+}
+
+@media (min-width: 1024px) {
+  .band__dose {
+    display: grid;
+  }
+}
+
+/* ---------- Listen mit Haken ---------- */
+
+.hakenliste {
+  display: grid;
+  gap: var(--a-3);
+}
+
+.hakenliste li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--a-3);
+  align-items: start;
+  color: var(--f-titel);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.hakenliste .zeichen {
+  color: var(--rot);
+  margin-top: 1px;
+}
+
+.punktliste {
+  display: grid;
+  gap: var(--a-3);
+  padding: 0;
+  list-style: none;
+}
+
+.punktliste li {
+  position: relative;
+  padding-left: var(--a-5);
+}
+
+.punktliste li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 10px;
+  height: 2px;
+  background: var(--rot);
+}
+
+/* ---------- Kontaktangaben ---------- */
+
+.kontaktliste {
+  display: grid;
+  gap: var(--a-2);
+}
+
+.kontaktliste a,
+.kontaktliste > li > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--antippen);
+  color: var(--f-titel);
+  font-weight: 500;
+}
+
+.kontaktliste .zeichen {
+  color: var(--rot);
+}
+
+.kontaktliste a {
+  transition: color var(--d-sofort) linear;
+}
+
+@media (hover: hover) {
+  .kontaktliste a:hover {
+    color: var(--f-verweis);
+    text-decoration: underline;
+    text-decoration-color: var(--rot);
+    text-underline-offset: 0.2em;
+  }
+}
+
+.kontaktliste a:active {
+  color: var(--rot-dunkel);
+}
+
+.telefon-gross {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--antippen);
+  font-family: var(--schrift-titel);
+  font-size: var(--gr-h3);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--f-titel);
+  font-variant-numeric: tabular-nums;
+}
+
+.telefon-gross .zeichen {
+  color: var(--rot);
+}

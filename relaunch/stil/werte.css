@@ -1,0 +1,117 @@
+/*
+ * Zentrale Werte. Wortgleich aus Design.md, Abschnitt 12.
+ * Alles Weitere auf der Seite leitet sich von diesen Variablen ab.
+ */
+:root {
+  /* Farbe */
+  --rot: #D70036;
+  --rot-dunkel: #B0002C;
+  --rot-hell: #FCEBEF;
+  --weiss: #FFFFFF;
+  --nebel: #F8F8F8;
+  --linie: #E4E4E4;
+  --schwarz: #000000;
+  --text: #3D3D3D;
+  --text-leise: #595959;
+  --anthrazit: #15181D;
+  --anthrazit-hell: #23272E;
+  --text-dunkel: #EDEEF0;
+  --gluehlicht: #FFD27A;
+  --erfolg: #1E7B4A;
+  --fehler: #A4001F;
+
+  /* Schrift */
+  --schrift-titel: var(--datei-bricolage), var(--datei-figtree), system-ui, sans-serif;
+  --schrift-text: var(--datei-figtree), system-ui, sans-serif;
+  --gr-schau: clamp(2.75rem, 7vw + 0.5rem, 7rem);
+  --gr-h1: clamp(2.25rem, 4.5vw + 0.75rem, 4.5rem);
+  --gr-h2: clamp(1.75rem, 2.5vw + 1rem, 3rem);
+  --gr-h3: clamp(1.25rem, 1vw + 1rem, 1.75rem);
+  --gr-vorspann: clamp(1.125rem, 0.6vw + 1rem, 1.375rem);
+  --gr-text: 1.0625rem;
+  --gr-klein: 0.9375rem;
+
+  /* Raum */
+  --a-1: 4px;  --a-2: 8px;  --a-3: 12px; --a-4: 16px; --a-5: 24px;
+  --a-6: 32px; --a-7: 48px; --a-8: 64px; --a-9: 96px; --a-10: 128px; --a-11: 192px;
+  --abschnitt: clamp(72px, 10vw, 160px);
+  --rand: clamp(20px, 5vw, 80px);
+  --breite: 1320px;
+  --kanal: 56px;
+
+  /* Form */
+  --r-klein: 8px; --r-mittel: 16px; --r-gross: 28px; --r-rund: 999px;
+  --schein-rot: 0 28px 56px -28px rgba(215, 0, 54, 0.35);
+  --schatten-oben: 0 12px 32px -16px rgba(0, 0, 0, 0.18);
+
+  /* Bewegung */
+  --d-sofort: 120ms; --d-schnell: 220ms; --d-ruhig: 420ms; --d-gross: 800ms; --d-szene: 1400ms;
+  --k-schalter: cubic-bezier(0.2, 0.9, 0.1, 1);
+  --k-strom: cubic-bezier(0.65, 0, 0.35, 1);
+  --k-feder: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+[data-licht="aus"] {
+  --weiss: #15181D; --nebel: #1B1F25; --linie: #2E333B;
+  --schwarz: #FFFFFF; --text: #EDEEF0; --text-leise: #B4BAC2;
+  --rot-hell: #3A0E1A;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --d-schnell: 120ms; --d-ruhig: 120ms; --d-gross: 0ms; --d-szene: 0ms; }
+}
+
+/*
+ * Abgeleitete Werte. Sie verweisen nur auf die Werte oben.
+ */
+:root {
+  /* Kopfzeile: bleibt immer weiß, auch bei "Licht aus" (Design.md, Abschnitt 1). */
+  --kopf-grund: #FFFFFF;
+  --kopf-titel: #000000;
+  --kopf-text: #3D3D3D;
+  --kopf-linie: #E4E4E4;
+  --kopf-nebel: #F8F8F8;
+  --kopf-hoehe: 88px;
+  --kopf-hoehe-klein: 64px;
+
+  /* Flächen und Schrift eines Abschnitts. Dunkle Abschnitte stellen diese Werte um. */
+  --f-grund: var(--weiss);
+  --f-karte: var(--nebel);
+  --f-titel: var(--schwarz);
+  --f-text: var(--text);
+  --f-leise: var(--text-leise);
+  --f-linie: var(--linie);
+  /* Textlinks: auf hellem Grund rot. Auf Anthrazit helle Schrift mit roter Linie,
+     weil Rot auf Anthrazit nur für Linien, Symbole und große Schrift reicht (Design.md, 3.4). */
+  --f-verweis: var(--rot);
+
+  /* Raster: Inhalt beginnt am Handy am Seitenrand, ab Laptop rechts vom Leitungskanal. */
+  --kanal-aktiv: 0px;
+  --inhalt-b: min(100% - 2 * var(--rand) - var(--kanal-aktiv), var(--breite));
+  --aussen: max(0px, (100% - var(--breite) - var(--kanal-aktiv) - 2 * var(--rand)) / 2);
+  --inhalt-links: calc(var(--aussen) + var(--rand) + var(--kanal-aktiv));
+  --leitung-x: calc(var(--aussen) + var(--rand) + 19px);
+  --spalte: 24px;
+
+  /* Ebenen */
+  --z-leitung: 1;
+  --z-inhalt: 2;
+  --z-handyleiste: 40;
+  --z-menue: 45;
+  --z-kopf: 50;
+  --z-zeiger: 90;
+
+  --antippen: 48px;
+}
+
+[data-licht="aus"] {
+  --f-verweis: var(--text-dunkel);
+}
+
+@media (max-width: 767px) {
+  :root { --spalte: 16px; }
+}
+
+@media (min-width: 1024px) {
+  :root { --kanal-aktiv: var(--kanal); }
+}

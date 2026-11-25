@@ -1,0 +1,280 @@
+/*
+ * Die Leitung (Design.md, 8.1): eine rote Linie im Leitungskanal von der Kopfzeile bis zur Anfrage.
+ * Reine Zierde, im Quelltext mit aria-hidden.
+ *
+ * Ohne Skript und bei reduzierter Bewegung ist sie fertig gezeichnet.
+ * Mit Skript zeichnet sie sich mit dem Scrollfortschritt: --zug ist die gezeichnete Länge in px.
+ * Bewegt wird nur der Beschnitt, nie Breite oder Höhe.
+ */
+
+.leitung {
+  position: absolute;
+  left: var(--leitung-x);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  z-index: var(--z-leitung);
+  pointer-events: none;
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .leitung {
+    display: block;
+  }
+}
+
+.leitung__bahn,
+.leitung__strom {
+  position: absolute;
+  inset: 0;
+}
+
+.leitung__bahn {
+  background: color-mix(in srgb, var(--rot) 14%, transparent);
+}
+
+.leitung__strom {
+  background: var(--rot);
+}
+
+.js .leitung__strom {
+  clip-path: inset(0 0 calc(100% - var(--zug, 62vh - var(--kopf-hoehe))) 0);
+}
+
+/* Knotenpunkt an jedem Abschnitt */
+.abschnitt__knoten {
+  position: absolute;
+  left: calc(var(--leitung-x) - 4px);
+  top: calc(var(--knoten-oben, var(--abschnitt)) + var(--gr-h2) * 0.54 - 5px);
+  z-index: 3;
+  display: none;
+}
+
+.abschnitt--eng > .abschnitt__knoten {
+  --knoten-oben: calc(var(--abschnitt) * 0.6);
+}
+
+@media (min-width: 1024px) {
+  .abschnitt__knoten {
+    display: block;
+  }
+}
+
+/* Handy: kein durchgehender Kanal. Ein kurzes Stück Leitung steht links neben jeder Abschnittsüberschrift. */
+@media (max-width: 1023px) {
+  .abschnitt__kopf > :is(h1, h2):first-child {
+    position: relative;
+    padding-left: 14px;
+  }
+
+  .abschnitt__kopf > :is(h1, h2):first-child::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.14em;
+    bottom: 0.14em;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--rot);
+    transform-origin: top;
+  }
+
+  .js .abschnitt__kopf.wartet > :is(h1, h2):first-child::before {
+    transform: scaleY(0);
+  }
+
+  .js .abschnitt__kopf > :is(h1, h2):first-child::before {
+    transition: transform var(--d-gross) var(--k-strom);
+  }
+}
+
+/* ---------- Auftakt der Startseite (Design.md, 8.2) ---------- */
+
+.start-kopf {
+  position: relative;
+  display: grid;
+  gap: var(--a-6);
+  padding: var(--a-6) var(--rand) var(--a-8);
+  background: var(--weiss);
+}
+
+.start-kopf__text {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--a-5);
+  align-content: center;
+}
+
+.start-kopf__titel {
+  font-size: min(var(--gr-schau), 12cqi, 12vh);
+  margin-bottom: var(--a-1);
+}
+
+.zeile {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+
+.zeile > span {
+  display: block;
+}
+
+.start-kopf .vorspann {
+  max-width: 34ch;
+}
+
+.start-kopf__google {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-2) var(--a-3);
+  min-height: var(--antippen);
+  width: fit-content;
+  color: var(--f-titel);
+  font-weight: 600;
+  line-height: 1.3;
+  border-radius: var(--r-klein);
+}
+
+.start-kopf__google span:last-child {
+  color: var(--f-leise);
+  font-weight: 500;
+}
+
+@media (hover: hover) {
+  .start-kopf__google:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--rot);
+    text-underline-offset: 0.25em;
+  }
+}
+
+.start-kopf__google:active {
+  color: var(--rot-dunkel);
+}
+
+.start-kopf__bild {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  max-height: 62vh;
+  width: 100%;
+}
+
+.start-kopf__bild img {
+  object-position: 50% 42%;
+}
+
+/* Glühlicht über dem Bild, sobald das Licht an ist */
+.start-kopf__bild::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 38% 44%, rgba(255, 210, 122, 0.26), rgba(255, 210, 122, 0) 55%);
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+.start-kopf__leitung {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .start-kopf {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: var(--a-7);
+    align-items: center;
+    min-height: min(820px, calc(100dvh - var(--kopf-hoehe)));
+    padding: var(--a-7) 0 var(--a-9) var(--inhalt-links);
+  }
+
+  .start-kopf__bild {
+    aspect-ratio: auto;
+    height: min(680px, calc(100dvh - var(--kopf-hoehe) - 152px));
+    max-height: none;
+    min-height: 420px;
+    border-radius: var(--r-gross) 0 0 var(--r-gross);
+  }
+
+  /* Die Leitung läuft vom Knoten im Kanal nach rechts unter dem Text entlang zum Bild. */
+  .start-kopf__leitung {
+    display: block;
+    position: absolute;
+    left: var(--leitung-x);
+    bottom: var(--a-8);
+    width: calc((100% - var(--inhalt-links) - var(--a-7)) * 7 / 12 + var(--inhalt-links) - var(--leitung-x) + var(--a-7));
+    height: 2px;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .start-kopf__leitung .knoten {
+    position: absolute;
+    left: -4px;
+    top: -4px;
+    background: var(--rot);
+  }
+
+  .start-kopf__strom {
+    position: absolute;
+    inset: 0;
+    background: var(--rot);
+    transform-origin: left center;
+  }
+}
+
+/* Die Abfolge läuft einmal je Besuch. data-auftakt setzt das Skript im Kopf der Seite. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-auftakt="1"] .start-kopf .zeile > span {
+    animation: zeile-hoch 620ms var(--k-schalter) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+
+  [data-auftakt="1"] .start-kopf__strom {
+    animation: strom-quer var(--d-gross) var(--k-strom) 300ms both;
+  }
+
+  [data-auftakt="1"] .start-kopf__bild img {
+    animation: licht-an 500ms var(--k-schalter) 900ms both;
+  }
+
+  [data-auftakt="1"] .start-kopf__bild::after {
+    animation: schein-an 500ms var(--k-schalter) 900ms both;
+  }
+
+  [data-auftakt="1"] .leitung__strom {
+    animation: leitung-start 700ms var(--k-strom) 1100ms both;
+  }
+}
+
+@keyframes zeile-hoch {
+  from {
+    transform: translateY(104%);
+  }
+}
+
+@keyframes strom-quer {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes licht-an {
+  from {
+    filter: brightness(0.72) saturate(0.6);
+  }
+}
+
+@keyframes schein-an {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes leitung-start {
+  from {
+    clip-path: inset(0 0 calc(100% - 28px) 0);
+  }
+}

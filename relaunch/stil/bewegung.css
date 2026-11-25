@@ -1,0 +1,325 @@
+/*
+ * Bewegung (Design.md, Abschnitt 8).
+ *
+ * Grundsatz: Ohne Skript steht alles fertig da. Das Skript setzt die Klasse "wartet" nur auf Elemente,
+ * die beim Start noch unterhalb des Bildschirms liegen, und nimmt sie beim Hineinscrollen wieder weg ("ist-da").
+ * Lesetext wird nie eingeblendet. Bewegt werden nur Lage, Größe über transform, Deckkraft und Beschnitt.
+ */
+
+/* ---------- Erscheinen beim Scrollen (8.6) ---------- */
+
+/* Überschriften: Zeile für Zeile aus einer Maske nach oben */
+.zeilen-fertig .zeile > span {
+  transition: transform var(--d-gross) var(--k-schalter);
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+
+.zeilen-fertig.wartet .zeile > span {
+  transform: translateY(104%);
+}
+
+/* Bilder: Der Rahmen öffnet sich von unten nach oben, das Bild läuft leicht gegenläufig. */
+.js .bildrahmen[data-erscheint] {
+  transition: clip-path var(--d-gross) var(--k-schalter);
+}
+
+.js .bildrahmen[data-erscheint] img {
+  transition:
+    filter 500ms var(--k-schalter),
+    transform var(--d-gross) var(--k-schalter);
+}
+
+.js .bildrahmen[data-erscheint].wartet {
+  clip-path: inset(100% 0 0 0);
+}
+
+.js .bildrahmen[data-erscheint].wartet img {
+  transform: translateY(-8%) scale(1.08);
+}
+
+/* Kartenreihen: nacheinander, 60 ms Versatz, 24 px von unten */
+.js [data-reihe]:not(.ruht) > * {
+  transition:
+    opacity var(--d-ruhig) linear,
+    transform var(--d-gross) var(--k-schalter);
+  transition-delay: calc(min(var(--i, 0), 7) * 60ms);
+}
+
+.js [data-reihe].wartet > * {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+/* Nach dem Erscheinen (Klasse "ruht") gelten wieder die eigenen Übergänge der Karten. */
+
+/* Schaltzeichen zeichnen sich einmal selbst (600 ms). */
+.js .zeichen[data-zeichnet] :is(path, circle, rect, line) {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 600ms var(--k-strom);
+}
+
+.js .wartet .zeichen[data-zeichnet] :is(path, circle, rect, line),
+.js .zeichen[data-zeichnet].wartet :is(path, circle, rect, line) {
+  stroke-dashoffset: 1;
+}
+
+/* Einzugsgebiet: Linien laufen von Germering nach außen. */
+.js .gebietskarte .ort__strahl {
+  transition:
+    transform var(--d-gross) var(--k-strom) calc(var(--i, 0) * 40ms),
+    opacity var(--d-schnell) linear;
+}
+
+.js .gebietskarte.wartet .ort__strahl {
+  transform: rotate(var(--w)) scaleX(0);
+}
+
+.js .gebietskarte .ort__punkt,
+.js .gebietskarte .ort__name {
+  transition:
+    opacity var(--d-schnell) linear calc(var(--i, 0) * 40ms + 500ms),
+    background-color var(--d-schnell) linear,
+    scale var(--d-schnell) var(--k-feder);
+}
+
+.js .gebietskarte.wartet .ort:not(.ort--kern) :is(.ort__punkt, .ort__name) {
+  opacity: 0;
+}
+
+/* Zielgruppenkarte: Die drei Aufgaben erscheinen nacheinander. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .zielgruppe:hover .zielgruppe__aufgaben li {
+    animation: aufgabe-ein var(--d-ruhig) var(--k-schalter) backwards;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+}
+
+@keyframes aufgabe-ein {
+  from {
+    opacity: 0.25;
+    transform: translateX(-10px);
+  }
+}
+
+/* ---------- Seitenwechsel (8.8): rote Fläche wischt von unten über die Seite ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-image-pair(root) {
+    background: var(--rot);
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-old(root) {
+    animation: wisch-alt 250ms var(--k-strom) both;
+  }
+
+  ::view-transition-new(root) {
+    animation: wisch-neu 250ms var(--k-strom) 250ms both;
+  }
+}
+
+@keyframes wisch-alt {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes wisch-neu {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* ---------- Mauszeiger (8.8): nur Geräte mit Maus, der normale Zeiger bleibt sichtbar ---------- */
+
+.zeiger {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: var(--z-zeiger);
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--d-schnell) linear;
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .zeiger {
+    display: block;
+  }
+}
+
+.zeiger[data-sichtbar="true"] {
+  opacity: 1;
+}
+
+.zeiger > * {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  transition:
+    transform var(--d-schnell) var(--k-schalter),
+    opacity var(--d-sofort) linear;
+}
+
+.zeiger__punkt {
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  background: var(--rot);
+}
+
+.zeiger__ring {
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border: 1.75px solid var(--rot);
+  transform: scale(0.2);
+  opacity: 0;
+}
+
+.zeiger__kreis {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  margin: -42px 0 0 -42px;
+  background: var(--rot);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  transform: scale(0.1);
+  opacity: 0;
+}
+
+.zeiger__schalter {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  background: var(--rot);
+  color: #fff;
+  transform: scale(0.15);
+  opacity: 0;
+}
+
+.zeiger__schalter .kippschalter {
+  width: 16px;
+  height: 26px;
+  border-radius: 6px;
+  border-width: 1.5px;
+}
+
+.zeiger__schalter .kippschalter__hebel {
+  left: 2.5px;
+  right: 2.5px;
+  bottom: 2.5px;
+  height: 11px;
+  border-radius: 3px;
+  opacity: 1;
+  background: #fff;
+  transform: translateY(-7px);
+}
+
+.zeiger[data-art="link"] .zeiger__punkt {
+  transform: scale(0.5);
+}
+
+.zeiger[data-art="link"] .zeiger__ring {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.zeiger[data-art="ansehen"] .zeiger__punkt,
+.zeiger[data-art="schalter"] .zeiger__punkt {
+  opacity: 0;
+}
+
+.zeiger[data-art="ansehen"] .zeiger__kreis {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.zeiger[data-art="schalter"] .zeiger__schalter {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* ---------- Weniger Bewegung (8.9) ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Die Leitung ist fertig gezeichnet, ohne Scrollbindung. */
+  .js .leitung__strom {
+    clip-path: none;
+  }
+
+  .knoten {
+    background: var(--rot);
+  }
+
+  /* Keine Masken, kein Versatz, keine Neigung, keine Anziehung. */
+  .zeile > span,
+  .js [data-reihe]:not(.ruht) > *,
+  .js .bildrahmen[data-erscheint],
+  .js .bildrahmen[data-erscheint] img {
+    transform: none !important;
+    clip-path: none !important;
+    opacity: 1 !important;
+    transition-delay: 0s !important;
+  }
+
+  .zielgruppe {
+    transform: none !important;
+  }
+
+  .knopf {
+    translate: none !important;
+  }
+
+  .licht img {
+    filter: none;
+  }
+
+  /* Die Sicherungsreihe klappt ohne Übergang auf. */
+  .sicherung,
+  .sicherung__name,
+  .sicherung__inhalt,
+  .sicherung__bild,
+  .sicherung__bild img {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+
+  .js .endstueck {
+    clip-path: none;
+  }
+
+  .zeiger {
+    display: none !important;
+  }
+}

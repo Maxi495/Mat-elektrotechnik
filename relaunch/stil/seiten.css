@@ -1,0 +1,1233 @@
+/* Abschnitte einzelner Seiten: Kopfbereiche, Sicherungsreihe, Karte, Bedienfeld, Zeitleiste, Haus, Danke, nicht gefunden. */
+
+/* ---------- Kopfbereich der Unterseiten (Design.md, 9.3) ---------- */
+
+.seitenkopf {
+  position: relative;
+  padding-block: var(--a-4) calc(var(--abschnitt) * 0.62);
+  background: var(--f-grund);
+  color: var(--f-text);
+}
+
+.seitenkopf__raster {
+  display: grid;
+  gap: var(--a-7) var(--a-7);
+  margin-top: var(--a-5);
+  align-items: center;
+}
+
+.seitenkopf__text {
+  display: grid;
+  gap: var(--a-5);
+  align-content: start;
+  max-width: 980px;
+}
+
+.seitenkopf__text h1 {
+  margin-bottom: var(--a-1);
+}
+
+.seitenkopf__text .hakenliste {
+  margin-top: var(--a-3);
+}
+
+.seitenkopf__bild {
+  display: grid;
+  gap: var(--a-3);
+}
+
+@media (min-width: 1024px) {
+  .seitenkopf--bild .seitenkopf__raster {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .seitenkopf__raster {
+    margin-top: var(--a-6);
+  }
+}
+
+/* Karriere: dunkler Auftritt. Die Kopfzeile darüber bleibt weiß. */
+.seitenkopf--dunkel {
+  padding-top: var(--a-5);
+}
+
+/* ---------- Sicherungsreihe (Design.md, 8.3) ---------- */
+
+.reihe-huelle {
+  --fuge: 6px;
+  container-type: inline-size;
+  position: relative;
+}
+
+.sammelschiene {
+  display: none;
+}
+
+.sicherungsreihe {
+  display: grid;
+  gap: var(--fuge);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sicherung {
+  --offen: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto calc(var(--offen) * 1fr);
+  align-items: center;
+  column-gap: var(--a-4);
+  padding: 0 var(--a-3) 0 var(--a-4);
+  border-radius: var(--r-mittel);
+  background: var(--anthrazit-hell);
+  color: #fff;
+  transition: grid-template-rows var(--d-ruhig) var(--k-schalter);
+}
+
+.sicherung[data-offen="true"],
+html:not(.js) .sicherung {
+  --offen: 1;
+}
+
+.sicherung__flaeche {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sicherung__bild {
+  position: absolute;
+  inset: 0;
+  opacity: calc(var(--offen) * 0.9);
+  transition: opacity 500ms var(--k-schalter);
+}
+
+.sicherung__bild img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--bildlage, center);
+  filter: brightness(calc(0.72 + var(--offen) * 0.28)) saturate(calc(0.6 + var(--offen) * 0.4));
+  transition: filter 500ms var(--k-schalter);
+}
+
+/* Abdunklung, damit Schrift über dem Foto lesbar bleibt */
+.sicherung__bild::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(21, 24, 29, 0.92) 0%, rgba(21, 24, 29, 0.74) 55%, rgba(21, 24, 29, 0.5) 100%);
+}
+
+.sicherung__ader {
+  display: none;
+}
+
+.sicherung__zeichen {
+  position: relative;
+  color: #fff;
+}
+
+.sicherung__name {
+  position: relative;
+  padding-block: var(--a-5);
+  font-size: 1.1875rem;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.sicherung__schalter {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--antippen);
+  height: 56px;
+  border-radius: var(--r-klein);
+  color: #EDEEF0;
+}
+
+/* Die ganze Zeile ist die Antippfläche des Schalters. */
+.sicherung__schalter::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: calc(-100cqw + var(--antippen) + var(--a-3));
+}
+
+.sicherung__schalter .kippschalter {
+  width: 24px;
+  height: 38px;
+}
+
+.sicherung__schalter .kippschalter__hebel {
+  height: 17px;
+  transform: translateY(calc(var(--offen) * -11px));
+  background: color-mix(in srgb, var(--rot) calc(var(--offen) * 100%), currentColor);
+  opacity: calc(0.55 + var(--offen) * 0.45);
+}
+
+.sicherung__schalter:focus-visible {
+  outline-color: #fff;
+}
+
+.sicherung__schalter:active .kippschalter {
+  scale: 0.94;
+}
+
+.sicherung__inhalt {
+  position: relative;
+  grid-column: 1 / -1;
+  min-height: 0;
+  overflow: hidden;
+  opacity: var(--offen);
+  transition: opacity var(--d-schnell) linear;
+}
+
+.sicherung__inhalt-innen {
+  display: grid;
+  gap: var(--a-3);
+  padding: 0 var(--a-2) var(--a-5) calc(24px + var(--a-4));
+  color: var(--text-dunkel);
+  max-width: 46ch;
+}
+
+.sicherung__inhalt .textlink {
+  --f-verweis: #fff;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--antippen);
+  background-size: 100% 2px;
+  background-position: 0 calc(100% - 10px);
+}
+
+.sicherung__inhalt .textlink:focus-visible {
+  outline-color: #fff;
+}
+
+/* Laptop und größer: neun senkrechte Streifen nebeneinander */
+@media (min-width: 1024px) {
+  .reihe-huelle {
+    --zu-b: calc((100cqw - 8 * var(--fuge)) / 13.5);
+    --offen-b: calc(var(--zu-b) * 5.5);
+    padding-top: 30px;
+  }
+
+  .sammelschiene {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: calc(19px - var(--kanal));
+    right: 0;
+    height: 2px;
+    background: #2E333B;
+  }
+
+  .sammelschiene__strom {
+    position: absolute;
+    inset: 0;
+    background: var(--rot);
+    transform-origin: left center;
+  }
+
+  .sicherungsreihe {
+    display: flex;
+    height: 620px;
+  }
+
+  .sicherung {
+    display: block;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0;
+    flex-grow: calc(1 + var(--offen) * 4.5);
+    transition: flex-grow var(--d-ruhig) var(--k-schalter);
+  }
+
+  html:not(.js) .sicherung {
+    --offen: 0;
+  }
+
+  html:not(.js) .sicherung:is(:hover, :focus-within),
+  html:not(.js) .sicherungsreihe:not(:hover):not(:focus-within) > .sicherung:first-child {
+    --offen: 1;
+  }
+
+  /* Das Foto behält die Breite des offenen Streifens, damit beim Aufklappen nichts springt. */
+  .sicherung__bild {
+    inset: 0 auto 0 0;
+    width: var(--offen-b);
+    opacity: var(--offen);
+  }
+
+  .sicherung__bild::after {
+    background: linear-gradient(
+      180deg,
+      rgba(21, 24, 29, 0.55) 0%,
+      rgba(21, 24, 29, 0.1) 34%,
+      rgba(21, 24, 29, 0.72) 68%,
+      rgba(21, 24, 29, 0.94) 100%
+    );
+  }
+
+  /* Ader: Verbindung von der Sammelschiene zur Sicherung */
+  .sicherung__ader {
+    display: block;
+    position: absolute;
+    left: calc(var(--zu-b) / 2 - 1px);
+    top: -28px;
+    width: 2px;
+    height: 28px;
+    background: var(--rot);
+    opacity: calc(0.4 + var(--offen) * 0.6);
+    box-shadow: 0 0 calc(var(--offen) * 14px) rgba(215, 0, 54, 0.9);
+    transform-origin: top;
+    transition: opacity var(--d-schnell) linear, box-shadow var(--d-ruhig) linear;
+  }
+
+  .sicherung__zeichen {
+    position: absolute;
+    left: calc(var(--zu-b) / 2 - 14px);
+    top: 34px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .sicherung__name {
+    position: absolute;
+    left: calc(var(--zu-b) / 2);
+    bottom: 104px;
+    padding: 0;
+    font-size: 1.25rem;
+    line-height: 1.15;
+    white-space: nowrap;
+    transform-origin: left center;
+    rotate: calc(-90deg * (1 - var(--offen)));
+    translate: calc(var(--offen) * (var(--zu-b) / 2 + 6px)) calc(var(--offen) * -92px);
+    scale: calc(1 + var(--offen) * 0.3);
+    transition:
+      rotate var(--d-ruhig) var(--k-schalter),
+      translate var(--d-ruhig) var(--k-schalter),
+      scale var(--d-ruhig) var(--k-schalter);
+  }
+
+  .sicherung__schalter {
+    position: absolute;
+    left: calc(var(--zu-b) / 2 - 24px);
+    bottom: 26px;
+    height: var(--antippen);
+  }
+
+  .sicherung__schalter::after {
+    inset: -8px;
+    left: -8px;
+  }
+
+  .sicherung__schalter .kippschalter {
+    width: 28px;
+    height: 44px;
+  }
+
+  .sicherung__schalter .kippschalter__hebel {
+    height: 20px;
+    transform: translateY(calc(var(--offen) * -13px));
+    transition:
+      transform var(--d-schnell) var(--k-feder),
+      background-color var(--d-sofort) linear,
+      opacity var(--d-sofort) linear;
+  }
+
+  .sicherung__inhalt {
+    position: absolute;
+    left: calc(var(--zu-b) + 6px);
+    bottom: 28px;
+    width: calc(var(--offen-b) - var(--zu-b) - 34px);
+    overflow: visible;
+    translate: 0 calc((1 - var(--offen)) * 14px);
+    clip-path: inset(-8px calc((1 - var(--offen)) * 100%) -8px -8px);
+    transition:
+      opacity var(--d-schnell) linear calc(var(--offen) * 140ms),
+      translate var(--d-ruhig) var(--k-schalter),
+      clip-path 0s linear calc((1 - var(--offen)) * var(--d-schnell));
+  }
+
+  .sicherung__inhalt-innen {
+    padding: 0;
+    max-width: none;
+  }
+
+  .sicherung__inhalt p {
+    min-height: 4.95em;
+    display: flex;
+    align-items: flex-end;
+  }
+}
+
+.leistungen-reihe__fuss {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-3) var(--a-7);
+  margin-top: var(--a-6);
+}
+
+.leistungen-reihe__fuss .textlink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--antippen);
+  background-position: 0 calc(100% - 10px);
+}
+
+/* ---------- Über uns kurz ---------- */
+
+.zweiteiler {
+  display: grid;
+  gap: var(--a-7) calc(var(--spalte) * 3);
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .zweiteiler {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .zweiteiler--text-links {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+}
+
+.zweiteiler__text {
+  display: grid;
+  gap: var(--a-5);
+  align-content: center;
+  justify-items: start;
+}
+
+/* ---------- Einzugsgebiet ---------- */
+
+.gebiet {
+  display: grid;
+  gap: var(--a-7) calc(var(--spalte) * 3);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .gebiet {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.gebietskarte {
+  position: relative;
+  container-type: inline-size;
+  aspect-ratio: 100 / 84;
+  width: 100%;
+  max-width: 620px;
+  margin: 0;
+}
+
+.gebietskarte ul {
+  position: absolute;
+  inset: 9cqw 17cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ort {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  width: 0;
+  height: 0;
+}
+
+.ort__strahl {
+  position: absolute;
+  left: calc(var(--dx) * 0.66cqw);
+  top: calc(var(--dy) * 0.66cqw);
+  width: calc(var(--d) * 0.66cqw);
+  height: 1.5px;
+  margin-top: -0.75px;
+  background: var(--rot);
+  opacity: 0.4;
+  transform-origin: 0 50%;
+  transform: rotate(var(--w)) scaleX(1);
+  transition: opacity var(--d-schnell) linear;
+}
+
+.ort__punkt {
+  position: absolute;
+  left: -6px;
+  top: -6px;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--rot);
+  background: var(--f-grund);
+  transition: background-color var(--d-schnell) linear, scale var(--d-schnell) var(--k-feder);
+}
+
+.ort--kern .ort__punkt {
+  left: -10px;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  background: var(--rot);
+}
+
+.ort__name {
+  position: absolute;
+  z-index: 2;
+  white-space: nowrap;
+  font-size: clamp(0.75rem, 2.7cqw, 0.9375rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--f-titel);
+  padding: 4px 2px;
+}
+
+.ort--kern .ort__name {
+  font-family: var(--schrift-titel);
+  font-weight: 600;
+  font-size: clamp(1rem, 3.6cqw, 1.25rem);
+}
+
+.ort[data-seite="rechts"] .ort__name {
+  left: 10px;
+  top: -0.7em;
+}
+
+.ort[data-seite="links"] .ort__name {
+  right: 10px;
+  top: -0.7em;
+}
+
+.ort[data-seite="oben"] .ort__name {
+  left: 0;
+  bottom: 9px;
+  transform: translateX(-50%);
+}
+
+.ort[data-seite="unten"] .ort__name {
+  left: 0;
+  top: 13px;
+  transform: translateX(-50%);
+}
+
+@media (hover: hover) {
+  .ort:hover .ort__strahl {
+    opacity: 1;
+    height: 2.5px;
+    margin-top: -1.25px;
+    box-shadow: 0 0 10px rgba(215, 0, 54, 0.6);
+  }
+
+  .ort:hover .ort__punkt {
+    background: var(--rot);
+    scale: 1.2;
+  }
+}
+
+.gebiet__listen {
+  display: grid;
+  gap: var(--a-6);
+}
+
+.gebiet__listen h3 {
+  font-size: 1.125rem;
+  letter-spacing: 0;
+  margin-bottom: var(--a-3);
+}
+
+.ortsliste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---------- Karriere-Streifen ---------- */
+
+.karrierestreifen {
+  position: relative;
+  display: grid;
+  gap: var(--a-5) var(--a-7);
+  align-items: center;
+  padding: clamp(32px, 5vw, 64px);
+  border-radius: var(--r-gross);
+  background: var(--rot);
+  color: #fff;
+}
+
+.karrierestreifen h2 {
+  color: #fff;
+  max-width: 18ch;
+}
+
+.karrierestreifen p {
+  max-width: 44ch;
+  margin-top: var(--a-3);
+  font-size: var(--gr-vorspann);
+  line-height: 1.5;
+}
+
+@media (min-width: 900px) {
+  .karrierestreifen {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+/* ---------- Smart-Home-Bedienfeld (Design.md, 8.8) ---------- */
+
+.bedienfeld {
+  display: grid;
+  gap: var(--a-4);
+}
+
+.raumbild {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-gross);
+  aspect-ratio: 4 / 3;
+  background: var(--anthrazit);
+}
+
+.raumbild img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 500ms var(--k-schalter);
+}
+
+.raumbild[data-licht="aus"] img {
+  filter: brightness(0.36) saturate(0.55);
+}
+
+.raumbild[data-licht="an"][data-jalousie="zu"] img {
+  filter: brightness(0.88);
+}
+
+/* Jalousien vor den beiden Fenstern des Fotos */
+.raumbild__jalousie {
+  position: absolute;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      #C9CCD1 0,
+      #C9CCD1 5px,
+      #8E939B 5px,
+      #8E939B 7px
+    );
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 900ms var(--k-strom), filter 500ms var(--k-schalter);
+}
+
+.raumbild[data-jalousie="zu"] .raumbild__jalousie {
+  clip-path: inset(0);
+}
+
+.raumbild[data-licht="aus"] .raumbild__jalousie {
+  filter: brightness(0.4);
+}
+
+/* Stimmung: warmer Lichtton über dem Raum */
+.raumbild__ton {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 58% 34%, rgba(255, 210, 122, 0.85), rgba(255, 150, 60, 0.5) 70%);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity 600ms var(--k-schalter);
+  pointer-events: none;
+}
+
+.raumbild[data-stimmung="abend"][data-licht="an"] .raumbild__ton {
+  opacity: 1;
+}
+
+.raumbild[data-stimmung="abend"][data-licht="an"] img {
+  filter: brightness(0.82) saturate(1.1);
+}
+
+.raumbild__zustand {
+  position: absolute;
+  left: var(--a-4);
+  bottom: var(--a-4);
+  padding: 6px 10px;
+  border-radius: var(--r-klein);
+  background: rgba(21, 24, 29, 0.82);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.bedientafel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--fuge, 6px);
+  padding: 6px;
+  border-radius: var(--r-mittel);
+  background: var(--anthrazit);
+}
+
+.bedientaste {
+  display: grid;
+  justify-items: center;
+  gap: var(--a-3);
+  padding: var(--a-4) var(--a-2);
+  border-radius: 11px;
+  background: var(--anthrazit-hell);
+  color: #EDEEF0;
+  font-weight: 600;
+  font-size: var(--gr-klein);
+  line-height: 1.2;
+  text-align: center;
+  transition: background-color var(--d-sofort) linear, scale var(--d-sofort) var(--k-schalter);
+}
+
+.bedientaste small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #B4BAC2;
+}
+
+@media (hover: hover) {
+  .bedientaste:hover {
+    background: #2E333B;
+  }
+}
+
+.bedientaste:focus-visible {
+  outline-color: #fff;
+  outline-offset: -3px;
+}
+
+.bedientaste:active {
+  scale: 0.97;
+}
+
+.bedientaste[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+html:not(.js) .bedientafel {
+  display: none;
+}
+
+/* ---------- Zeitleiste (Über uns) ---------- */
+
+.zeitleiste {
+  position: relative;
+  display: grid;
+  gap: var(--a-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.zeitleiste li {
+  position: relative;
+  display: grid;
+  gap: var(--a-3);
+  padding-left: var(--a-6);
+  max-width: 760px;
+}
+
+.zeitleiste li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 34px;
+  bottom: calc(var(--a-8) * -1);
+  width: 2px;
+  background: var(--rot);
+}
+
+.zeitleiste li:last-child::before {
+  display: none;
+}
+
+.zeitleiste .knoten {
+  position: absolute;
+  left: 0;
+  top: 22px;
+  z-index: 3;
+}
+
+.zeitleiste__jahr {
+  font-family: var(--schrift-titel);
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--f-titel);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 1024px) {
+  .zeitleiste li {
+    padding-left: 0;
+  }
+
+  /* Die Knoten der Zeitleiste sitzen auf der Leitung im Kanal. */
+  .zeitleiste .knoten {
+    left: calc(19px - var(--kanal) - 4px);
+    top: 30px;
+  }
+
+  .zeitleiste li::before {
+    display: none;
+  }
+}
+
+/* ---------- Werte, Vorteile: Aussagen in zwei Spalten ohne Kartenrahmen ---------- */
+
+.aussagen {
+  display: grid;
+  gap: var(--a-7) calc(var(--spalte) * 2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 768px) {
+  .aussagen {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.aussagen li {
+  display: grid;
+  gap: var(--a-2);
+  align-content: start;
+  padding-top: var(--a-4);
+  border-top: 2px solid var(--f-titel);
+}
+
+.aussagen h3 {
+  font-size: 1.25rem;
+}
+
+/* Leistungsumfang: Teilabschnitte in zwei Spalten */
+.umfang {
+  display: grid;
+  gap: var(--a-7) calc(var(--spalte) * 3);
+}
+
+@media (min-width: 900px) {
+  .umfang {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.umfang__teil {
+  display: grid;
+  gap: var(--a-3);
+  align-content: start;
+}
+
+.umfang__teil p {
+  max-width: 62ch;
+}
+
+/* Für wen: drei Absätze nebeneinander, getrennt durch Linien */
+.fuerwen {
+  display: grid;
+  gap: var(--a-6) calc(var(--spalte) * 2);
+}
+
+@media (min-width: 900px) {
+  .fuerwen {
+    grid-template-columns: repeat(var(--anzahl, 3), minmax(0, 1fr));
+  }
+}
+
+.fuerwen__gruppe {
+  display: grid;
+  gap: var(--a-3);
+  align-content: start;
+  padding-top: var(--a-4);
+  border-top: 1px solid var(--f-linie);
+}
+
+.fuerwen__gruppe h3 {
+  font-size: 1.25rem;
+}
+
+/* Kosten und Förderung: Hinweisfläche im Abschnitt Ablauf */
+.kostenfeld {
+  display: grid;
+  gap: var(--a-4);
+  margin-top: var(--a-8);
+  padding: clamp(24px, 4vw, 48px);
+  border-radius: var(--r-gross);
+  background: var(--f-karte);
+}
+
+.kostenfeld p {
+  max-width: 68ch;
+}
+
+@media (min-width: 900px) {
+  .kostenfeld {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    column-gap: calc(var(--spalte) * 2);
+  }
+
+  .kostenfeld__text {
+    display: grid;
+    gap: var(--a-4);
+  }
+}
+
+/* ---------- 3D-Haus: Platz und Ausweichlösung ---------- */
+
+.hausbuehne {
+  position: relative;
+  border-radius: var(--r-gross);
+  background: var(--anthrazit);
+  color: #EDEEF0;
+  overflow: hidden;
+}
+
+.hausbuehne__bild {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  max-height: 72vh;
+  width: 100%;
+}
+
+.hausbuehne svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: #EDEEF0;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hausbuehne__leitung {
+  stroke: var(--rot);
+}
+
+.hauspunkt {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  display: grid;
+  place-items: center;
+  width: var(--antippen);
+  height: var(--antippen);
+  margin: -24px 0 0 -24px;
+  border-radius: 50%;
+  color: #fff;
+}
+
+.hauspunkt::before {
+  content: "";
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--rot);
+  background: var(--anthrazit);
+  transition: background-color var(--d-schnell) linear, scale var(--d-schnell) var(--k-feder);
+}
+
+.hauspunkt span {
+  position: absolute;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (hover: hover) {
+  .hauspunkt:hover::before {
+    background: var(--rot);
+    scale: 1.15;
+  }
+}
+
+.hauspunkt:focus-visible {
+  outline-color: #fff;
+}
+
+.hauspunkt:active::before {
+  background: var(--rot-dunkel);
+  scale: 0.95;
+}
+
+.hausbuehne__hinweis {
+  padding: var(--a-4) var(--a-5);
+  border-top: 1px solid #2E333B;
+  font-size: var(--gr-klein);
+  line-height: 1.5;
+}
+
+.hausliste {
+  display: grid;
+  gap: var(--spalte);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: hauspunkt;
+}
+
+.hausliste .karte {
+  height: 100%;
+}
+
+.hausliste__nummer {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--rot);
+  color: var(--f-titel);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.hausliste__kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--a-3);
+}
+
+/* ---------- Danke und "Seite nicht gefunden": zentriert ---------- */
+
+.mitte {
+  display: grid;
+  justify-items: center;
+  gap: var(--a-5);
+  text-align: center;
+  padding-block: clamp(56px, 9vw, 128px);
+}
+
+.mitte h1 {
+  max-width: 16ch;
+}
+
+.mitte .vorspann {
+  margin-inline: auto;
+}
+
+.mitte .reihe-knoepfe {
+  justify-content: center;
+}
+
+.mitte .verbindung {
+  justify-items: center;
+}
+
+.naechste-schritte {
+  display: grid;
+  gap: var(--a-4);
+  max-width: 560px;
+  margin: var(--a-4) auto 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+  counter-reset: schritt;
+}
+
+.naechste-schritte li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--a-4);
+  align-items: start;
+  padding-top: var(--a-4);
+  border-top: 1px solid var(--f-linie);
+  counter-increment: schritt;
+}
+
+.naechste-schritte li::before {
+  content: counter(schritt);
+  font-family: var(--schrift-titel);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--f-titel);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Unterbrochener Stromkreis */
+.unterbrochen {
+  width: min(100%, 420px);
+  height: auto;
+  color: var(--f-titel);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+
+.unterbrochen__leitung {
+  stroke: var(--rot);
+}
+
+.unterbrochen__hebel {
+  transform-box: fill-box;
+  transform-origin: 0% 100%;
+  transition: transform var(--d-ruhig) var(--k-feder);
+}
+
+.unterbrochen__funke {
+  stroke: var(--rot);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .unterbrochen__funke {
+    animation: funken 1600ms steps(1, end) infinite;
+  }
+
+  .unterbrochen__funke:nth-of-type(2) {
+    animation-delay: 230ms;
+  }
+
+  .unterbrochen__funke:nth-of-type(3) {
+    animation-delay: 610ms;
+  }
+}
+
+@keyframes funken {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  8%,
+  16% {
+    opacity: 1;
+  }
+  12%,
+  24% {
+    opacity: 0;
+  }
+}
+
+/* Der Knopf "Zurück zur Startseite" schließt den Kreis. */
+.stromkreis:has(.knopf:is(:hover, :focus-visible)) .unterbrochen__hebel {
+  transform: rotate(28deg);
+}
+
+.stromkreis:has(.knopf:is(:hover, :focus-visible)) .unterbrochen__funke {
+  animation: none;
+  opacity: 0;
+}
+
+/* ---------- Rechtstexte ---------- */
+
+.rechtstext {
+  max-width: 68ch;
+}
+
+.rechtstext > * + * {
+  margin-top: var(--a-4);
+}
+
+.rechtstext h2 {
+  font-size: var(--gr-h3);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-top: var(--a-8);
+}
+
+.rechtstext h3 {
+  font-size: 1.125rem;
+  letter-spacing: 0;
+  margin-top: var(--a-6);
+}
+
+.rechtstext ul {
+  display: grid;
+  gap: var(--a-2);
+  padding-left: 1.2em;
+}
+
+.rechtstext li::marker {
+  color: var(--rot);
+}
+
+/* ---------- Referenzen: Filter ---------- */
+
+.filter {
+  display: grid;
+  gap: var(--a-5);
+  margin-bottom: var(--a-7);
+}
+
+.filter__gruppe {
+  display: grid;
+  gap: var(--a-3);
+}
+
+.filter__gruppe > p {
+  color: var(--f-titel);
+  font-weight: 600;
+}
+
+.filter__leer {
+  padding: var(--a-6);
+  border-radius: var(--r-mittel);
+  border: 1.5px dashed var(--f-linie);
+}
+
+.filter__leer[hidden] {
+  display: none;
+}
+
+[data-referenz][hidden] {
+  display: none;
+}
+
+/* ---------- Video ---------- */
+
+.videoplatz {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  padding: var(--a-6);
+  border-radius: var(--r-gross);
+  border: 1.5px dashed var(--f-linie);
+  text-align: center;
+}
+
+.video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-gross);
+  background: var(--anthrazit);
+}
+
+/* ---------- Kurzüberblick einer Leistung ---------- */
+
+.ueberblick {
+  padding-block: var(--a-6);
+  border-block: 1px solid var(--f-linie);
+}
+
+.ueberblick .hakenliste {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--a-4) var(--a-6);
+}

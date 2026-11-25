@@ -1,0 +1,615 @@
+/* Anfrageformular (Design.md, 9.12) und Anfrage-Abschnitt mit Stecker und Steckdose. */
+
+.anfrage {
+  z-index: var(--z-inhalt);
+}
+
+.anfrage__raster {
+  display: grid;
+  gap: var(--a-8) var(--spalte);
+}
+
+@media (min-width: 1024px) {
+  .anfrage__raster {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    column-gap: calc(var(--spalte) * 3);
+    align-items: start;
+  }
+}
+
+.anfrage__seite {
+  display: grid;
+  gap: var(--a-6);
+  align-content: start;
+}
+
+.anfrage__seite h3 {
+  font-size: 1.125rem;
+  letter-spacing: 0;
+}
+
+/* ---------- Formular ---------- */
+
+.formular {
+  display: grid;
+  gap: var(--a-5);
+}
+
+.formular__gruppe {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.formular__gruppe legend,
+.formular__beschriftung {
+  display: block;
+  padding: 0;
+  margin-bottom: var(--a-3);
+  color: var(--f-titel);
+  font-weight: 600;
+}
+
+.formular__zeile {
+  display: grid;
+  gap: var(--a-5) var(--spalte);
+}
+
+@media (min-width: 640px) {
+  .formular__zeile {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.marken-wahl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-2);
+}
+
+.wahlmarke {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  min-height: var(--antippen);
+  align-items: center;
+}
+
+.wahlmarke input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.wahlmarke .marke {
+  transition:
+    background-color var(--d-sofort) linear,
+    border-color var(--d-sofort) linear,
+    color var(--d-sofort) linear,
+    scale var(--d-sofort) var(--k-schalter);
+}
+
+.wahlmarke .marke .zeichen {
+  width: 0;
+  height: 16px;
+  opacity: 0;
+  margin-right: -6px;
+  transition: width var(--d-schnell) var(--k-schalter), opacity var(--d-sofort) linear;
+}
+
+@media (hover: hover) {
+  .wahlmarke:hover .marke {
+    border-color: var(--rot);
+  }
+}
+
+.wahlmarke input:focus-visible + .marke {
+  outline: 3px solid var(--rot);
+  outline-offset: 3px;
+}
+
+.wahlmarke input:active + .marke {
+  scale: 0.97;
+}
+
+.wahlmarke input:disabled + .marke {
+  opacity: 0.45;
+}
+
+/* Feld mit Beschriftung, die immer sichtbar bleibt und bei Fokus nach oben rutscht */
+.feld {
+  position: relative;
+}
+
+.feld__eingabe {
+  display: block;
+  width: 100%;
+  height: 56px;
+  padding: 22px 44px 6px 16px;
+  border-radius: var(--r-klein);
+  border: 1px solid var(--f-linie);
+  background: var(--f-grund);
+  color: var(--f-titel);
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  appearance: none;
+  caret-color: var(--rot);
+  transition: border-color var(--d-sofort) linear, background-color var(--d-sofort) linear;
+}
+
+textarea.feld__eingabe {
+  height: auto;
+  min-height: 148px;
+  padding-top: 28px;
+  resize: vertical;
+}
+
+.feld__eingabe::placeholder {
+  color: transparent;
+}
+
+.feld__beschriftung {
+  position: absolute;
+  left: 16px;
+  top: 17px;
+  color: var(--f-leise);
+  line-height: 1.3;
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform var(--d-schnell) var(--k-schalter), color var(--d-sofort) linear;
+}
+
+.feld__eingabe:focus ~ .feld__beschriftung,
+.feld__eingabe:not(:placeholder-shown) ~ .feld__beschriftung {
+  transform: translateY(-11px) scale(0.78);
+}
+
+.feld__eingabe:focus ~ .feld__beschriftung {
+  color: var(--f-titel);
+}
+
+/* Rote Linie, die sich bei Fokus von links nach rechts zeichnet */
+.feld__linie {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 54px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--rot);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--d-schnell) var(--k-strom);
+  pointer-events: none;
+}
+
+.feld--text .feld__linie {
+  top: auto;
+  bottom: 7px;
+}
+
+.feld__eingabe:focus ~ .feld__linie {
+  transform: scaleX(1);
+}
+
+@media (hover: hover) {
+  .feld__eingabe:hover {
+    border-color: var(--f-leise);
+  }
+}
+
+.feld__eingabe:focus-visible {
+  outline: 3px solid var(--rot);
+  outline-offset: 3px;
+  border-color: var(--rot);
+}
+
+.feld__eingabe:active {
+  background: var(--f-karte);
+}
+
+.feld__eingabe:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Gültige Eingabe: kleiner Haken zeichnet sich */
+.feld__haken {
+  position: absolute;
+  right: 14px;
+  top: 17px;
+  width: 22px;
+  height: 22px;
+  color: var(--erfolg);
+  pointer-events: none;
+}
+
+.feld__haken path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset var(--d-ruhig) var(--k-strom);
+}
+
+.feld[data-gueltig="true"] .feld__haken path {
+  stroke-dashoffset: 0;
+}
+
+/* Fehler: Symbol und Satz direkt unter dem Feld */
+.feld[data-fehler="true"] .feld__eingabe,
+.feld[data-markiert="true"] .feld__eingabe,
+.formular__gruppe[data-fehler="true"] .marke {
+  border-color: var(--fehler);
+}
+
+.feld__fehler--gruppe {
+  display: grid;
+  margin-top: calc(var(--a-3) * -1);
+}
+
+.feld__hinweis--gruppe {
+  margin-top: calc(var(--a-3) * -1);
+}
+
+.feld__fehler {
+  display: none;
+  grid-template-columns: auto 1fr;
+  gap: var(--a-2);
+  align-items: start;
+  margin-top: var(--a-2);
+  color: var(--fehler);
+  font-size: var(--gr-klein);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+[data-licht="aus"] .feld__fehler,
+.dunkel .feld__fehler {
+  color: #fff;
+}
+
+[data-fehler="true"] > .feld__fehler,
+[data-fehler="true"] .feld__fehler {
+  display: grid;
+}
+
+.feld__fehler .zeichen {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
+.feld__hinweis {
+  margin-top: var(--a-2);
+  color: var(--f-leise);
+  font-size: var(--gr-klein);
+  line-height: 1.4;
+}
+
+/* Foto hochladen */
+.feld-datei {
+  display: grid;
+  gap: var(--a-2);
+}
+
+.feld-datei input[type="file"] {
+  width: 100%;
+  min-height: 56px;
+  padding: 10px;
+  border-radius: var(--r-klein);
+  border: 1px dashed var(--f-linie);
+  color: var(--f-leise);
+  font-size: var(--gr-klein);
+  cursor: pointer;
+  transition: border-color var(--d-sofort) linear;
+}
+
+.feld-datei input[type="file"]::file-selector-button {
+  min-height: 36px;
+  margin-right: var(--a-3);
+  padding: 0 14px;
+  border-radius: var(--r-klein);
+  border: 1px solid var(--f-titel);
+  background: transparent;
+  color: var(--f-titel);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--d-sofort) linear, border-color var(--d-sofort) linear;
+}
+
+@media (hover: hover) {
+  .feld-datei input[type="file"]:hover {
+    border-color: var(--rot);
+  }
+
+  .feld-datei input[type="file"]:hover::file-selector-button {
+    background: var(--rot-hell);
+    border-color: var(--rot);
+  }
+}
+
+.feld-datei input[type="file"]:active::file-selector-button {
+  background: var(--rot-hell);
+}
+
+.feld-datei input[type="file"]:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Einwilligung */
+.einwilligung {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--a-3);
+  align-items: start;
+  min-height: var(--antippen);
+  padding-block: 10px;
+  cursor: pointer;
+  font-size: var(--gr-klein);
+  line-height: 1.5;
+}
+
+.einwilligung input {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  border-radius: 6px;
+  border: 1.5px solid var(--f-leise);
+  background: var(--f-grund);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition:
+    background-color var(--d-sofort) linear,
+    border-color var(--d-sofort) linear,
+    scale var(--d-sofort) var(--k-schalter);
+}
+
+.einwilligung input::after {
+  content: "";
+  width: 11px;
+  height: 6px;
+  margin-top: -3px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) scale(0);
+  transition: transform var(--d-schnell) var(--k-feder);
+}
+
+.einwilligung input:checked {
+  background: var(--rot);
+  border-color: var(--rot);
+}
+
+.einwilligung input:checked::after {
+  transform: rotate(-45deg) scale(1);
+}
+
+@media (hover: hover) {
+  .einwilligung:hover input {
+    border-color: var(--rot);
+  }
+}
+
+.einwilligung input:active {
+  scale: 0.92;
+}
+
+.einwilligung input:disabled {
+  opacity: 0.45;
+}
+
+.einwilligung[data-fehler="true"] input {
+  border-color: var(--fehler);
+}
+
+/* Falle für automatische Einsendungen: für Menschen unsichtbar */
+.formular__falle {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.formular__fuss {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-4) var(--a-5);
+}
+
+.formular__status {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--a-3);
+  align-items: start;
+  padding: var(--a-4);
+  border-radius: var(--r-klein);
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.formular__status:empty {
+  display: none;
+}
+
+.formular__status[data-art="fehler"] {
+  background: var(--rot-hell);
+  color: var(--fehler);
+}
+
+[data-licht="aus"] .formular__status[data-art="fehler"] {
+  color: #fff;
+}
+
+.formular__status[data-art="erfolg"] {
+  background: color-mix(in srgb, var(--erfolg) 12%, transparent);
+  color: var(--erfolg);
+}
+
+[data-licht="aus"] .formular__status[data-art="erfolg"] {
+  color: #fff;
+}
+
+/* ---------- Stecker und Steckdose: das Ende der Leitung ---------- */
+
+.verbindung {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: var(--a-4);
+}
+
+.verbindung__bild {
+  position: relative;
+  width: 132px;
+  height: 196px;
+}
+
+.verbindung__stecker,
+.verbindung__dose {
+  position: absolute;
+  left: 0;
+  width: 132px;
+  color: var(--f-titel);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.verbindung__stecker {
+  top: 0;
+  height: 96px;
+  overflow: visible;
+  color: var(--rot);
+  transition: transform 520ms var(--k-feder);
+}
+
+.verbindung__dose {
+  bottom: 0;
+  height: 92px;
+}
+
+.verbindung__schein {
+  position: absolute;
+  left: 50%;
+  bottom: 52px;
+  width: 190px;
+  height: 190px;
+  margin: 0 0 -95px -95px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 210, 122, 0.75), rgba(255, 210, 122, 0) 68%);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 500ms var(--k-schalter) 220ms, transform 700ms var(--k-schalter) 220ms;
+  pointer-events: none;
+}
+
+/* Der Stecker schwebt vor der Dose. */
+@media (prefers-reduced-motion: no-preference) {
+  .verbindung.ist-da:not([data-verbunden="true"]) .verbindung__stecker {
+    animation: schweben 3200ms ease-in-out infinite alternate;
+  }
+}
+
+@keyframes schweben {
+  from {
+    transform: translateY(-3px);
+  }
+  to {
+    transform: translateY(4px);
+  }
+}
+
+/* Nach dem Absenden fährt der Stecker in die Dose, die Dose leuchtet. */
+.verbindung[data-verbunden="true"] .verbindung__stecker {
+  transform: translateY(48px);
+}
+
+.verbindung[data-verbunden="true"] .verbindung__schein {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.verbindung[data-verbunden="true"] .verbindung__dose {
+  color: var(--rot);
+}
+
+.verbindung__text {
+  font-family: var(--schrift-titel);
+  font-size: var(--gr-h3);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--f-titel);
+  max-width: 14ch;
+}
+
+.verbindung__text[hidden] {
+  display: none;
+}
+
+/* Die Leitung kommt vom Kanal oben in den Abschnitt und endet im Stecker. */
+.endstueck {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .anfrage--mit-leitung {
+    --luecke: calc(var(--spalte) * 3);
+    --stecker-x: calc(
+      var(--inhalt-links) + (var(--inhalt-b) - var(--luecke)) * 7 / 11 + var(--luecke) + 66px
+    );
+    --endstueck-fall: calc(var(--abschnitt) - 36px);
+  }
+
+  .endstueck {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .endstueck__weg {
+    position: absolute;
+    left: var(--leitung-x);
+    top: 0;
+    width: calc(var(--stecker-x) - 24px - var(--leitung-x));
+    height: 44px;
+    border-left: 2px solid var(--rot);
+    border-bottom: 2px solid var(--rot);
+    border-bottom-left-radius: 22px;
+  }
+
+  .endstueck__bogen {
+    position: absolute;
+    left: calc(var(--stecker-x) - 24px);
+    top: 42px;
+    width: 24px;
+    height: var(--endstueck-fall, 80px);
+    border-top: 2px solid var(--rot);
+    border-right: 2px solid var(--rot);
+    border-top-right-radius: 22px;
+  }
+
+  .js .endstueck {
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path var(--d-szene) var(--k-strom);
+  }
+
+  .js .endstueck.ist-da {
+    clip-path: inset(0);
+  }
+}
