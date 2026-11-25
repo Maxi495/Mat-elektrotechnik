@@ -1,0 +1,876 @@
+/* Kopfzeile, Aufklappmenü, Menü und Leiste am Handy, Fußzeile (Design.md, 9.1, 9.2, 9.15, 8.7). */
+
+/* ---------- Kopfzeile ---------- */
+
+.kopf {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-kopf);
+  height: var(--kopf-hoehe);
+  pointer-events: none;
+}
+
+.kopf__leiste {
+  position: relative;
+  height: var(--kopf-hoehe);
+  background: var(--kopf-grund);
+  color: var(--kopf-text);
+  pointer-events: auto;
+  transition:
+    transform var(--d-ruhig) var(--k-schalter),
+    box-shadow var(--d-ruhig) linear;
+}
+
+.kopf__innen {
+  display: flex;
+  align-items: center;
+  gap: var(--a-5);
+  height: 100%;
+  padding-left: calc(var(--aussen) + var(--rand));
+  padding-right: calc(var(--aussen) + var(--rand));
+  transition: transform var(--d-ruhig) var(--k-schalter);
+}
+
+/* Nach 80 px Scrollweg: 64 px hoch mit feinem Schatten. Bewegt wird nur die Lage. */
+.kopf[data-klein="true"] .kopf__leiste {
+  transform: translateY(calc(var(--kopf-hoehe-klein) - var(--kopf-hoehe)));
+  box-shadow: var(--schatten-oben);
+}
+
+.kopf[data-klein="true"] .kopf__innen {
+  transform: translateY(calc((var(--kopf-hoehe) - var(--kopf-hoehe-klein)) / 2));
+}
+
+/* Verschwindet beim Abwärtsscrollen, kommt beim Aufwärtsscrollen sofort zurück. */
+.kopf[data-weg="true"] .kopf__leiste {
+  transform: translateY(-110%);
+  box-shadow: none;
+}
+
+.kopf:focus-within .kopf__leiste,
+.kopf[data-menue="offen"] .kopf__leiste {
+  transform: none;
+}
+
+.kopf:focus-within .kopf__innen,
+.kopf[data-menue="offen"] .kopf__innen {
+  transform: none;
+}
+
+.kopf__logo {
+  display: block;
+  flex: none;
+  margin-right: auto;
+  border-radius: var(--r-klein);
+}
+
+.kopf__logo img {
+  width: 96px;
+  height: 50px;
+}
+
+.kopf__logo:active {
+  opacity: 0.8;
+}
+
+.kopf__nav {
+  display: none;
+}
+
+.kopf__nav > ul {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kopf__link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--antippen);
+  padding: 0 14px 0 18px;
+  border-radius: var(--r-rund);
+  color: var(--kopf-titel);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.kopf__link::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--rot);
+  transform: scale(0);
+  transition: transform var(--d-schnell) var(--k-feder);
+}
+
+.kopf__link > span {
+  display: inline-block;
+  transition: transform var(--d-schnell) var(--k-schalter);
+}
+
+.kopf__link .zeichen {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--d-schnell) var(--k-schalter);
+}
+
+@media (hover: hover) {
+  .kopf__link:hover::before,
+  .hat-menue:hover > .kopf__link::before {
+    transform: scale(1);
+  }
+
+  .kopf__link:hover > span,
+  .hat-menue:hover > .kopf__link > span {
+    transform: translateX(6px);
+  }
+}
+
+.kopf__link[aria-current="page"]::before,
+.kopf__link[aria-current="true"]::before {
+  transform: scale(1);
+}
+
+.kopf__link[aria-current="page"] > span,
+.kopf__link[aria-current="true"] > span {
+  transform: translateX(6px);
+}
+
+.kopf__link:active {
+  color: var(--rot-dunkel);
+}
+
+.kopf__link[aria-expanded="true"] .zeichen,
+.hat-menue:hover > .kopf__link .zeichen {
+  transform: rotate(180deg);
+}
+
+.kopf__telefon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--a-2);
+  min-width: var(--antippen);
+  min-height: var(--antippen);
+  border-radius: var(--r-rund);
+  color: var(--kopf-titel);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: color var(--d-sofort) linear;
+}
+
+.kopf__telefon .zeichen {
+  color: var(--rot);
+}
+
+.kopf__telefon span {
+  display: none;
+}
+
+@media (hover: hover) {
+  .kopf__telefon:hover {
+    color: var(--rot);
+  }
+}
+
+.kopf__telefon:active {
+  color: var(--rot-dunkel);
+}
+
+.kopf__anfrage {
+  display: none;
+}
+
+.kopf__menueknopf {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--antippen);
+  height: var(--antippen);
+  margin-right: -10px;
+  border-radius: 50%;
+  color: var(--kopf-titel);
+  transition: background-color var(--d-sofort) linear, scale var(--d-sofort) var(--k-schalter);
+}
+
+.kopf__menueknopf span {
+  position: absolute;
+  left: 13px;
+  right: 13px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  transition: transform var(--d-ruhig) var(--k-schalter), opacity var(--d-sofort) linear;
+}
+
+.kopf__menueknopf span:nth-child(1) {
+  transform: translateY(-6px);
+}
+
+.kopf__menueknopf span:nth-child(3) {
+  transform: translateY(6px);
+}
+
+.kopf__menueknopf[aria-expanded="true"] span:nth-child(1) {
+  transform: rotate(45deg);
+}
+
+.kopf__menueknopf[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+
+.kopf__menueknopf[aria-expanded="true"] span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+
+@media (hover: hover) {
+  .kopf__menueknopf:hover {
+    background: var(--kopf-nebel);
+  }
+}
+
+.kopf__menueknopf:active {
+  scale: 0.94;
+  background: var(--kopf-nebel);
+}
+
+@media (min-width: 560px) {
+  .kopf__telefon span {
+    display: inline;
+  }
+
+  .kopf__telefon {
+    padding-inline: var(--a-3);
+  }
+}
+
+@media (min-width: 1024px) {
+  .kopf__nav {
+    display: block;
+    margin-right: auto;
+  }
+
+  .kopf__logo {
+    margin-right: var(--a-5);
+  }
+
+  .kopf__anfrage {
+    display: inline-flex;
+  }
+
+  .kopf__menueknopf {
+    display: none;
+  }
+
+  .kopf__innen {
+    gap: var(--a-3);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1179px) {
+  .kopf__telefon span {
+    display: none;
+  }
+
+  .kopf__link {
+    padding: 0 10px 0 16px;
+  }
+}
+
+/* ---------- Aufklappmenü Leistungen ---------- */
+
+.aufklapp {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  background: var(--kopf-grund);
+  color: var(--kopf-text);
+  box-shadow: var(--schatten-oben);
+  border-top: 1px solid var(--kopf-linie);
+  visibility: hidden;
+  opacity: 0;
+  clip-path: inset(0 0 100% 0);
+  transition:
+    clip-path var(--d-ruhig) var(--k-schalter),
+    opacity var(--d-schnell) linear,
+    visibility 0s linear var(--d-ruhig);
+}
+
+.hat-menue {
+  position: static;
+}
+
+@media (hover: hover) {
+  .hat-menue:hover > .aufklapp {
+    visibility: visible;
+    opacity: 1;
+    clip-path: inset(0 0 -40px 0);
+    transition-delay: 0s;
+  }
+}
+
+.hat-menue:focus-within > .aufklapp,
+.hat-menue[data-offen="true"] > .aufklapp {
+  visibility: visible;
+  opacity: 1;
+  clip-path: inset(0 0 -40px 0);
+  transition-delay: 0s;
+}
+
+/* Nach Escape bleibt das Menü zu, bis Maus oder Fokus es verlassen haben. */
+.hat-menue[data-gesperrt="true"] > .aufklapp {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  clip-path: inset(0 0 100% 0) !important;
+}
+
+.aufklapp__innen {
+  display: grid;
+  gap: var(--a-6) calc(var(--spalte) * 2);
+  padding: var(--a-6) calc(var(--aussen) + var(--rand)) var(--a-7);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1180px) {
+  .aufklapp__innen {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+}
+
+.aufklapp__liste {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-template-rows: repeat(3, auto);
+  gap: var(--a-1) var(--spalte);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menuepunkt {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--a-4);
+  padding: var(--a-3) var(--a-4);
+  border-radius: var(--r-mittel);
+  color: var(--kopf-titel);
+  transition: background-color var(--d-sofort) linear;
+}
+
+.menuepunkt .zeichen {
+  grid-row: span 2;
+  color: var(--rot);
+}
+
+.menuepunkt__name {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.menuepunkt__zeile {
+  grid-column: 2;
+  color: var(--kopf-text);
+  font-size: var(--gr-klein);
+  line-height: 1.35;
+  opacity: 0.85;
+}
+
+.menuepunkt .kippschalter {
+  grid-row: 1 / span 2;
+  grid-column: 3;
+  width: 20px;
+  height: 32px;
+  border-radius: 7px;
+  color: var(--kopf-text);
+}
+
+.menuepunkt .kippschalter__hebel {
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+@media (hover: hover) {
+  .menuepunkt:hover {
+    background: var(--kopf-nebel);
+  }
+
+  .menuepunkt:hover .kippschalter__hebel {
+    transform: translateY(-9px);
+    background: var(--rot);
+    opacity: 1;
+  }
+}
+
+.menuepunkt:focus-visible .kippschalter__hebel,
+.menuepunkt[aria-current="page"] .kippschalter__hebel {
+  transform: translateY(-9px);
+  background: var(--rot);
+  opacity: 1;
+}
+
+.menuepunkt:active {
+  background: #FCEBEF;
+}
+
+/* Einträge erscheinen spaltenweise versetzt. */
+.aufklapp__liste > li {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity var(--d-schnell) linear, transform var(--d-ruhig) var(--k-schalter);
+}
+
+.hat-menue:hover .aufklapp__liste > li,
+.hat-menue:focus-within .aufklapp__liste > li,
+.hat-menue[data-offen="true"] .aufklapp__liste > li {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(var(--spalte-nr, 0) * 60ms + 60ms);
+}
+
+.aufklapp__vorschau {
+  display: none;
+  position: relative;
+  border-radius: var(--r-gross);
+  overflow: hidden;
+  background: #23272E;
+  aspect-ratio: 4 / 5;
+  max-height: 320px;
+  justify-self: end;
+  width: 100%;
+}
+
+@media (min-width: 1180px) {
+  .aufklapp__vorschau {
+    display: block;
+  }
+}
+
+.aufklapp__vorschau img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--d-ruhig) var(--k-schalter);
+}
+
+.aufklapp__vorschau img[data-aktiv="true"] {
+  opacity: 1;
+}
+
+.aufklapp__fuss {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-3) var(--a-7);
+  padding-top: var(--a-5);
+  border-top: 1px solid var(--kopf-linie);
+}
+
+.aufklapp__fuss .textlink {
+  --f-verweis: #D70036;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--antippen);
+  background-size: 0% 2px;
+  background-position: 100% calc(100% - 10px);
+}
+
+@media (hover: hover) {
+  .aufklapp__fuss .textlink:hover {
+    background-size: 100% 2px;
+    background-position: 0 calc(100% - 10px);
+  }
+}
+
+/* ---------- Menü am Handy ---------- */
+
+.handymenue {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-menue);
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--kopf-hoehe) + var(--a-5)) var(--rand) calc(var(--a-6) + env(safe-area-inset-bottom));
+  background: var(--rot);
+  color: #fff;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  visibility: hidden;
+  clip-path: inset(0 0 100% 0);
+  transition:
+    clip-path 500ms var(--k-strom),
+    visibility 0s linear 500ms;
+}
+
+.handymenue[data-offen="true"] {
+  visibility: visible;
+  clip-path: inset(0);
+  transition-delay: 0s;
+}
+
+@media (min-width: 1024px) {
+  .handymenue {
+    display: none;
+  }
+}
+
+.handymenue__liste {
+  display: grid;
+  gap: var(--a-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.handymenue__liste > li {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity var(--d-schnell) linear, transform var(--d-ruhig) var(--k-schalter);
+}
+
+.handymenue[data-offen="true"] .handymenue__liste > li {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(var(--i, 0) * 60ms + 220ms);
+}
+
+.handymenue__link,
+.handymenue summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--a-4);
+  min-height: 60px;
+  font-family: var(--schrift-titel);
+  font-size: clamp(1.75rem, 7vw, 2.5rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #fff;
+  cursor: pointer;
+  list-style: none;
+  transition: font-weight var(--d-schnell) var(--k-schalter);
+}
+
+.handymenue summary::-webkit-details-marker {
+  display: none;
+}
+
+.handymenue__link:active,
+.handymenue summary:active,
+.handymenue__link[aria-current="page"] {
+  font-weight: 700;
+}
+
+.handymenue summary .zeichen {
+  transition: transform var(--d-ruhig) var(--k-schalter);
+}
+
+.handymenue details[open] summary .zeichen {
+  transform: rotate(180deg);
+}
+
+.handymenue__unterliste {
+  display: grid;
+  margin: 0 0 var(--a-4);
+  padding: 0;
+  list-style: none;
+}
+
+.handymenue__unterliste a {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--antippen);
+  font-weight: 500;
+  font-size: 1.125rem;
+  color: #fff;
+  transition: font-weight var(--d-schnell) var(--k-schalter);
+}
+
+.handymenue__unterliste a:active,
+.handymenue__unterliste a[aria-current="page"] {
+  font-weight: 700;
+}
+
+.handymenue__fuss {
+  display: grid;
+  gap: var(--a-3);
+  margin-top: auto;
+  padding-top: var(--a-6);
+}
+
+.handymenue__fuss .knopf--zweit {
+  --knopf-text: #fff;
+  --knopf-fuellung: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 0 1.5px #fff;
+}
+
+.handymenue__fuss .knopf--zweit:active {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+html[data-menue="offen"] {
+  overflow: hidden;
+}
+
+/* ---------- Feste Leiste am Handy ---------- */
+
+.handyleiste {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-handyleiste);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--a-3);
+  align-items: center;
+  height: calc(64px + env(safe-area-inset-bottom));
+  padding: 8px var(--a-4) calc(8px + env(safe-area-inset-bottom));
+  background: var(--weiss);
+  box-shadow: 0 -12px 32px -16px rgba(0, 0, 0, 0.18);
+  transition: transform var(--d-ruhig) var(--k-schalter);
+}
+
+.handyleiste .knopf {
+  min-height: var(--antippen);
+  padding: 0 12px;
+  width: 100%;
+}
+
+.handyleiste .knopf--zweit {
+  --knopf-text: var(--schwarz);
+  box-shadow: inset 0 0 0 1.5px var(--schwarz);
+}
+
+.handyleiste[data-versteckt="true"] {
+  transform: translateY(110%);
+}
+
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 1024px) {
+  .handyleiste {
+    display: none;
+  }
+}
+
+/* ---------- Fußzeile ---------- */
+
+.fuss {
+  position: relative;
+  z-index: var(--z-inhalt);
+  padding-top: clamp(64px, 8vw, 112px);
+  background: var(--anthrazit);
+  color: var(--text-dunkel);
+  overflow: hidden;
+}
+
+.fuss__spalten {
+  display: grid;
+  gap: var(--a-7) var(--spalte);
+}
+
+@media (min-width: 640px) {
+  .fuss__spalten {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .fuss__spalten {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 0.8fr);
+    column-gap: calc(var(--spalte) * 2);
+  }
+}
+
+.fuss h2 {
+  margin-bottom: var(--a-4);
+  font-family: var(--schrift-text);
+  font-size: var(--gr-klein);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: #B4BAC2;
+}
+
+.fuss__firma {
+  font-family: var(--schrift-titel);
+  font-size: var(--gr-h3);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #fff;
+  margin-bottom: var(--a-3);
+}
+
+.fuss__liste {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fuss__liste > li > a,
+.fuss__liste > li > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--antippen);
+  color: var(--text-dunkel);
+  font-weight: 500;
+  line-height: 1.3;
+  transition: font-weight var(--d-schnell) var(--k-schalter), color var(--d-sofort) linear;
+}
+
+.fuss__liste .zeichen {
+  color: var(--rot);
+  flex: none;
+}
+
+@media (hover: hover) {
+  .fuss__liste a:hover {
+    font-weight: 700;
+    color: #fff;
+  }
+}
+
+.fuss__liste a:active {
+  font-weight: 700;
+  color: #fff;
+}
+
+.fuss__liste a[aria-current="page"] {
+  color: #fff;
+  font-weight: 700;
+}
+
+.fuss :focus-visible {
+  outline-color: #fff;
+}
+
+.fuss__bewertung {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--antippen);
+  margin-top: var(--a-3);
+  color: #fff;
+  font-weight: 600;
+}
+
+.fuss__bewertung .sterne .zeichen {
+  width: 16px;
+  height: 16px;
+}
+
+.fuss__gebiet {
+  margin-top: var(--a-8);
+  padding-top: var(--a-5);
+  border-top: 1px solid #2E333B;
+  color: #B4BAC2;
+  font-size: var(--gr-klein);
+  line-height: 1.5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-3) var(--a-6);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fuss__name-rahmen {
+  container-type: inline-size;
+  margin-top: var(--a-6);
+}
+
+/* Firmenname groß über die ganze Breite. Das Logo erscheint hier nicht, weil keine Negativ-Version vorliegt. */
+.fuss__name {
+  font-family: var(--schrift-titel);
+  font-size: 10.9cqi;
+  font-weight: 600;
+  font-stretch: 100%;
+  line-height: 0.82;
+  letter-spacing: -0.045em;
+  color: #fff;
+  white-space: nowrap;
+  margin-bottom: -0.08em;
+  user-select: none;
+}
+
+/* Lichtschalter */
+.lichtschalter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--antippen);
+  padding: 0 var(--a-2);
+  border-radius: var(--r-klein);
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: scale var(--d-sofort) var(--k-schalter);
+}
+
+.lichtschalter .kippschalter {
+  width: 24px;
+  height: 38px;
+  color: #EDEEF0;
+}
+
+.lichtschalter .kippschalter__hebel {
+  height: 17px;
+}
+
+.lichtschalter[aria-checked="true"] .kippschalter__hebel {
+  transform: translateY(-11px);
+  background: var(--rot);
+  opacity: 1;
+}
+
+.lichtschalter__zustand {
+  color: #B4BAC2;
+  font-weight: 500;
+}
+
+@media (hover: hover) {
+  .lichtschalter:hover .kippschalter {
+    color: #fff;
+  }
+}
+
+.lichtschalter:active {
+  scale: 0.97;
+}
+
+/* Ohne Skript gibt es nichts zu schalten. */
+html:not(.js) .lichtschalter {
+  display: none;
+}
