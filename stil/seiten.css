@@ -112,7 +112,7 @@ html:not(.js) .sicherung {
   height: 100%;
   object-fit: cover;
   object-position: var(--bildlage, center);
-  filter: brightness(calc(0.72 + var(--offen) * 0.28)) saturate(calc(0.6 + var(--offen) * 0.4));
+  filter: brightness(calc(0.72 + var(--offen) * 0.28));
   transition: filter 500ms var(--k-schalter);
 }
 

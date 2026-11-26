@@ -72,7 +72,7 @@ function teileZeilen(el: HTMLElement): (() => void) | null {
 function erscheinen(wurzel: ParentNode): Aufraeumen {
   const kandidaten = Array.from(
     wurzel.querySelectorAll<HTMLElement>(
-      "main [data-zeilen], main .bildrahmen, main [data-reihe], main [data-erscheint], main .zeichen[data-zeichnet], main [data-portraet], main [data-erscheint-kopf]",
+      "main [data-zeilen], main .bildrahmen, main [data-reihe], main [data-erscheint], main .zeichen[data-zeichnet], main [data-erscheint-kopf]",
     ),
   ).filter((el) => !el.closest(".start-kopf, .seitenkopf, .sicherung, .raumbild"));
 

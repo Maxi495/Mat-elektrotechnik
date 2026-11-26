@@ -149,10 +149,10 @@ export function Bewertungskarte({ bewertung: b }: { bewertung: Bewertung }) {
   );
 }
 
-/** Team-Porträt: Schwarzweiß zu Farbe, Name und Funktion. */
+/** Team-Porträt in Farbe, Name und Funktion. */
 export function Portraet({ mitglied: m, i = 0 }: { mitglied: Teammitglied; i?: number }) {
   return (
-    <figure className="portraet" style={nr(i)} data-portraet>
+    <figure className="portraet" style={nr(i)}>
       <div className="bildrahmen bildrahmen--1-1">
         <Image
           src={m.bild}

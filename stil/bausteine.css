@@ -451,10 +451,13 @@ a.marke:active {
   aspect-ratio: 1 / 1;
 }
 
-/* "Licht aus": Bilder in Karten liegen zuerst etwas abgedunkelt (Design.md, Abschnitt 7). */
+/*
+ * Lichtschein auf Bildern in Karten (Design.md, Abschnitt 7): Mit der Maus liegt ein warmer Schein auf dem Bild,
+ * am Handy geht er beim Hineinscrollen an. Die Bilder selbst stehen von Anfang an in voller Farbe.
+ * Abweichung von Design.md: kein abgedunkelter, entsättigter Ausgangszustand mehr (Wunsch des Auftraggebers, 26.11.2026).
+ */
 .licht img {
-  filter: brightness(0.72) saturate(0.6);
-  transition: filter 500ms var(--k-schalter), transform var(--d-gross) var(--k-schalter);
+  transition: transform var(--d-gross) var(--k-schalter);
 }
 
 .licht::after {
@@ -472,31 +475,16 @@ a.marke:active {
   transition: opacity 500ms var(--k-schalter);
 }
 
-.licht.ist-an img,
-.licht-an .licht img {
-  filter: none;
-}
-
 .licht.ist-an::after,
 .licht-an .licht::after {
   opacity: 1;
 }
 
 @media (hover: hover) {
-  :is(a, article, li, figure):hover > .licht img,
-  .licht:hover img {
-    filter: none;
-  }
-
   :is(a, article, li, figure):hover > .licht::after,
   .licht:hover::after {
     opacity: 1;
   }
-}
-
-/* Ohne Skript und bei reduzierter Bewegung sind Bilder von Anfang an hell. */
-html:not(.js) .licht img {
-  filter: none;
 }
 
 /* ---------- Karten ---------- */
@@ -697,7 +685,6 @@ html:not(.js) .licht img {
 
 @media (hover: hover) {
   .referenzkarte:hover .referenzkarte__bild img {
-    filter: none;
     transform: scale(1.04);
   }
 
@@ -1152,15 +1139,10 @@ html:not(.js) .licht img {
   transform: scaleX(-1);
 }
 
-/* Team-Porträt */
+/* Team-Porträt: von Anfang an in Farbe. Design.md sah Schwarzweiß vor, der Auftraggeber wollte am 26.11.2026 Farbe. */
 .portraet {
   position: relative;
   display: block;
-}
-
-.portraet .bildrahmen img {
-  filter: grayscale(1) contrast(1.05);
-  transition: filter var(--d-ruhig) var(--k-schalter);
 }
 
 .portraet__text {
@@ -1176,24 +1158,9 @@ html:not(.js) .licht img {
 }
 
 @media (hover: hover) {
-  .portraet:hover .bildrahmen img {
-    filter: none;
-  }
-
   .portraet:hover .portraet__name {
     transform: translateX(4px);
   }
-}
-
-/* Am Handy kommen die Porträts beim Hineinscrollen in Farbe. */
-@media (hover: none) {
-  .portraet.ist-da .bildrahmen img {
-    filter: none;
-  }
-}
-
-html:not(.js) .portraet .bildrahmen img {
-  filter: none;
 }
 
 .teamraster {

@@ -301,10 +301,6 @@
     translate: none !important;
   }
 
-  .licht img {
-    filter: none;
-  }
-
   /* Die Sicherungsreihe klappt ohne Übergang auf. */
   .sicherung,
   .sicherung__name,
