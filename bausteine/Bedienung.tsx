@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { nachrangig, richteMausEin } from "@/lib/bedienung";
+import { richteMausEin, starteKopf } from "@/lib/bedienung";
 
 /**
  * Schaltet ein, was für den ganzen Besuch gilt. Zeigt selbst nichts an.
  *
  * - Mauszeiger, Anziehung der Knöpfe, Neigung der Karten (nur Geräte mit Maus).
- * - Kopfzeile beim Scrollen: lädt mit GSAP nachrangig.
+ * - Kopfzeile beim Scrollen: klein nach 80 px, weg beim Abwärtsscrollen, ohne Bibliothek.
  * - Seitenwechsel: rote Fläche wischt von unten über die Seite, umgesetzt mit der
  *   View-Transitions-Technik des Browsers. Ohne sie bleibt es beim normalen Seitenwechsel.
  *
@@ -19,18 +19,10 @@ export function Bedienung() {
 
   useEffect(() => {
     const maus = richteMausEin();
-    let kopf: (() => void) | undefined;
-    let aktiv = true;
-    const abbrechen = nachrangig(() => {
-      import("@/lib/bewegung").then((m) => {
-        if (aktiv) kopf = m.starteKopf();
-      });
-    });
+    const kopf = starteKopf();
     return () => {
-      aktiv = false;
-      abbrechen();
       maus();
-      kopf?.();
+      kopf();
     };
   }, []);
 

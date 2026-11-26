@@ -396,6 +396,122 @@ function zaehler(wurzel: ParentNode): Aufraeumen {
   };
 }
 
+/* ------------------------------------------------------------------ Kopfzeile beim Scrollen */
+
+/**
+ * Kopfzeile: nach 80 px Scrollweg klein, beim Abwärtsscrollen weg, beim Aufwärtsscrollen sofort zurück
+ * (Design.md, 8.7). Kommt ohne Bibliothek aus und läuft einmal je Besuch.
+ */
+export function starteKopf(): Aufraeumen {
+  const kopf = document.querySelector<HTMLElement>("[data-kopf]");
+  if (!kopf) return () => {};
+  let zuletzt = window.scrollY;
+  let bild = 0;
+
+  const pruefe = () => {
+    bild = 0;
+    const weg = window.scrollY;
+    const klein = weg > 80;
+    if (kopf.dataset.klein !== String(klein)) kopf.dataset.klein = String(klein);
+    if (weg < zuletzt || weg <= 320) {
+      if (kopf.dataset.weg !== "false") kopf.dataset.weg = "false";
+    } else if (weg > zuletzt && kopf.dataset.weg !== "true") {
+      kopf.dataset.weg = "true";
+    }
+    zuletzt = weg;
+  };
+  const rollt = () => {
+    if (!bild) bild = requestAnimationFrame(pruefe);
+  };
+
+  window.addEventListener("scroll", rollt, { passive: true });
+  pruefe();
+  return () => {
+    window.removeEventListener("scroll", rollt);
+    cancelAnimationFrame(bild);
+    delete kopf.dataset.klein;
+    delete kopf.dataset.weg;
+  };
+}
+
+/* ------------------------------------------------------------------ Schmale Bildschirme: Knoten und Ablauf */
+
+/**
+ * Unter 1024 px gibt es weder den Leitungskanal noch den Auftritt der Sicherungsreihe.
+ * Was dort bleibt, die Knoten der Zeitleiste und die Verbindung im Ablauf, läuft hier ohne Bibliothek.
+ * So lädt das Handy GSAP gar nicht erst (Design.md, 13: Skripte unter 200 KB).
+ * Ab 1024 px übernimmt starteSeite in lib/bewegung.ts.
+ */
+export function starteSeiteLeicht(): Aufraeumen {
+  const inhalt = document.querySelector<HTMLElement>("main");
+  if (!inhalt) return () => {};
+
+  const knoten = Array.from(inhalt.querySelectorAll<HTMLElement>("[data-knoten], .zeitleiste .knoten"));
+  const ablaeufe = Array.from(inhalt.querySelectorAll<HTMLElement>("[data-ablauf]"));
+
+  if (ruhig() || !("IntersectionObserver" in window)) {
+    knoten.forEach((k) => k.classList.add("ist-an"));
+    ablaeufe.forEach((a) => a.querySelectorAll(".ablauf__knoten").forEach((p) => p.classList.add("ist-an")));
+    return () => {};
+  }
+
+  // Ein Knoten füllt sich, sobald er die oberen 62 Prozent des Bildschirms erreicht.
+  const waechter = new IntersectionObserver(
+    (eintraege) => {
+      for (const e of eintraege) {
+        if (!e.isIntersecting) continue;
+        e.target.classList.add("ist-an");
+        waechter.unobserve(e.target);
+      }
+    },
+    { rootMargin: "0px 0px -38% 0px" },
+  );
+  knoten.forEach((k) => waechter.observe(k));
+
+  // Ablauf: Die Verbindung wächst mit dem Scrollweg, jeder Knoten zündet, wenn sie ihn erreicht.
+  let bild = 0;
+  const zeichne = () => {
+    bild = 0;
+    const hoehe = window.innerHeight;
+    const start = hoehe * 0.72;
+    const ende = hoehe * 0.58;
+    for (const ablauf of ablaeufe) {
+      const bahn = ablauf.querySelector<HTMLElement>(".ablauf__bahn");
+      if (!bahn) continue;
+      const feld = ablauf.getBoundingClientRect();
+      const anteil = Math.max(0, Math.min(1, (start - feld.top) / (feld.height + start - ende)));
+      ablauf.style.setProperty("--fortschritt", anteil.toFixed(3));
+
+      const b = bahn.getBoundingClientRect();
+      const quer = b.width > b.height;
+      ablauf.querySelectorAll<HTMLElement>(".ablauf__knoten:not(.ist-an)").forEach((p) => {
+        const r = p.getBoundingClientRect();
+        const lage = quer
+          ? (r.left + r.width / 2 - b.left) / b.width
+          : (r.top + r.height / 2 - b.top) / b.height;
+        if (anteil >= Math.max(0, Math.min(0.98, lage))) p.classList.add("ist-an");
+      });
+    }
+  };
+  const rollt = () => {
+    if (!bild) bild = requestAnimationFrame(zeichne);
+  };
+
+  if (ablaeufe.length > 0) {
+    window.addEventListener("scroll", rollt, { passive: true });
+    window.addEventListener("resize", rollt);
+    zeichne();
+  }
+
+  return () => {
+    waechter.disconnect();
+    window.removeEventListener("scroll", rollt);
+    window.removeEventListener("resize", rollt);
+    cancelAnimationFrame(bild);
+    ablaeufe.forEach((a) => a.style.removeProperty("--fortschritt"));
+  };
+}
+
 /** Alles, was zu einer Seite gehört. Läuft bei jedem Seitenwechsel neu. */
 export function richteSeiteEin(wurzel: ParentNode = document): Aufraeumen {
   const abbau = [erscheinen(wurzel), licht(wurzel), sicherungsreihe(wurzel), laufband(wurzel), zaehler(wurzel)];

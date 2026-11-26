@@ -3,41 +3,16 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 /**
  * Bewegung mit GSAP und ScrollTrigger (Design.md, Abschnitt 8 und 12):
- * die Leitung, die Knotenpunkte, die Verbindung im Ablauf, der Auftritt der Sicherungsreihe
- * und das Verhalten der Kopfzeile beim Scrollen.
+ * die Leitung, die Knotenpunkte, die Verbindung im Ablauf und der Auftritt der Sicherungsreihe.
  *
- * Diese Datei wird erst nach dem ersten Bildaufbau geladen (Design.md, Abschnitt 13, Punkt 5).
+ * Diese Datei wird erst nach dem ersten Bildaufbau geladen (Design.md, Abschnitt 13, Punkt 5)
+ * und nur ab 1024 px Breite. Darunter gibt es keinen Leitungskanal; Knoten und Ablauf laufen dort
+ * ohne Bibliothek (starteSeiteLeicht in lib/bedienung.ts).
  * Ohne sie steht alles fertig da: Leitung gezeichnet, Knoten gefüllt, erste Sicherung offen.
  */
 gsap.registerPlugin(ScrollTrigger);
 
 const ruhig = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-/** Kopfzeile: nach 80 px Scrollweg klein, beim Abwärtsscrollen weg, beim Aufwärtsscrollen sofort zurück. */
-export function starteKopf(): () => void {
-  const kopf = document.querySelector<HTMLElement>("[data-kopf]");
-  if (!kopf) return () => {};
-  const waechter = ScrollTrigger.create({
-    start: 0,
-    end: "max",
-    onUpdate: (self) => {
-      const weg = self.scroll();
-      const klein = weg > 80;
-      if (kopf.dataset.klein !== String(klein)) kopf.dataset.klein = String(klein);
-      const verstecken = weg > 320 && self.direction === 1;
-      if (self.direction === -1 || weg <= 320) {
-        if (kopf.dataset.weg !== "false") kopf.dataset.weg = "false";
-      } else if (verstecken && kopf.dataset.weg !== "true") {
-        kopf.dataset.weg = "true";
-      }
-    },
-  });
-  return () => {
-    waechter.kill();
-    delete kopf.dataset.klein;
-    delete kopf.dataset.weg;
-  };
-}
 
 /** Alles, was zu einer Seite gehört. Läuft bei jedem Seitenwechsel neu. */
 export function starteSeite(): () => void {

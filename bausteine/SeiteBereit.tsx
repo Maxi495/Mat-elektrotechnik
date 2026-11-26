@@ -1,25 +1,46 @@
 "use client";
 
 import { useEffect } from "react";
-import { nachrangig, richteSeiteEin } from "@/lib/bedienung";
+import { nachrangig, richteSeiteEin, starteSeiteLeicht } from "@/lib/bedienung";
 
 /**
  * Steht am Ende jeder Seite und schaltet deren Bewegung ein, sobald die Seite im Browser steht.
  * So verändert kein Skript die Seite, bevor sie vollständig übernommen ist.
  *
  * - Erscheinen, Sicherungsreihe, Laufband starten sofort (klein, ohne Bibliothek).
- * - GSAP für Leitung, Ablauf und Sicherungsreihe lädt nachrangig.
+ * - Ab 1024 px Breite lädt GSAP nachrangig: Leitung, Ablauf und Auftritt der Sicherungsreihe.
+ * - Darunter gibt es keinen Leitungskanal. Knoten und Ablauf laufen dort ohne Bibliothek,
+ *   das Handy lädt GSAP gar nicht erst.
  */
 export function SeiteBereit() {
   useEffect(() => {
     const seite = richteSeiteEin(document);
-    let leitung: (() => void) | undefined;
+    const breit = window.matchMedia("(min-width: 1024px)");
+    let bewegung: (() => void) | undefined;
+    let abbrechen: (() => void) | undefined;
     let aktiv = true;
-    const abbrechen = nachrangig(() => {
-      import("@/lib/bewegung").then((m) => {
-        if (aktiv) leitung = m.starteSeite();
+
+    const starte = () => {
+      abbrechen?.();
+      abbrechen = undefined;
+      bewegung?.();
+      bewegung = undefined;
+
+      if (!breit.matches) {
+        bewegung = starteSeiteLeicht();
+        return;
+      }
+      abbrechen = nachrangig(() => {
+        import("@/lib/bewegung").then((m) => {
+          // Inzwischen kann die Seite gewechselt oder das Fenster schmal geworden sein.
+          if (aktiv && breit.matches && !bewegung) bewegung = m.starteSeite();
+        });
       });
-    });
+    };
+
+    starte();
+    // Wird das Fenster über die Grenze gezogen oder das Tablet gedreht, wechselt die Fassung.
+    breit.addEventListener("change", starte);
 
     // Dem Seitenwechsel melden, dass die neue Seite steht.
     window.dispatchEvent(new Event("mat-seite-bereit"));
@@ -31,11 +52,12 @@ export function SeiteBereit() {
 
     return () => {
       aktiv = false;
-      abbrechen();
+      breit.removeEventListener("change", starte);
+      abbrechen?.();
       window.clearTimeout(auftakt);
       delete document.documentElement.dataset.auftakt;
       seite();
-      leitung?.();
+      bewegung?.();
     };
   }, []);
 
