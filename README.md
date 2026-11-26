@@ -2,11 +2,11 @@
 
 Neue Webseite der Mat-Elektrotechnik GmbH, Germering. Next.js (App Router) mit TypeScript, alle Seiten werden beim Bau statisch erzeugt.
 
-Dieser Ordner ist ein eigenständiges Projekt. Die Dateien im Stammordner des Repos (alte statische Seite) gehören nicht dazu.
+Das Projekt liegt im Stammordner des Repos. Die frühere statische Seite wurde am 26.11.2026 entfernt; sie steht in der Git-Historie bis einschließlich Commit `9afc6ad`.
 
 ## Befehle
 
-Im Ordner `relaunch/` ausführen:
+Im Stammordner ausführen:
 
 ```bash
 npm install
@@ -19,8 +19,8 @@ npm run typen    # TypeScript-Prüfung
 
 ## Vercel
 
-- **Root Directory:** `relaunch`
-- **Framework Preset:** Next.js
+- Vercel baut aus dem Stammordner und veröffentlicht bei jedem Push auf `main`.
+- `vercel.json` legt Next.js als Framework fest. In den Projekteinstellungen muss dafür nichts umgestellt werden.
 - Build- und Install-Befehl: Standard
 
 ## Umgebungsvariablen

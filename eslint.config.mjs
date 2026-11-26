@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Unterlagen und fremde Projekte, die nur lokal im Ordner liegen und nicht zur Webseite gehören:
+    "elektrotechnik-haus/**",
+    "mds/**",
+    "_aufnahme/**",
   ]),
 ]);
 
