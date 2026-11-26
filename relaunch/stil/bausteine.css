@@ -148,7 +148,7 @@
 
 .dunkel .knopf--zweit,
 .abschnitt--dunkel .knopf--zweit {
-  --knopf-fuellung: rgba(215, 0, 54, 0.28);
+  --knopf-fuellung: color-mix(in srgb, var(--rot) 28%, transparent);
 }
 
 /* Weißer Knopf im roten Abschluss-Band */
@@ -464,8 +464,8 @@ a.marke:active {
   pointer-events: none;
   background: radial-gradient(
     circle 260px at var(--licht-x, 50%) var(--licht-y, 40%),
-    rgba(255, 210, 122, 0.32),
-    rgba(255, 210, 122, 0) 70%
+    color-mix(in srgb, var(--gluehlicht) 32%, transparent),
+    transparent 70%
   );
   opacity: 0;
   mix-blend-mode: soft-light;
@@ -587,6 +587,10 @@ html:not(.js) .licht img {
 
 .leistungskarte p {
   color: var(--f-text);
+}
+
+/* Nur der Text wächst. So steht der Link in jeder Karte einer Reihe auf derselben Höhe. */
+.leistungskarte h3 + p {
   flex: 1;
 }
 
@@ -626,11 +630,34 @@ html:not(.js) .licht img {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
 }
 
+/* Wenige Karten teilen sich die ganze Breite, statt rechts eine leere Spalte zu lassen. */
+.kartenraster--fuellt {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
+.kartenraster--fuellt > * {
+  max-width: 720px;
+}
+
 /* Referenzkarte (9.8) */
 .referenzkarte {
   display: flex;
   flex-direction: column;
   gap: var(--a-3);
+}
+
+/*
+ * Drei Projekte nebeneinander: Bild, Titel, Marken und Text liegen auf gemeinsamen Zeilen, auch wenn ein Titel umbricht.
+ * Nicht im großen Raster der Referenzseite, weil die Karten dort beim Filtern kurz aus dem Raster gelöst werden.
+ */
+@supports (grid-template-rows: subgrid) {
+  .referenzraster--drei > .referenzkarte:not(.referenzkarte--leer) {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 4;
+    align-content: start;
+    row-gap: var(--a-3);
+  }
 }
 
 .referenzkarte__bild {
@@ -729,7 +756,7 @@ html:not(.js) .licht img {
 .zielgruppe {
   display: flex;
   flex-direction: column;
-  border-radius: var(--r-gross);
+  border-radius: var(--r-mittel);
   background: var(--f-karte);
   overflow: hidden;
   transform: rotateX(var(--neig-x, 0deg)) rotateY(var(--neig-y, 0deg));
@@ -801,8 +828,10 @@ html:not(.js) .licht img {
   transition: transform var(--d-ruhig) var(--k-schalter), box-shadow var(--d-ruhig) var(--k-schalter);
 }
 
+/* Die Karte ist weiß (Design.md, 9.9). Auf weißem Grund trennt sie ein feiner Rand. */
 .abschnitt:not(.abschnitt--nebel):not(.abschnitt--dunkel) .bewertung {
-  background: var(--nebel);
+  background: var(--weiss);
+  border: 1px solid var(--f-linie);
 }
 
 .bewertung blockquote {
@@ -1033,10 +1062,21 @@ html:not(.js) .portraet .bildrahmen img {
   gap: var(--a-2) var(--a-5);
   padding: var(--a-5) var(--a-4);
   margin-inline: calc(var(--a-4) * -1);
-  border-bottom: 1px solid var(--f-linie);
   color: var(--f-titel);
   overflow: hidden;
   transition: color var(--d-sofort) linear;
+}
+
+/* Die Trennlinie liegt im Raster wie die oberste Linie der Liste, die rote Fläche greift seitlich darüber hinaus. */
+.stellenzeile::after {
+  content: "";
+  position: absolute;
+  left: var(--a-4);
+  right: var(--a-4);
+  bottom: 0;
+  height: 1px;
+  background: var(--f-linie);
+  transition: opacity var(--d-sofort) linear;
 }
 
 .stellenzeile::before {
@@ -1079,6 +1119,10 @@ html:not(.js) .portraet .bildrahmen img {
 
   .stellenzeile:hover::before {
     transform: scaleY(1);
+  }
+
+  .stellenzeile:hover::after {
+    opacity: 0;
   }
 
   .stellenzeile:hover .stellenzeile__kurz {
@@ -1224,7 +1268,8 @@ html:not(.js) .portraet .bildrahmen img {
   font-variant-numeric: tabular-nums;
 }
 
-.ablauf__knoten {
+/* Mit .ablauf davor, damit die Lage Vorrang vor der allgemeinen Regel .knoten hat. */
+.ablauf .ablauf__knoten {
   position: absolute;
   left: 0;
   top: 16px;
@@ -1254,6 +1299,19 @@ html:not(.js) .portraet .bildrahmen img {
   margin-top: var(--a-6);
 }
 
+/* Am Handy endet die senkrechte Verbindung am Knoten des letzten Schritts. */
+@media (max-width: 899px) {
+  .ablauf__schritt:last-child::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 27px;
+    bottom: 0;
+    width: 10px;
+    background: var(--f-grund);
+  }
+}
+
 @media (min-width: 900px) {
   .ablauf {
     padding-top: var(--a-7);
@@ -1268,7 +1326,7 @@ html:not(.js) .portraet .bildrahmen img {
     padding-right: var(--a-4);
   }
 
-  .ablauf__knoten {
+  .ablauf .ablauf__knoten {
     left: 0;
     top: calc(var(--a-7) * -1 - 4px);
   }
@@ -1373,7 +1431,6 @@ html:not(.js) .knoten {
   width: 24px;
   height: 24px;
   color: var(--rot);
-  transition: transform var(--d-ruhig) var(--k-schalter);
 }
 
 .frage__plus::before,
@@ -1389,18 +1446,14 @@ html:not(.js) .knoten {
   background: currentColor;
 }
 
+/* Der senkrechte Strich dreht sich um 90 Grad in die Waagerechte: Aus dem Plus wird ein Minus. */
 .frage__plus::after {
   transform: rotate(90deg);
-  transition: transform var(--d-ruhig) var(--k-schalter), opacity var(--d-schnell) linear;
+  transition: transform var(--d-ruhig) var(--k-schalter);
 }
 
 .frage[open] .frage__plus::after {
   transform: rotate(0deg);
-  opacity: 0;
-}
-
-.frage[open] .frage__plus {
-  transform: rotate(180deg);
 }
 
 @media (hover: hover) {

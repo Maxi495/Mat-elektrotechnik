@@ -70,8 +70,8 @@ blockquote {
   margin: 0;
 }
 
-ul[class],
-ol[class] {
+/* Ohne Gewicht, damit jede Liste ihren eigenen Innenabstand mit einer einfachen Klasse setzen kann. */
+:where(ul[class], ol[class]) {
   list-style: none;
   padding: 0;
 }
@@ -291,8 +291,8 @@ p {
   --f-karte: var(--anthrazit-hell);
   --f-titel: #FFFFFF;
   --f-text: var(--text-dunkel);
-  --f-leise: #B4BAC2;
-  --f-linie: #2E333B;
+  --f-leise: var(--leise-auf-dunkel);
+  --f-linie: var(--linie-auf-dunkel);
   --f-verweis: var(--text-dunkel);
 }
 

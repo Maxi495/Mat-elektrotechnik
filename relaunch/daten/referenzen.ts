@@ -102,7 +102,6 @@ export const referenzen: Referenz[] = [
     bildAlt:
       "Blitzschutz: Fangstangen neben Lichtkuppeln auf dem verschneiten Flachdach eines Wohnhauses",
     satz: "Fangstangen schützen die Lichtkuppeln und Aufbauten auf dem Dach vor direkten Einschlägen.",
-    start: true,
   },
   {
     id: "treppe-stufenlicht",
@@ -328,6 +327,8 @@ export const referenzen: Referenz[] = [
     bildAlt:
       "Verteilerbau: geöffneter Schaltschrank mit Sicherungslasttrennern in einem Technikraum",
     satz: "Der Schaltschrank nimmt die Einspeisung des Gebäudes auf und verteilt sie weiter.",
+    // Auf der Startseite statt des Flachdachs: Dessen Foto steht dort schon in der Karte "Hausverwaltungen".
+    start: true,
   },
   {
     id: "verteiler-sicherungsreihen",

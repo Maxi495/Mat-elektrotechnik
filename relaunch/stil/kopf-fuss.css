@@ -124,7 +124,7 @@
 .kopf__link .zeichen {
   width: 16px;
   height: 16px;
-  transition: transform var(--d-schnell) var(--k-schalter);
+  transition: transform var(--d-schnell) var(--k-schalter), translate var(--d-schnell) var(--k-schalter);
 }
 
 @media (hover: hover) {
@@ -137,6 +137,12 @@
   .hat-menue:hover > .kopf__link > span {
     transform: translateX(6px);
   }
+
+  /* Der Winkel rückt mit dem Wort, sonst stößt das Wort an ihn. */
+  .kopf__link:hover > .zeichen,
+  .hat-menue:hover > .kopf__link > .zeichen {
+    translate: 6px 0;
+  }
 }
 
 .kopf__link[aria-current="page"]::before,
@@ -147,6 +153,10 @@
 .kopf__link[aria-current="page"] > span,
 .kopf__link[aria-current="true"] > span {
   transform: translateX(6px);
+}
+
+.kopf__link[aria-current="true"] > .zeichen {
+  translate: 6px 0;
 }
 
 .kopf__link:active {
@@ -434,7 +444,7 @@ html:not(.js) .hat-menue:focus-within > .aufklapp,
 }
 
 .menuepunkt:active {
-  background: #FCEBEF;
+  background: var(--kopf-rot-hell);
 }
 
 /* Einträge erscheinen spaltenweise versetzt. */
@@ -457,7 +467,7 @@ html:not(.js) .hat-menue:focus-within .aufklapp__liste > li,
   position: relative;
   border-radius: var(--r-gross);
   overflow: hidden;
-  background: #23272E;
+  background: var(--anthrazit-hell);
   aspect-ratio: 4 / 5;
   max-height: 320px;
   justify-self: end;
@@ -494,7 +504,7 @@ html:not(.js) .hat-menue:focus-within .aufklapp__liste > li,
 }
 
 .aufklapp__fuss .textlink {
-  --f-verweis: #D70036;
+  --f-verweis: var(--rot);
   display: inline-flex;
   align-items: center;
   min-height: var(--antippen);
@@ -723,7 +733,7 @@ html[data-menue="offen"] {
   font-weight: 600;
   line-height: 1.4;
   letter-spacing: 0;
-  color: #B4BAC2;
+  color: var(--leise-auf-dunkel);
 }
 
 .fuss__firma {
@@ -799,8 +809,8 @@ html[data-menue="offen"] {
 .fuss__gebiet {
   margin-top: var(--a-8);
   padding-top: var(--a-5);
-  border-top: 1px solid #2E333B;
-  color: #B4BAC2;
+  border-top: 1px solid var(--linie-auf-dunkel);
+  color: var(--leise-auf-dunkel);
   font-size: var(--gr-klein);
   line-height: 1.5;
   display: flex;
@@ -846,7 +856,7 @@ html[data-menue="offen"] {
 .lichtschalter .kippschalter {
   width: 24px;
   height: 38px;
-  color: #EDEEF0;
+  color: var(--text-dunkel);
 }
 
 .lichtschalter .kippschalter__hebel {
@@ -860,7 +870,7 @@ html[data-menue="offen"] {
 }
 
 .lichtschalter__zustand {
-  color: #B4BAC2;
+  color: var(--leise-auf-dunkel);
   font-weight: 500;
 }
 

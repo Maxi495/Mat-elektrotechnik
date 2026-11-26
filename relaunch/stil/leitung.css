@@ -61,6 +61,28 @@
   }
 }
 
+/*
+ * Die Leitung endet im Stecker an der Anfrage (Design.md, 8.1). Abschnitte, die auf der Kontaktseite
+ * danach noch folgen, liegen über dem Kanal und tragen keinen Knoten: So beginnt keine zweite Linie.
+ */
+.anfrage ~ .abschnitt {
+  z-index: var(--z-inhalt);
+}
+
+.anfrage ~ .abschnitt > .abschnitt__knoten {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .anfrage ~ .abschnitt .abschnitt__kopf > :is(h1, h2):first-child {
+    padding-left: 0;
+  }
+
+  .anfrage ~ .abschnitt .abschnitt__kopf > :is(h1, h2):first-child::before {
+    content: none;
+  }
+}
+
 /* Handy: kein durchgehender Kanal. Ein kurzes Stück Leitung steht links neben jeder Abschnittsüberschrift. */
 @media (max-width: 1023px) {
   .abschnitt__kopf > :is(h1, h2):first-child {
@@ -172,7 +194,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 38% 44%, rgba(255, 210, 122, 0.26), rgba(255, 210, 122, 0) 55%);
+  background: radial-gradient(circle at 38% 44%, color-mix(in srgb, var(--gluehlicht) 26%, transparent), transparent 55%);
   mix-blend-mode: soft-light;
   pointer-events: none;
 }
@@ -192,6 +214,8 @@
 
   .start-kopf__bild {
     aspect-ratio: auto;
+    /* Steht unten in der Zeile: So trifft die Leitung immer die Unterkante des Bildes. */
+    align-self: end;
     height: min(680px, calc(100dvh - var(--kopf-hoehe) - 152px));
     max-height: none;
     min-height: 420px;
@@ -223,6 +247,19 @@
     background: var(--rot);
     transform-origin: left center;
   }
+
+  /* Am Ende läuft die Leitung unter das Bild und biegt nach oben in seine Unterkante (Design.md, 9.3). */
+  .start-kopf__leitung::after {
+    content: "";
+    position: absolute;
+    left: 100%;
+    bottom: 0;
+    width: var(--a-7);
+    height: calc(var(--a-9) - var(--a-8));
+    border: solid var(--rot);
+    border-width: 0 2px 2px 0;
+    border-bottom-right-radius: var(--r-mittel);
+  }
 }
 
 /* Die Abfolge läuft einmal je Besuch. data-auftakt setzt das Skript im Kopf der Seite. */
@@ -234,6 +271,10 @@
 
   [data-auftakt="1"] .start-kopf__strom {
     animation: strom-quer var(--d-gross) var(--k-strom) 300ms both;
+  }
+
+  [data-auftakt="1"] .start-kopf__leitung::after {
+    animation: ecke-ein 180ms var(--k-strom) 1040ms both;
   }
 
   [data-auftakt="1"] .start-kopf__bild img {
@@ -258,6 +299,15 @@
 @keyframes strom-quer {
   from {
     transform: scaleX(0);
+  }
+}
+
+@keyframes ecke-ein {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
   }
 }
 

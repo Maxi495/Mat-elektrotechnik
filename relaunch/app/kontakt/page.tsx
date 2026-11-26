@@ -31,7 +31,7 @@ const fragen = [
   },
   {
     frage: "Kostet die Beratung etwas?",
-    antwort: "Nein. Die erste Beratung ist kostenlos.",
+    antwort: "Nein. Die Beratung ist kostenlos.",
   },
 ];
 

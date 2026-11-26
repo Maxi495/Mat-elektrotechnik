@@ -194,7 +194,7 @@ export function Bewertungsreihe({ liste, laufband = true }: { liste: Bewertung[]
   if (!laufband) {
     return (
       <>
-        <div className="kartenraster" data-reihe>
+        <div className="kartenraster kartenraster--fuellt" data-reihe>
           {liste.map((b) => (
             <Bewertungskarte bewertung={b} key={b.id} />
           ))}
@@ -240,32 +240,35 @@ export function Ablauf({
   dauerHinweis?: boolean;
 }) {
   return (
-    <div className="ablauf" data-ablauf style={{ "--schritte": schritte.length } as CSSProperties}>
-      <div className="ablauf__bahn" aria-hidden="true">
-        <span className="ablauf__strom" />
+    <>
+      <div className="ablauf" data-ablauf style={{ "--schritte": schritte.length } as CSSProperties}>
+        <div className="ablauf__bahn" aria-hidden="true">
+          <span className="ablauf__strom" />
+        </div>
+        <ol className="ablauf__liste">
+          {schritte.map((s, i) => (
+            <li className="ablauf__schritt" key={s.titel}>
+              <span className="ablauf__knoten knoten" aria-hidden="true" />
+              <span className="ablauf__ziffer" aria-hidden="true">
+                {i + 1}
+              </span>
+              <h3>
+                <span className="nur-vorlesen">Schritt {i + 1}: </span>
+                {s.titel}
+              </h3>
+              <p>{s.text}</p>
+              {s.dauer ? <p className="klein">{s.dauer}</p> : null}
+            </li>
+          ))}
+        </ol>
       </div>
-      <ol className="ablauf__liste">
-        {schritte.map((s, i) => (
-          <li className="ablauf__schritt" key={s.titel}>
-            <span className="ablauf__knoten knoten" aria-hidden="true" />
-            <span className="ablauf__ziffer" aria-hidden="true">
-              {i + 1}
-            </span>
-            <h3>
-              <span className="nur-vorlesen">Schritt {i + 1}: </span>
-              {s.titel}
-            </h3>
-            <p>{s.text}</p>
-            {s.dauer ? <p className="klein">{s.dauer}</p> : null}
-          </li>
-        ))}
-      </ol>
+      {/* Der Hinweis steht außerhalb, damit die Verbindung der Schritte am letzten Schritt endet. */}
       {dauerHinweis && schritte.every((s) => !s.dauer) ? (
         <p className="klein ablauf__hinweis">
           <Offen>{ablaufDauerHinweis}</Offen>
         </p>
       ) : null}
-    </div>
+    </>
   );
 }
 

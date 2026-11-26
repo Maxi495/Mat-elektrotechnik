@@ -137,7 +137,7 @@ html:not(.js) .sicherung {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(21, 24, 29, 0.92) 0%, rgba(21, 24, 29, 0.74) 55%, rgba(21, 24, 29, 0.5) 100%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--anthrazit) 92%, transparent) 0%, color-mix(in srgb, var(--anthrazit) 74%, transparent) 55%, color-mix(in srgb, var(--anthrazit) 50%, transparent) 100%);
 }
 
 .sicherung__ader {
@@ -164,7 +164,7 @@ html:not(.js) .sicherung {
   width: var(--antippen);
   height: 56px;
   border-radius: var(--r-klein);
-  color: #EDEEF0;
+  color: var(--text-dunkel);
 }
 
 /* Die ganze Zeile ist die Antippfläche des Schalters. */
@@ -245,7 +245,7 @@ html:not(.js) .sicherung {
     left: calc(19px - var(--kanal));
     right: 0;
     height: 2px;
-    background: #2E333B;
+    background: var(--linie-auf-dunkel);
   }
 
   .sammelschiene__strom {
@@ -290,10 +290,10 @@ html:not(.js) .sicherung {
   .sicherung__bild::after {
     background: linear-gradient(
       180deg,
-      rgba(21, 24, 29, 0.55) 0%,
-      rgba(21, 24, 29, 0.1) 34%,
-      rgba(21, 24, 29, 0.72) 68%,
-      rgba(21, 24, 29, 0.94) 100%
+      color-mix(in srgb, var(--anthrazit) 55%, transparent) 0%,
+      color-mix(in srgb, var(--anthrazit) 10%, transparent) 34%,
+      color-mix(in srgb, var(--anthrazit) 72%, transparent) 68%,
+      color-mix(in srgb, var(--anthrazit) 94%, transparent) 100%
     );
   }
 
@@ -307,7 +307,7 @@ html:not(.js) .sicherung {
     height: 28px;
     background: var(--rot);
     opacity: calc(0.4 + var(--offen) * 0.6);
-    box-shadow: 0 0 calc(var(--offen) * 14px) rgba(215, 0, 54, 0.9);
+    box-shadow: 0 0 calc(var(--offen) * 14px) color-mix(in srgb, var(--rot) 90%, transparent);
     transform-origin: top;
     transition: opacity var(--d-schnell) linear, box-shadow var(--d-ruhig) linear;
   }
@@ -434,7 +434,7 @@ html:not(.js) .sicherung {
 .gebiet {
   display: grid;
   gap: var(--a-7) calc(var(--spalte) * 3);
-  align-items: center;
+  align-items: start;
 }
 
 @media (min-width: 900px) {
@@ -458,6 +458,13 @@ html:not(.js) .sicherung {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Schmale Karte am Handy: weniger Rand, damit die Orte mehr Abstand voneinander bekommen. */
+@container (max-width: 480px) {
+  .gebietskarte ul {
+    inset: 9cqw 13cqw 9cqw 14cqw;
+  }
 }
 
 .ort {
@@ -503,6 +510,7 @@ html:not(.js) .sicherung {
   background: var(--rot);
 }
 
+/* Der Name liegt auf einem Feld in der Grundfarbe: Keine Linie läuft durch die Schrift. */
 .ort__name {
   position: absolute;
   z-index: 2;
@@ -511,7 +519,9 @@ html:not(.js) .sicherung {
   font-weight: 500;
   line-height: 1;
   color: var(--f-titel);
-  padding: 4px 2px;
+  padding: 4px 5px;
+  border-radius: var(--r-klein);
+  background: var(--f-grund);
 }
 
 .ort--kern .ort__name {
@@ -521,13 +531,22 @@ html:not(.js) .sicherung {
 }
 
 .ort[data-seite="rechts"] .ort__name {
-  left: 10px;
+  left: 9px;
   top: -0.7em;
 }
 
 .ort[data-seite="links"] .ort__name {
-  right: 10px;
+  right: 9px;
   top: -0.7em;
+}
+
+/* Der Kernort hat einen größeren Punkt, sein Name rückt entsprechend weiter ab. */
+.ort--kern[data-seite="rechts"] .ort__name {
+  left: 14px;
+}
+
+.ort--kern[data-seite="links"] .ort__name {
+  right: 14px;
 }
 
 .ort[data-seite="oben"] .ort__name {
@@ -547,7 +566,7 @@ html:not(.js) .sicherung {
     opacity: 1;
     height: 2.5px;
     margin-top: -1.25px;
-    box-shadow: 0 0 10px rgba(215, 0, 54, 0.6);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--rot) 60%, transparent);
   }
 
   .ort:hover .ort__punkt {
@@ -643,10 +662,10 @@ html:not(.js) .sicherung {
   background:
     repeating-linear-gradient(
       180deg,
-      #C9CCD1 0,
-      #C9CCD1 5px,
-      #8E939B 5px,
-      #8E939B 7px
+      var(--text-dunkel) 0,
+      var(--text-dunkel) 5px,
+      var(--leise-auf-dunkel) 5px,
+      var(--leise-auf-dunkel) 7px
     );
   clip-path: inset(0 0 100% 0);
   transition: clip-path 900ms var(--k-strom), filter 500ms var(--k-schalter);
@@ -664,7 +683,7 @@ html:not(.js) .sicherung {
 .raumbild__ton {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 58% 34%, rgba(255, 210, 122, 0.85), rgba(255, 150, 60, 0.5) 70%);
+  background: radial-gradient(circle at 58% 34%, color-mix(in srgb, var(--gluehlicht) 90%, transparent), color-mix(in srgb, var(--gluehlicht) 45%, transparent) 70%);
   mix-blend-mode: soft-light;
   opacity: 0;
   transition: opacity 600ms var(--k-schalter);
@@ -685,7 +704,7 @@ html:not(.js) .sicherung {
   bottom: var(--a-4);
   padding: 6px 10px;
   border-radius: var(--r-klein);
-  background: rgba(21, 24, 29, 0.82);
+  background: color-mix(in srgb, var(--anthrazit) 82%, transparent);
   color: #fff;
   font-size: 0.8125rem;
   font-weight: 500;
@@ -708,7 +727,7 @@ html:not(.js) .sicherung {
   padding: var(--a-4) var(--a-2);
   border-radius: 11px;
   background: var(--anthrazit-hell);
-  color: #EDEEF0;
+  color: var(--text-dunkel);
   font-weight: 600;
   font-size: var(--gr-klein);
   line-height: 1.2;
@@ -721,12 +740,12 @@ html:not(.js) .sicherung {
   margin-top: 2px;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #B4BAC2;
+  color: var(--leise-auf-dunkel);
 }
 
 @media (hover: hover) {
   .bedientaste:hover {
-    background: #2E333B;
+    background: var(--linie-auf-dunkel);
   }
 }
 
@@ -835,7 +854,7 @@ html:not(.js) .bedientafel {
   gap: var(--a-2);
   align-content: start;
   padding-top: var(--a-4);
-  border-top: 2px solid var(--f-titel);
+  border-top: 1px solid var(--f-linie);
 }
 
 .aussagen h3 {
@@ -920,7 +939,7 @@ html:not(.js) .bedientafel {
   position: relative;
   border-radius: var(--r-gross);
   background: var(--anthrazit);
-  color: #EDEEF0;
+  color: var(--text-dunkel);
   overflow: hidden;
 }
 
@@ -935,7 +954,7 @@ html:not(.js) .bedientafel {
   width: 100%;
   height: 100%;
   fill: none;
-  stroke: #EDEEF0;
+  stroke: var(--text-dunkel);
   stroke-width: 1.75;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -994,7 +1013,7 @@ html:not(.js) .bedientafel {
 
 .hausbuehne__hinweis {
   padding: var(--a-4) var(--a-5);
-  border-top: 1px solid #2E333B;
+  border-top: 1px solid var(--linie-auf-dunkel);
   font-size: var(--gr-klein);
   line-height: 1.5;
 }
@@ -1036,12 +1055,12 @@ html:not(.js) .bedientafel {
 
 /* ---------- Danke und "Seite nicht gefunden": zentriert ---------- */
 
+/* Den Abstand nach oben und unten gibt schon der Abschnitt. Ein zweiter schöbe den Inhalt aus dem ersten Bildschirm. */
 .mitte {
   display: grid;
   justify-items: center;
   gap: var(--a-5);
   text-align: center;
-  padding-block: clamp(56px, 9vw, 128px);
 }
 
 .mitte h1 {
@@ -1058,6 +1077,11 @@ html:not(.js) .bedientafel {
 
 .mitte .verbindung {
   justify-items: center;
+}
+
+.mitte .verbindung__text {
+  max-width: none;
+  white-space: nowrap;
 }
 
 .naechste-schritte {

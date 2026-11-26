@@ -39,7 +39,7 @@ const schritte = [
   { titel: "Anfrage", text: "Sie schreiben uns oder rufen an und schildern Ihr Vorhaben." },
   {
     titel: "Beratung vor Ort",
-    text: "Wir sehen uns die Situation an und beraten Sie. Die erste Beratung ist kostenlos.",
+    text: "Wir sehen uns die Situation an und beraten Sie. Die Beratung ist kostenlos.",
   },
   { titel: "Angebot", text: "Sie erhalten ein Angebot mit allen Positionen." },
   {
@@ -215,7 +215,7 @@ export default function Startseite() {
       {/* 11. Abschluss: kurzes Anfrageformular, Telefon */}
       <Anfrage
         titel="Sagen Sie uns, was Sie vorhaben"
-        text="Wir melden uns bei Ihnen und beraten Sie. Die erste Beratung ist kostenlos."
+        text="Wir melden uns bei Ihnen und beraten Sie. Die Beratung ist kostenlos."
         kurz
       />
     </Seite>

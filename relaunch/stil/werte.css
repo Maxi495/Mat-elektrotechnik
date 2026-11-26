@@ -71,8 +71,13 @@
   --kopf-text: #3D3D3D;
   --kopf-linie: #E4E4E4;
   --kopf-nebel: #F8F8F8;
+  --kopf-rot-hell: #FCEBEF;
   --kopf-hoehe: 88px;
   --kopf-hoehe-klein: 64px;
+
+  /* Feste Töne für dunkle Abschnitte auf heller Seite. Dieselben Werte wie --text-leise und --linie bei "Licht aus". */
+  --leise-auf-dunkel: #B4BAC2;
+  --linie-auf-dunkel: #2E333B;
 
   /* Flächen und Schrift eines Abschnitts. Dunkle Abschnitte stellen diese Werte um. */
   --f-grund: var(--weiss);

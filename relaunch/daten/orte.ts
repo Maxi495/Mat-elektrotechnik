@@ -18,12 +18,12 @@ export interface Ort {
 }
 
 export const orte: Ort[] = [
-  { name: "Germering", bereich: "kern", x: 53.8, y: 52.9, beschriftung: "unten", entfernungKm: 0 },
+  { name: "Germering", bereich: "kern", x: 53.8, y: 52.9, beschriftung: "links", entfernungKm: 0 },
   { name: "Puchheim", bereich: "umkreis", x: 47.6, y: 41.9, beschriftung: "links", entfernungKm: null },
-  { name: "Eichenau", bereich: "umkreis", x: 32, y: 31, beschriftung: "links", entfernungKm: null },
+  { name: "Eichenau", bereich: "umkreis", x: 32, y: 31, beschriftung: "oben", entfernungKm: null },
   { name: "Gröbenzell", bereich: "umkreis", x: 56.9, y: 14.2, beschriftung: "rechts", entfernungKm: null },
   { name: "Olching", bereich: "umkreis", x: 37.3, y: 6, beschriftung: "links", entfernungKm: null },
-  { name: "Fürstenfeldbruck", bereich: "umkreis", x: 6, y: 23.2, beschriftung: "rechts", entfernungKm: null },
+  { name: "Fürstenfeldbruck", bereich: "umkreis", x: 6, y: 23.2, beschriftung: "oben", entfernungKm: null },
   { name: "Gilching", bereich: "umkreis", x: 21.3, y: 69.7, beschriftung: "links", entfernungKm: null },
   { name: "Krailling", bereich: "umkreis", x: 68, y: 78, beschriftung: "links", entfernungKm: null },
   { name: "Planegg", bereich: "umkreis", x: 80, y: 71, beschriftung: "rechts", entfernungKm: null },
@@ -32,7 +32,7 @@ export const orte: Ort[] = [
   { name: "Freiham", bereich: "muenchen", x: 70.2, y: 48.5, beschriftung: "rechts", entfernungKm: null },
   { name: "Aubing", bereich: "muenchen", x: 74.7, y: 37.4, beschriftung: "rechts", entfernungKm: null },
   { name: "Lochhausen", bereich: "muenchen", x: 70.7, y: 24.5, beschriftung: "rechts", entfernungKm: null },
-  { name: "Pasing", bereich: "muenchen", x: 96, y: 44, beschriftung: "rechts", entfernungKm: null },
+  { name: "Pasing", bereich: "muenchen", x: 100, y: 40, beschriftung: "rechts", entfernungKm: null },
 ];
 
 export const kernort = orte.find((o) => o.bereich === "kern")!;

@@ -71,7 +71,7 @@ export default function UeberUns() {
       {/* 1. Überschrift, Teamfoto */}
       <Seitenkopf
         krumen={[{ name: "Über uns", pfad: "/unternehmen" }]}
-        titel={`Elektro-Meisterbetrieb in Germering, seit ${firma.gegruendet} für Sie da`}
+        titel={`Elektro-Meisterbetrieb in Germering, seit\u00A0${firma.gegruendet} für Sie da`}
         vorspann="Wir planen, installieren, warten und reparieren für gewerbliche und private Kunden im Raum München. Ein Betrieb, ein Ansprechpartner, alles rund um Strom."
         bild={teamHof}
         bildAlt="Vier Mitarbeiter von Mat-Elektrotechnik vor dem Firmengebäude in Germering, daneben die Firmenfahrzeuge"
