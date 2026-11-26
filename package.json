@@ -7,10 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typen": "next typegen && tsc --noEmit"
+    "typen": "next typegen && tsc --noEmit",
+    "postinstall": "node werkzeuge/karte-einrichten.mjs",
+    "karte:holen": "node werkzeuge/kartendaten-holen.mjs",
+    "karte:bauen": "node werkzeuge/kartendaten-bauen.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.1",
+    "maplibre-gl": "^6.19.0",
     "next": "16.4.6",
     "nodemailer": "^10.6.1",
     "react": "19.3.0",

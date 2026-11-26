@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     "elektrotechnik-haus/**",
     "mds/**",
     "_aufnahme/**",
+    // Kopie des Hintergrund-Rechners der Kartenbibliothek (werkzeuge/karte-einrichten.mjs)
+    "public/kartenhelfer/**",
   ]),
 ]);
 

@@ -50,3 +50,6 @@ next-env.d.ts
 /.impeccable/
 /PRODUCT.md
 /DESIGN.md
+
+# Kopien für die Karte, entstehen bei npm install (werkzeuge/karte-einrichten.mjs)
+/public/kartenhelfer/

@@ -64,29 +64,6 @@
   stroke-dashoffset: 1;
 }
 
-/* Einzugsgebiet: Linien laufen von Germering nach außen. */
-.js .gebietskarte .ort__strahl {
-  transition:
-    transform var(--d-gross) var(--k-strom) calc(var(--i, 0) * 40ms),
-    opacity var(--d-schnell) linear;
-}
-
-.js .gebietskarte.wartet .ort__strahl {
-  transform: rotate(var(--w)) scaleX(0);
-}
-
-.js .gebietskarte .ort__punkt,
-.js .gebietskarte .ort__name {
-  transition:
-    opacity var(--d-schnell) linear calc(var(--i, 0) * 40ms + 500ms),
-    background-color var(--d-schnell) linear,
-    scale var(--d-schnell) var(--k-feder);
-}
-
-.js .gebietskarte.wartet .ort:not(.ort--kern) :is(.ort__punkt, .ort__name) {
-  opacity: 0;
-}
-
 /* Zielgruppenkarte: Die drei Aufgaben erscheinen nacheinander. */
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .zielgruppe:hover .zielgruppe__aufgaben li {

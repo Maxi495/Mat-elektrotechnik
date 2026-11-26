@@ -9,6 +9,7 @@ import "@/stil/formular.css";
 import "@/stil/kopf-fuss.css";
 import "@/stil/leitung.css";
 import "@/stil/seiten.css";
+import "@/stil/karte.css";
 import "@/stil/bewegung.css";
 
 import { Bedienung } from "@/bausteine/Bedienung";

@@ -1,0 +1,603 @@
+/*
+ * Karte des Einzugsgebiets mit Adresssuche und Fahrzeit (bausteine/Gebietskarte.tsx, lib/kartenbild.ts).
+ * Eigene Karte aus Daten von OpenStreetMap, ohne fremde Server.
+ * Die wenigen Regeln, die die Kartenbibliothek MapLibre selbst braucht, stehen am Ende.
+ */
+
+/* ---------- Aufbau: Suche, Karte, Ergebnis, Ortslisten ---------- */
+
+.gebiet {
+  display: grid;
+  gap: var(--a-5);
+  grid-template-areas:
+    "suche"
+    "karte"
+    "ergebnis"
+    "listen";
+}
+
+.gebiet__suche {
+  grid-area: suche;
+  /* Die Vorschlagsliste liegt über Karte und Ergebnis */
+  position: relative;
+  z-index: 5;
+}
+
+.kartenergebnis {
+  grid-area: ergebnis;
+}
+
+.gebiet__listen {
+  grid-area: listen;
+  display: grid;
+  gap: var(--a-5);
+}
+
+@media (min-width: 900px) {
+  .gebiet {
+    grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "karte suche"
+      "karte ergebnis"
+      "karte listen";
+    gap: var(--a-6) calc(var(--spalte) * 2.5);
+    align-items: start;
+  }
+}
+
+.gebiet__listen h3 {
+  font-size: 1.125rem;
+  letter-spacing: 0;
+  margin-bottom: var(--a-3);
+}
+
+.ortsliste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---------- Karte ---------- */
+
+.landkarte {
+  grid-area: karte;
+  position: relative;
+  isolation: isolate;
+  margin: 0;
+  overflow: hidden;
+  /* Hochformat am Handy, damit alle Orte von Olching bis Gauting hineinpassen */
+  aspect-ratio: 4 / 5;
+  max-height: 76vh;
+  border-radius: var(--r-gross);
+  /* Landfarbe der Karte (lib/kartenbild.ts), damit beim Laden nichts aufblitzt */
+  background: #f3f3f1;
+}
+
+[data-licht="aus"] .landkarte {
+  background: #1b1f25;
+}
+
+@media (min-width: 640px) {
+  .landkarte {
+    aspect-ratio: 5 / 4;
+  }
+}
+
+/* Feiner Rand über der Karte, folgt der Rundung */
+.landkarte::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--anthrazit) 10%, transparent);
+  pointer-events: none;
+}
+
+.landkarte__standbild,
+.landkarte__flaeche {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.landkarte__standbild {
+  object-fit: cover;
+}
+
+/* Bei "Licht aus" ist die Karte dunkel. Das Standbild wird dafür umgekehrt, bis die echte Karte geladen ist. */
+[data-licht="aus"] .landkarte__standbild {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88);
+}
+
+.gebiet[data-zustand="laedt"] .landkarte__flaeche::after {
+  content: "Karte lädt …";
+  position: absolute;
+  left: var(--a-4);
+  bottom: var(--a-4);
+  padding: 6px 12px;
+  border-radius: var(--r-rund);
+  background: var(--anthrazit);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.landkarte__knoepfe {
+  position: absolute;
+  top: var(--a-3);
+  right: var(--a-3);
+  z-index: 2;
+  display: grid;
+  gap: var(--a-2);
+}
+
+.kartenknopf {
+  display: grid;
+  place-items: center;
+  width: var(--antippen);
+  height: var(--antippen);
+  border-radius: 50%;
+  background: #fff;
+  color: #000;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--anthrazit) 10%, transparent),
+    0 10px 24px -12px color-mix(in srgb, var(--anthrazit) 55%, transparent);
+  transition:
+    background-color var(--d-sofort) linear,
+    color var(--d-sofort) linear,
+    scale var(--d-sofort) var(--k-schalter);
+}
+
+@media (hover: hover) {
+  .kartenknopf:hover:not(:disabled) {
+    background: var(--rot);
+    color: #fff;
+  }
+}
+
+.kartenknopf:active:not(:disabled) {
+  scale: 0.95;
+  background: var(--rot-dunkel);
+  color: #fff;
+}
+
+.landkarte__quelle {
+  position: absolute;
+  right: var(--a-2);
+  bottom: var(--a-2);
+  z-index: 2;
+  padding: 2px 8px;
+  border-radius: var(--r-rund);
+  background: color-mix(in srgb, #fff 84%, transparent);
+  color: #3d3d3d;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}
+
+.landkarte__quelle a {
+  position: relative;
+}
+
+/* Antippfläche größer als die kleine Schrift */
+.landkarte__quelle a::after {
+  content: "";
+  position: absolute;
+  inset: -14px -10px;
+}
+
+@media (hover: hover) {
+  .landkarte__quelle a:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ---------- Marker auf der Karte ---------- */
+
+/* Die Marker haben keine eigene Fläche: Knoten und Schild hängen an ihrem Mittelpunkt. */
+.landkarte__firma,
+.landkarte__ziel {
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.landkarte__firma-knoten,
+.landkarte__ziel-knoten {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--rot);
+  box-shadow: 0 0 0 3px #fff, 0 6px 14px -4px color-mix(in srgb, var(--anthrazit) 60%, transparent);
+}
+
+/* Der Betrieb: gefüllter Knoten, der ruhig pulsiert (Design.md, 8.1) */
+.landkarte__firma-knoten {
+  width: 18px;
+  height: 18px;
+}
+
+.landkarte__firma-knoten::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--rot);
+  opacity: 0;
+  animation: landkarte-puls 2600ms var(--k-strom) infinite;
+}
+
+@keyframes landkarte-puls {
+  0% {
+    opacity: 0.45;
+    scale: 1;
+  }
+
+  70%,
+  100% {
+    opacity: 0;
+    scale: 3.2;
+  }
+}
+
+.landkarte__firma-name {
+  position: absolute;
+  left: 16px;
+  top: 0;
+  translate: 0 -50%;
+  padding: 5px 10px;
+  border-radius: var(--r-rund);
+  background: var(--anthrazit);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* Verläuft die Strecke nach Osten, steht das Schild links vom Knoten */
+.landkarte__firma--links .landkarte__firma-name {
+  left: auto;
+  right: 16px;
+}
+
+[data-licht="aus"] .landkarte__firma-name {
+  background: #fff;
+  color: #000;
+}
+
+.landkarte__ziel-knoten {
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  box-shadow: 0 0 0 4px var(--rot), 0 6px 14px -4px color-mix(in srgb, var(--anthrazit) 60%, transparent);
+}
+
+/* Fahrzeit als Schild über dem Ziel. Erscheint, wenn die Leitung angekommen ist. */
+.landkarte__ziel-zeit {
+  position: absolute;
+  left: 0;
+  bottom: 18px;
+  translate: -50% 8px;
+  padding: 6px 12px;
+  border-radius: var(--r-rund);
+  background: var(--rot);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  opacity: 0;
+  box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--rot) 80%, transparent);
+  transition:
+    opacity var(--d-schnell) linear,
+    translate var(--d-ruhig) var(--k-feder);
+}
+
+.landkarte__ziel.ist-da .landkarte__ziel-zeit {
+  opacity: 1;
+  translate: -50% 0;
+}
+
+/* ---------- Adresssuche ---------- */
+
+.kartensuche {
+  position: relative;
+  margin-top: var(--a-4);
+}
+
+.kartensuche label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--f-titel);
+  font-size: var(--gr-klein);
+  font-weight: 600;
+}
+
+.kartensuche__feld {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.kartensuche__feld > .zeichen {
+  position: absolute;
+  left: 14px;
+  color: var(--f-leise);
+  pointer-events: none;
+}
+
+.kartensuche input {
+  width: 100%;
+  height: 56px;
+  padding: 0 48px;
+  border: 1px solid var(--f-linie);
+  border-radius: var(--r-klein);
+  background: var(--f-grund);
+  color: var(--f-titel);
+  /* Mindestens 16 px, sonst vergrößert das iPhone die Seite beim Antippen */
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  appearance: none;
+  caret-color: var(--rot);
+  transition: border-color var(--d-sofort) linear;
+}
+
+.kartensuche input::placeholder {
+  color: var(--f-leise);
+  opacity: 1;
+}
+
+.kartensuche input:focus {
+  border-color: var(--rot);
+}
+
+.kartensuche__leeren {
+  position: absolute;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: var(--antippen);
+  height: var(--antippen);
+  border-radius: 50%;
+  color: var(--f-leise);
+}
+
+@media (hover: hover) {
+  .kartensuche__leeren:hover {
+    color: var(--rot);
+  }
+}
+
+.kartensuche__liste {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 6;
+  max-height: min(340px, 52vh);
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--f-linie);
+  border-radius: var(--r-mittel);
+  background: var(--weiss);
+  box-shadow: 0 24px 48px -24px color-mix(in srgb, var(--anthrazit) 45%, transparent);
+}
+
+.kartensuche__liste [role="option"] {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--antippen);
+  padding: 6px 10px;
+  border-radius: var(--r-klein);
+  color: var(--f-text);
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.kartensuche__liste [role="option"] .zeichen {
+  color: var(--f-leise);
+}
+
+.kartensuche__liste [role="option"] strong {
+  display: block;
+  color: var(--f-titel);
+  font-weight: 600;
+}
+
+.kartensuche__ort {
+  color: var(--f-leise);
+  font-size: var(--gr-klein);
+}
+
+.kartensuche__liste [aria-selected="true"] {
+  background: var(--rot-hell);
+}
+
+.kartensuche__liste [aria-selected="true"] .zeichen {
+  color: var(--rot);
+}
+
+.kartensuche__leer {
+  padding: 10px;
+  color: var(--f-leise);
+  font-size: var(--gr-klein);
+  line-height: 1.45;
+}
+
+/* ---------- Ergebnis: Fahrzeit und Entfernung ---------- */
+
+.kartenergebnis {
+  display: grid;
+  gap: var(--a-3);
+  padding: var(--a-5);
+  border-radius: var(--r-mittel);
+  background: var(--f-karte);
+}
+
+.kartenergebnis__hinweis {
+  color: var(--f-leise);
+}
+
+.kartenergebnis__weg strong {
+  color: var(--f-titel);
+  font-weight: 600;
+}
+
+.kartenergebnis__zeit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--a-2) var(--a-3);
+  color: var(--f-titel);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.kartenergebnis__zahl {
+  color: var(--rot);
+  font-family: var(--schrift-titel);
+  font-size: clamp(3.25rem, 6vw, 4.5rem);
+  font-weight: 600;
+  line-height: 0.82;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.kartenergebnis__km {
+  display: block;
+  color: var(--f-leise);
+  font-weight: 500;
+}
+
+.textknopf {
+  position: relative;
+  color: var(--f-verweis);
+  font-weight: 600;
+}
+
+/* Antippfläche 48 px */
+.textknopf::after {
+  content: "";
+  position: absolute;
+  inset: -12px -8px;
+}
+
+@media (hover: hover) {
+  .textknopf:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+}
+
+/* Ohne Skript gibt es keine Suche und keine Rechnung: Standbild und Ortslisten bleiben. */
+html:not(.js) :is(.gebiet__suche, .kartenergebnis, .landkarte__knoepfe) {
+  display: none;
+}
+
+/* ---------- Was die Kartenbibliothek MapLibre braucht (Auszug aus maplibre-gl.css, Version 6) ---------- */
+
+.maplibregl-map {
+  overflow: hidden;
+  -webkit-tap-highlight-color: rgb(0 0 0 / 0);
+  -webkit-touch-callout: none;
+}
+
+.maplibregl-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Der Fokusrahmen läge sonst außerhalb der abgerundeten Karte und würde abgeschnitten */
+.maplibregl-canvas:focus-visible {
+  outline-offset: -6px;
+  border-radius: calc(var(--r-gross) - 4px);
+}
+
+.maplibregl-canvas-container.maplibregl-interactive {
+  cursor: grab;
+}
+
+.maplibregl-canvas-container.maplibregl-interactive:active {
+  cursor: grabbing;
+}
+
+.maplibregl-canvas-container.maplibregl-touch-zoom-rotate,
+.maplibregl-canvas-container.maplibregl-touch-zoom-rotate .maplibregl-canvas {
+  touch-action: pan-x pan-y;
+}
+
+.maplibregl-canvas-container.maplibregl-touch-drag-pan,
+.maplibregl-canvas-container.maplibregl-touch-drag-pan .maplibregl-canvas {
+  touch-action: pinch-zoom;
+}
+
+.maplibregl-canvas-container.maplibregl-touch-zoom-rotate.maplibregl-touch-drag-pan,
+.maplibregl-canvas-container.maplibregl-touch-zoom-rotate.maplibregl-touch-drag-pan .maplibregl-canvas {
+  touch-action: none;
+}
+
+/* Ein Finger scrollt die Seite, zwei Finger bewegen die Karte */
+.maplibregl-canvas-container.maplibregl-touch-drag-pan.maplibregl-cooperative-gestures,
+.maplibregl-canvas-container.maplibregl-touch-drag-pan.maplibregl-cooperative-gestures .maplibregl-canvas {
+  touch-action: pan-x pan-y;
+}
+
+.maplibregl-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+/* Hinweis, wenn jemand die Karte mit dem Rad oder einem Finger bewegen will */
+.maplibregl-cooperative-gesture-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--a-5);
+  background: color-mix(in srgb, var(--anthrazit) 62%, transparent);
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 600ms linear 900ms;
+}
+
+.maplibregl-cooperative-gesture-screen.maplibregl-show {
+  opacity: 1;
+  transition: opacity 80ms linear;
+}
+
+.maplibregl-cooperative-gesture-screen .maplibregl-mobile-message {
+  display: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .maplibregl-cooperative-gesture-screen .maplibregl-desktop-message {
+    display: none;
+  }
+
+  .maplibregl-cooperative-gesture-screen .maplibregl-mobile-message {
+    display: block;
+  }
+}

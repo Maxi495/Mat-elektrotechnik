@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
+      // Kartendaten tragen eine Prüfsumme im Namen, die Hilfsdateien eine Versionsangabe in der Adresse.
+      {
+        source: "/:ordner(karte|kartenhelfer)/:datei*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
       {
         source: "/:pfad*",
         headers: [

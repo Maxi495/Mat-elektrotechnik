@@ -3,12 +3,14 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { adresszeile, erreichbarkeitText, firma, offen } from "@/daten/firma";
 import { ablaufDauerHinweis, leistungen, leistungNachId, type Leistung } from "@/daten/leistungen";
-import { kernort, muenchenWest, orte, umkreis } from "@/daten/orte";
+import { orte } from "@/daten/orte";
+import kartenStandbild from "@/bilder/karte-einzugsgebiet.webp";
 import type { Bewertung } from "@/daten/bewertungen";
 import { teamgroesse } from "@/daten/team";
 import { zielgruppen } from "@/daten/zielgruppen";
 import { Anfrageformular } from "./Anfrageformular";
 import { Fliesstext, Offen, teile } from "./Fliesstext";
+import { Gebietskarte } from "./Gebietskarte";
 import { nr } from "./Geruest";
 import { Bewertungskarte } from "./Karten";
 import { Kippschalter, Sterne, Zeichen, type ZeichenArt } from "./Zeichen";
@@ -315,77 +317,29 @@ export function Fragen({ fragen }: { fragen: { frage: string; antwort: string }[
 
 /* ------------------------------------------------------------------ Einzugsgebiet */
 
-const zahl = (n: number) => Number(n.toFixed(2));
-
 /**
- * Einzugsgebiet (Design.md, 8.8): Germering als gefüllter Knoten, Orte als hohle Knoten.
- * Linien laufen beim Erscheinen von Germering nach außen. Schematisch, nicht maßstäblich.
+ * Einzugsgebiet (Design.md, 8.8): Karte mit dem Betrieb als gefülltem Knoten und den Orten als hohlen Knoten.
+ * Die Leitung läuft vom Betrieb zum gewählten Ort oder zur eingegebenen Straße, daneben steht die Fahrzeit.
+ * Karte, Suche und Rechnung: bausteine/Gebietskarte.tsx. Die Ortslisten stehen als Text im Quelltext.
  */
 export function Gebiet() {
   return (
-    <div className="gebiet">
-      <figure className="gebietskarte" data-erscheint aria-label="Schematische Karte des Einzugsgebiets">
-        <ul>
-          {orte.map((o, i) => {
-            const dx = kernort.x - o.x;
-            const dy = kernort.y - o.y;
-            const laenge = Math.hypot(dx, dy);
-            const winkel = (Math.atan2(-dy, -dx) * 180) / Math.PI;
-            return (
-              <li
-                key={o.name}
-                className={`ort${o.bereich === "kern" ? " ort--kern" : ""}`}
-                data-seite={o.beschriftung}
-                style={
-                  {
-                    "--x": o.x,
-                    "--y": o.y,
-                    "--dx": zahl(dx),
-                    "--dy": zahl(dy),
-                    "--d": zahl(laenge),
-                    "--w": `${zahl(winkel)}deg`,
-                    "--i": i,
-                  } as CSSProperties
-                }
-              >
-                {o.bereich === "kern" ? null : <span className="ort__strahl" aria-hidden="true" />}
-                <span className="ort__punkt" aria-hidden="true" />
-                <span className="ort__name">{o.name}</span>
-              </li>
-            );
-          })}
-        </ul>
-      </figure>
-
-      <div className="gebiet__listen">
-        <div>
-          <h3>Rund um Germering</h3>
-          <ul className="ortsliste">
-            {umkreis.map((o) => (
-              <li className="marke" key={o.name}>
-                {o.name}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <h3>Münchner Westen</h3>
-          <ul className="ortsliste">
-            {muenchenWest.map((o) => (
-              <li className="marke" key={o.name}>
-                {o.name}
-              </li>
-            ))}
-          </ul>
-          <p className="klein" style={{ marginTop: "var(--a-3)" }}>
-            Auf Anfrage arbeiten wir im ganzen Münchner Stadtgebiet.
-          </p>
-        </div>
-        <p className="klein">
-          <Offen>Einzugsgebiet von Mat bestätigen lassen</Offen>
-        </p>
-      </div>
-    </div>
+    <Gebietskarte
+      orte={orte.map(({ name, bereich, lon, lat }) => ({ name, bereich, lon, lat }))}
+      firma={{ name: firma.kurzname, strasse: firma.adresse.strasse, ...firma.adresse.lage }}
+      standbild={{
+        bild: kartenStandbild,
+        alt: `Karte des Einzugsgebiets: der Betrieb in Germering, darum ${orte
+          .filter((o) => o.bereich !== "kern")
+          .map((o) => o.name)
+          .join(", ")}`,
+      }}
+    >
+      <p className="klein">Auf Anfrage arbeiten wir im ganzen Münchner Stadtgebiet.</p>
+      <p className="klein">
+        <Offen>Einzugsgebiet von Mat bestätigen lassen</Offen>
+      </p>
+    </Gebietskarte>
   );
 }
 

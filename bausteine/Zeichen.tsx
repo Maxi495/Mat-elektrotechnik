@@ -28,7 +28,9 @@ export type WeiteresZeichen =
   | "pokal"
   | "team"
   | "pause"
-  | "weiter";
+  | "weiter"
+  | "lupe"
+  | "minus";
 
 export type ZeichenArt = ZeichenName | WeiteresZeichen;
 
@@ -158,6 +160,9 @@ const zeichen: Record<ZeichenArt, ReactNode> = {
   // Laufband anhalten und weiterlaufen lassen
   pause: [L("M9 6v12"), L("M15 6v12")],
   weiter: [L("M8.5 5.5v13l10-6.5z")],
+  // Karte: Suche und Verkleinern
+  lupe: [<circle key="k" cx="10.5" cy="10.5" r="6" pathLength={1} />, L("M15 15l5 5")],
+  minus: [L("M5 12h14")],
 };
 
 export function Zeichen({

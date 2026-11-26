@@ -18,6 +18,8 @@ export const firma = {
     ort: "Germering",
     bundesland: "BY",
     land: "DE",
+    /** Lage des Betriebs laut Firmeneintrag bei Google Maps. Startpunkt der Strecken auf der Karte. */
+    lage: { lon: 11.3763343, lat: 48.1314877 },
   },
 
   telefon: {

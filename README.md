@@ -49,7 +49,9 @@ Zugangsdaten stehen nie im Code.
 | `app/` | Die Seiten. Jede Seite gibt ihren Inhalt im Baustein `Seite` zurück |
 | `bausteine/` | Bausteine nach `Design.md`, Abschnitt 9 |
 | `stil/` | Gestaltung. `werte.css` enthält die zentralen Variablen aus `Design.md`, Abschnitt 12 |
-| `lib/` | Bewegung, Bedienung, SEO, Umgebung |
+| `lib/` | Bewegung, Bedienung, SEO, Umgebung, Karte |
+| `werkzeuge/` | Skripte, die Daten für die Seite bauen (Karte) |
+| `public/karte/` | Kartendaten, gebaut aus OpenStreetMap |
 | `bilder/` | Fotos von der bisherigen Webseite. `bilder/bewertungen/`: Profilbilder zu den Google-Bewertungen |
 | `schriften/` | Bricolage Grotesque und Figtree als variable Dateien, mit Lizenz |
 
@@ -58,6 +60,28 @@ Zugangsdaten stehen nie im Code.
 - **Neue Leistung, neues Projekt, neue Stelle:** Eintrag in der passenden Datei unter `daten/`. Menü, Kacheln, Formular, Sitemap und Seiten übernehmen ihn.
 - **Fehlende Inhalte:** stehen auf der Seite sichtbar als `[OFFEN: ...]`. Suche im Code nach `OFFEN` oder `offen(`.
 - **Google-Bewertungen:** stehen in `daten/bewertungen.ts` in der Liste `googleBewertungen`, im Wortlaut aus dem Google-Profil (Stand in `daten/firma.ts`, `google.stand`). Die Seite holt nichts von Google nach. Eine neue Bewertung kommt von Hand dazu: Name und Text unverändert übernehmen, Leistung zuordnen, das Profilbild als WebP mit 96 × 96 px nach `bilder/bewertungen/` legen. Ohne eigenes Bild `bild: null` und bei `farbe` den Farbton des Buchstaben-Bilds eintragen. Danach `google.anzahl`, `google.note` und `google.stand` anpassen.
+
+## Karte des Einzugsgebiets
+
+Die Karte auf Startseite, "Über uns" und Kontakt ist eine eigene Karte. Sie lädt nichts von fremden Servern: keine Kacheln, keine Schrift, kein Kartendienst. Eine eingegebene Adresse verlässt den Browser nicht, gerechnet wird auf dem Gerät.
+
+| Teil | Wo |
+|---|---|
+| Kartendaten (Straßennetz, Gelände, Straßenverzeichnis) | `public/karte/`, gebaut aus OpenStreetMap |
+| Lesen des Netzes und Berechnen der schnellsten Strecke | `lib/kartennetz.ts` |
+| Adresssuche im Straßenverzeichnis | `lib/kartensuche.ts` |
+| Kartenbild mit MapLibre GL (BSD-Lizenz): Stil, Beschriftung, Marker, Strecke | `lib/kartenbild.ts` |
+| Bedienung: Suchfeld, Ortswahl, Ergebnis | `bausteine/Gebietskarte.tsx`, `stil/karte.css` |
+| Standbild, bis die Karte geladen ist, und ohne Skript | `bilder/karte-einzugsgebiet.webp` |
+
+- **Laden:** Karte und Daten (zusammen rund 600 KB) laden erst, wenn der Abschnitt in die Nähe des Bildschirms kommt.
+- **Hilfsdateien:** `npm install` kopiert den Hintergrund-Rechner von MapLibre und die Kartenschrift nach `public/kartenhelfer/` (`werkzeuge/karte-einrichten.mjs`, Ordner steht in `.gitignore`).
+- **Daten erneuern:** `npm run karte:holen strassen orte grenzen flaechen siedlung linien` holt die Rohdaten neu nach `_aufnahme/osm/`, `npm run karte:bauen` schreibt `public/karte/` und `daten/karte.ts`. Den Ausschnitt legt `AUSSCHNITT` in `werkzeuge/kartendaten-holen.mjs` fest.
+- **Standbild erneuern:** nach Änderungen am Kartenstil die Karte in der Übersicht in doppelter Auflösung aufnehmen (ohne Knöpfe und Quellenangabe) und als WebP ablegen.
+- **Fahrzeit:** Je Straßenstück zählt das erlaubte Tempo mal einem Anteil je Straßenart (Autobahn 0,9, Wohnstraße 0,6), dazu 6 Sekunden je Kreuzung mit einer gleich wichtigen oder wichtigeren Straße. Abgeglichen am 26.11.2026 für alle 14 Orte mit einem Routenplaner auf OSM-Daten: Die Entfernungen stimmen auf 1 bis 2 Prozent, die Zeiten liegen im Mittel 16 Prozent darüber. Das ist gewollt, weil der Routenplaner ohne Verkehr eher zu kurz rechnet. Die Seite nennt die Zeit als "etwa" und als reine Fahrzeit ohne Verkehr, nicht als Zusage.
+- **Grenzen:** Das Verzeichnis kennt Straßen, keine Hausnummern. Ziel ist die Mitte der Straße im gewählten Ort. Adressen außerhalb des Ausschnitts findet die Suche nicht.
+- **Quellenangabe:** "© OpenStreetMap" auf der Karte ist Pflicht (Lizenz ODbL) und bleibt stehen.
+- **Abweichung von `Design.md`, 8.8:** Dort ist die Karte schematisch. Am 26.11.2026 wollte der Auftraggeber eine echte, bedienbare Karte mit Adresseingabe und Fahrzeit. Die Leitung läuft weiter von Germering zu den Orten, jetzt entlang der wirklichen Strecke.
 
 ## Schalter in `daten/firma.ts`
 
