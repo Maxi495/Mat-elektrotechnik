@@ -371,7 +371,13 @@ function zaehler(wurzel: ParentNode): Aufraeumen {
           const t = Math.min(1, (jetzt - beginn) / dauer);
           const sanft = 1 - Math.pow(1 - t, 3);
           el.textContent = String(Math.round(start + (ziel - start) * sanft));
-          if (t < 1) bilder.push(requestAnimationFrame(tick));
+          if (t < 1) {
+            bilder.push(requestAnimationFrame(tick));
+          } else {
+            // Fertig gezählt: Die reservierte Breite entfällt, sonst bleibt neben schmalen Ziffern eine Lücke.
+            el.style.removeProperty("display");
+            el.style.removeProperty("min-width");
+          }
         };
         bilder.push(requestAnimationFrame(tick));
       }
@@ -384,6 +390,8 @@ function zaehler(wurzel: ParentNode): Aufraeumen {
     bilder.forEach((b) => cancelAnimationFrame(b));
     zahlen.forEach((z) => {
       if (z.dataset.zaehler) z.textContent = z.dataset.zaehler;
+      z.style.removeProperty("display");
+      z.style.removeProperty("min-width");
     });
   };
 }
