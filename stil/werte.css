@@ -75,7 +75,7 @@
   --kopf-hoehe: 88px;
   --kopf-hoehe-klein: 64px;
 
-  /* Sterne der Google-Bewertungen: Googles Gelb. Design.md (9.9) sieht Rot vor, der Auftraggeber wollte am 26.11.2026 Gelb. */
+  /* Alle Sterne der Google-Note und der Bewertungen: Googles Gelb. Design.md (9.9) sieht Rot vor, der Auftraggeber wollte am 26.11.2026 Gelb. */
   --stern-gelb: #FBBC04;
 
   /* Feste Töne für dunkle Abschnitte auf heller Seite. Dieselben Werte wie --text-leise und --linie bei "Licht aus". */

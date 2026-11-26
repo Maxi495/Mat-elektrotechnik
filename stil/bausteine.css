@@ -959,10 +959,11 @@ html:not(.js) .licht img {
   color: var(--rot-dunkel);
 }
 
+/* Sterne der Google-Note: im Kopf der Startseite, in der Gesamtnote und in der Fußzeile. Dasselbe Gelb wie auf den Karten. */
 .sterne {
   display: flex;
   gap: 2px;
-  color: var(--rot);
+  color: var(--stern-gelb);
 }
 
 .sterne .zeichen {
@@ -970,11 +971,6 @@ html:not(.js) .licht img {
   height: 20px;
   fill: currentColor;
   stroke-width: 1.25;
-}
-
-/* Die Gesamtnote steht bei den Bewertungen und trägt dasselbe Gelb. */
-.gesamtnote .sterne {
-  color: var(--stern-gelb);
 }
 
 @media (hover: hover) {
