@@ -210,6 +210,13 @@ p {
   border-radius: var(--r-klein);
 }
 
+/* Gesperrt (Design.md, 9.17): gilt für jedes Bedienelement, auch wo ein Baustein nichts Eigenes festlegt. */
+:where(button, input, select, textarea):disabled,
+:where(a, button, summary)[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .auf-rot :focus-visible,
 .auf-rot:focus-visible {
   outline-color: #fff;
@@ -231,7 +238,6 @@ p {
 
 .sprunglink:focus-visible {
   transform: translateY(0);
-  outline-color: #000;
 }
 
 /* ---------- Raster ---------- */

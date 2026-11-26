@@ -6,6 +6,8 @@ import type { Stelle } from "@/daten/stellen";
 import { klartext } from "@/bausteine/Fliesstext";
 import { absolut, indexierbar } from "./umgebung";
 
+const vorschauAlt = "Mat-Elektrotechnik: Ihr Elektriker in Germering und im Münchner Westen";
+
 /**
  * Titel, Meta-Beschreibung, Canonical und Vorschau je Seite (SEO-Optimierung.md, Kapitel 8 und 11).
  * Der Titel wird wortgleich übernommen, ohne angehängten Firmennamen.
@@ -34,8 +36,15 @@ export function seitenMeta({
       siteName: firma.name,
       locale: "de_DE",
       type: "website",
+      // Allgemeines Vorschaubild. Seiten mit eigener Datei opengraph-image (Startseite, Leistungen) nutzen ihre eigene.
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: vorschauAlt }],
     },
-    twitter: { card: "summary_large_image", title: titel, description: beschreibung },
+    twitter: {
+      card: "summary_large_image",
+      title: titel,
+      description: beschreibung,
+      images: ["/opengraph-image"],
+    },
   };
 }
 

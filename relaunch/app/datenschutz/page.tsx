@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { Offen } from "@/bausteine/Fliesstext";
-import { Seite, Seitenkopf } from "@/bausteine/Geruest";
+import { Abschlussband, Seite, Seitenkopf } from "@/bausteine/Geruest";
 import { adresszeile, firma } from "@/daten/firma";
 import { seitenMeta } from "@/lib/seo";
 
@@ -114,6 +114,9 @@ export default function Datenschutz() {
           </div>
         </div>
       </section>
+
+      {/* Keine Seite endet ohne nächsten Schritt (Informationsarchitektur.md, 15; Design.md, 9.14). */}
+      <Abschlussband titel="Sie haben eine Frage an Mat-Elektrotechnik?" text="Schreiben Sie uns, was Sie vorhaben, oder rufen Sie an." />
     </Seite>
   );
 }

@@ -94,12 +94,43 @@
     scale var(--d-sofort) var(--k-schalter);
 }
 
+/* Der Haken erscheint über Deckkraft und Größe. Die Breite wechselt ohne Übergang (Design.md, 8.0). */
 .wahlmarke .marke .zeichen {
   width: 0;
   height: 16px;
   opacity: 0;
+  scale: 0.4;
   margin-right: -6px;
-  transition: width var(--d-schnell) var(--k-schalter), opacity var(--d-sofort) linear;
+  transition: opacity var(--d-sofort) linear, scale var(--d-schnell) var(--k-feder);
+}
+
+/* Marke mit Schaltzeichen: Beim Wählen tauscht der Haken das Zeichen an derselben Stelle. Nichts verschiebt sich. */
+.wahlmarke .marke__bild {
+  position: relative;
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.wahlmarke .marke .marke__bild .zeichen {
+  position: absolute;
+  inset: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  opacity: 1;
+  scale: 1;
+}
+
+.wahlmarke .marke .marke__bild .marke__haken,
+.wahlmarke input:checked + .marke .marke__bild .zeichen:not(.marke__haken) {
+  opacity: 0;
+  scale: 0.4;
+}
+
+.wahlmarke input:checked + .marke .marke__bild .marke__haken {
+  opacity: 1;
+  scale: 1;
 }
 
 @media (hover: hover) {
@@ -246,15 +277,6 @@ textarea.feld__eingabe {
   border-color: var(--fehler);
 }
 
-.feld__fehler--gruppe {
-  display: grid;
-  margin-top: calc(var(--a-3) * -1);
-}
-
-.feld__hinweis--gruppe {
-  margin-top: calc(var(--a-3) * -1);
-}
-
 .feld__fehler {
   display: none;
   grid-template-columns: auto 1fr;
@@ -288,6 +310,16 @@ textarea.feld__eingabe {
   color: var(--f-leise);
   font-size: var(--gr-klein);
   line-height: 1.4;
+}
+
+/* Meldung und Hinweis zu Telefon und E-Mail gelten für beide Felder und rücken näher an die Zeile darüber. */
+.feld__fehler--gruppe {
+  display: grid;
+  margin-top: calc(var(--a-3) * -1);
+}
+
+.feld__hinweis--gruppe {
+  margin-top: calc(var(--a-3) * -1);
 }
 
 /* Foto hochladen */

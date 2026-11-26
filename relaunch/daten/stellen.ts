@@ -9,6 +9,8 @@ export interface Stelle {
   slug: string;
   pfad: string;
   titel: string;
+  /** Seitentitel für Suchmaschinen, höchstens rund 60 Zeichen. */
+  seoTitel: string;
   art: "Fachkraft" | "Meister" | "Ausbildung";
   kurz: string;
   einleitung: string;
@@ -26,6 +28,7 @@ export interface Stelle {
 const daten: Record<StelleId, Omit<Stelle, "id" | "slug" | "pfad">> = {
   elektroinstallateur: {
     titel: "Elektroinstallateur (m/w/d)",
+    seoTitel: "Elektroinstallateur (m/w/d) in Germering | Mat",
     art: "Fachkraft",
     kurz: "Installation, Kundendienst und Beleuchtung bei Privat- und Gewerbekunden.",
     einleitung:
@@ -57,6 +60,7 @@ const daten: Record<StelleId, Omit<Stelle, "id" | "slug" | "pfad">> = {
   },
   projektleiter: {
     titel: "Projektleiter / Elektromeister (m/w/d)",
+    seoTitel: "Projektleiter Elektromeister (m/w/d) Germering | Mat",
     art: "Meister",
     kurz: "Projekte vom Angebot bis zur Abnahme führen, mit eigenem Team.",
     einleitung:
@@ -91,6 +95,7 @@ const daten: Record<StelleId, Omit<Stelle, "id" | "slug" | "pfad">> = {
   },
   ausbildung: {
     titel: "Ausbildung zum Elektroniker für Energie- und Gebäudetechnik (m/w/d)",
+    seoTitel: "Ausbildung Elektroniker (m/w/d) in Germering | Mat",
     art: "Ausbildung",
     kurz: "Handwerk lernen im jungen Team, mit moderner Ausrüstung und Aufstiegschancen.",
     einleitung:

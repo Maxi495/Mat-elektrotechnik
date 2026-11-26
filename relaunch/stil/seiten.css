@@ -76,7 +76,7 @@
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-rows: auto calc(var(--offen) * 1fr);
+  grid-template-rows: auto 0fr;
   align-items: center;
   column-gap: var(--a-4);
   padding: 0 var(--a-3) 0 var(--a-4);
@@ -89,6 +89,7 @@
 .sicherung[data-offen="true"],
 html:not(.js) .sicherung {
   --offen: 1;
+  grid-template-rows: auto 1fr;
 }
 
 .sicherung__flaeche {
@@ -113,6 +114,22 @@ html:not(.js) .sicherung {
   object-position: var(--bildlage, center);
   filter: brightness(calc(0.72 + var(--offen) * 0.28)) saturate(calc(0.6 + var(--offen) * 0.4));
   transition: filter 500ms var(--k-schalter);
+}
+
+/*
+ * Am Handy sind die Fotos geschlossener Zeilen unsichtbar. Sie werden dann auch nicht geladen,
+ * sondern erst beim Aufklappen. Das spart beim ersten Aufruf rund 250 KB.
+ */
+@media (max-width: 1023px) {
+  .js .sicherung:not([data-offen="true"]) .sicherung__bild {
+    display: none;
+  }
+
+  @starting-style {
+    .js .sicherung[data-offen="true"] .sicherung__bild {
+      opacity: 0;
+    }
+  }
 }
 
 /* Abdunklung, damit Schrift über dem Foto lesbar bleibt */
@@ -183,6 +200,8 @@ html:not(.js) .sicherung {
 .sicherung__inhalt {
   position: relative;
   grid-column: 1 / -1;
+  /* Füllt die eigene Zeile: Zugeklappt ist sie null Pixel hoch und liegt nicht unsichtbar über dem Schalter. */
+  align-self: stretch;
   min-height: 0;
   overflow: hidden;
   opacity: var(--offen);
@@ -239,6 +258,8 @@ html:not(.js) .sicherung {
   .sicherungsreihe {
     display: flex;
     height: 620px;
+    /* Der Text geschlossener Streifen ragt rechts über die Reihe hinaus. Hier wird er abgeschnitten, damit die Seite nicht seitlich wächst. */
+    overflow-x: clip;
   }
 
   .sicherung {

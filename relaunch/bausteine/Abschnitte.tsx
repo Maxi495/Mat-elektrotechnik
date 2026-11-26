@@ -460,7 +460,7 @@ export function Anfrage({
             {text ? <p className="vorspann">{text}</p> : null}
           </header>
           <Anfrageformular
-            auswahl={leistungen.map((l) => ({ id: l.id, name: l.name }))}
+            auswahl={leistungen.map((l) => ({ id: l.id, name: l.name, zeichen: l.zeichen }))}
             vorauswahl={vorauswahl}
             kurz={kurz}
           />

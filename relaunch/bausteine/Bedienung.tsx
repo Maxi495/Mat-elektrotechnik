@@ -60,8 +60,9 @@ export function Bedienung() {
             const sicherung = window.setTimeout(fertig, 2500);
             wechselFertig = () => {
               window.clearTimeout(sicherung);
-              // Ein Bild abwarten, damit die neue Seite gezeichnet ist.
-              requestAnimationFrame(() => fertig());
+              // Sofort melden: Solange der Browser auf diese Zusage wartet, zeichnet er kein neues Bild.
+              // Ein Warten auf das nächste Bild käme deshalb nie zurück.
+              fertig();
             };
             router.push(ziel.pathname + ziel.search + ziel.hash);
           }),

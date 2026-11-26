@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: PageProps<"/karriere/[stelle]
   const s = stelleNachSlug(slug);
   if (!s) return {};
   return seitenMeta({
-    titel: `${s.titel} in Germering | Mat-Elektrotechnik`,
-    beschreibung: `${s.kurz} Stelle bei der ${firma.name} in Germering. Bewerbung in wenigen Minuten, Lebenslauf freiwillig.`,
+    titel: s.seoTitel,
+    beschreibung: `${s.kurz} Jetzt bei Mat-Elektrotechnik in Germering bewerben.`,
     pfad: s.pfad,
   });
 }

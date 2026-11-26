@@ -139,7 +139,11 @@ export function KopfInnen({
                     }
                   }}
                   onBlur={(e) => {
-                    if (!e.currentTarget.contains(e.relatedTarget as Node)) setGesperrt(false);
+                    // Verlässt der Fokus den Menüpunkt, schließt das Menü.
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setGesperrt(false);
+                      setAufklappOffen(false);
+                    }
                   }}
                 >
                   <button

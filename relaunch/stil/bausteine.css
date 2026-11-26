@@ -340,12 +340,14 @@ a.marke:active {
     scale var(--d-sofort) var(--k-schalter);
 }
 
+/* Der Haken erscheint über Deckkraft und Größe. Die Breite wechselt ohne Übergang (Design.md, 8.0). */
 .marke--filter .zeichen {
   width: 0;
   height: 16px;
   opacity: 0;
+  scale: 0.4;
   margin-right: -6px;
-  transition: width var(--d-schnell) var(--k-schalter), opacity var(--d-sofort) linear;
+  transition: opacity var(--d-sofort) linear, scale var(--d-schnell) var(--k-feder);
 }
 
 @media (hover: hover) {
@@ -358,12 +360,12 @@ a.marke:active {
   scale: 0.97;
 }
 
+/* Gleiche Schriftstärke wie im Ruhezustand, damit die Nachbarn beim Wählen nicht rücken. */
 .marke--filter[aria-pressed="true"],
 .wahlmarke input:checked + .marke {
   background: var(--rot-hell);
   border-color: var(--rot);
   color: var(--rot);
-  font-weight: 600;
 }
 
 [data-licht="aus"] .marke--filter[aria-pressed="true"],
@@ -375,6 +377,7 @@ a.marke:active {
 .wahlmarke input:checked + .marke .zeichen {
   width: 16px;
   opacity: 1;
+  scale: 1;
   margin-right: 0;
 }
 
@@ -1154,11 +1157,37 @@ html:not(.js) .portraet .bildrahmen img {
   line-height: 1.4;
 }
 
-/* Am Handy seitlich wischbar bis zum Bildschirmrand */
-@media (max-width: 1279px) {
+/* Am Handy und Tablet seitlich wischbar bis zum Bildschirmrand */
+@media (max-width: 1023px) {
   .vertrauen {
     margin-right: calc((var(--aussen) + var(--rand)) * -1);
     padding-right: var(--rand);
+  }
+}
+
+/*
+ * Ab Laptop stehen alle fünf Angaben in einer Zeile, ohne seitliches Scrollen: fünf gleich breite Spalten,
+ * die Erklärungen brechen dafür früher um. Reicht der Platz gar nicht (sehr große Schrift), rückt die letzte Angabe in die nächste Zeile.
+ */
+@media (min-width: 1024px) {
+  .vertrauen {
+    overflow-x: visible;
+    flex-wrap: wrap;
+  }
+
+  .vertrauen li {
+    flex: 1 1 0;
+    min-width: min-content;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1179px) {
+  .vertrauen {
+    gap: var(--a-5) var(--a-4);
+  }
+
+  .vertrauen__wert {
+    font-size: 1.125rem;
   }
 }
 
@@ -1451,10 +1480,18 @@ html:not(.js) .knoten {
 }
 
 .brotkrumen a {
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-height: var(--antippen);
   transition: color var(--d-sofort) linear;
+}
+
+/* Kurze Wörter wie "Start" bekommen seitlich mehr Antippfläche. */
+.brotkrumen a::after {
+  content: "";
+  position: absolute;
+  inset: 0 -8px;
 }
 
 @media (hover: hover) {

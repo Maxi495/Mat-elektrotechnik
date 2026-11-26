@@ -210,7 +210,11 @@ function sicherungsreihe(wurzel: ParentNode): Aufraeumen {
     };
 
     const fokus = (e: FocusEvent) => {
-      const s = (e.target as Element).closest<HTMLElement>(".sicherung");
+      // Nur der Fokus per Tastatur öffnet. Beim Antippen folgt sofort der Klick, der selbst schaltet;
+      // würde der Fokus hier schon öffnen, schlösse der Klick die Zeile am Handy gleich wieder.
+      const ziel = e.target as Element;
+      if (!ziel.matches(":focus-visible")) return;
+      const s = ziel.closest<HTMLElement>(".sicherung");
       if (s && s.dataset.offen !== "true") stelle(s);
     };
 

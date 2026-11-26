@@ -13,7 +13,7 @@ import {
   type ReactNode,
 } from "react";
 import { sendeAnfrage, sendeBewerbung, type FormularStand } from "@/app/aktionen";
-import { Zeichen } from "./Zeichen";
+import { Zeichen, type ZeichenArt } from "./Zeichen";
 
 /**
  * Anfrageformular (Informationsarchitektur.md, Abschnitt 10; Design.md, 9.12 und 8.8).
@@ -24,7 +24,8 @@ import { Zeichen } from "./Zeichen";
  * dann fährt der Stecker in die Dose und die Danke-Seite folgt.
  */
 
-type Auswahl = { id: string; name: string };
+/** zeichen: Schaltzeichen der Leistung, dasselbe wie in Menü, Sicherungsreihe, Karten und Haus. */
+type Auswahl = { id: string; name: string; zeichen?: ZeichenArt };
 
 const anfang: FormularStand = { status: "bereit" };
 
@@ -291,7 +292,14 @@ export function Anfrageformular({
       >
         <legend>{bewerbung ? "Für welche Stelle?" : "Worum geht es?"}</legend>
         <div className="marken-wahl">
-          {[...auswahl, bewerbung ? { id: "initiativ", name: "Keine bestimmte" } : { id: "anderes", name: "Etwas anderes" }].map(
+          {(
+            [
+              ...auswahl,
+              bewerbung
+                ? { id: "initiativ", name: "Keine bestimmte" }
+                : { id: "anderes", name: "Etwas anderes", zeichen: "plus" },
+            ] as Auswahl[]
+          ).map(
             (a) => (
               <label className="wahlmarke" key={a.id}>
                 <input
@@ -310,7 +318,15 @@ export function Anfrageformular({
                   }
                 />
                 <span className="marke">
-                  <Zeichen name="haken" />
+                  {a.zeichen ? (
+                    // Beim Wählen tauscht der Haken das Schaltzeichen an derselben Stelle. Nichts verschiebt sich.
+                    <span className="marke__bild" aria-hidden="true">
+                      <Zeichen name={a.zeichen} />
+                      <Zeichen name="haken" className="marke__haken" />
+                    </span>
+                  ) : (
+                    <Zeichen name="haken" />
+                  )}
                   {a.name}
                 </span>
               </label>
@@ -438,6 +454,7 @@ export function Anfrageformular({
             type="checkbox"
             name="einwilligung"
             value="ja"
+            defaultChecked={werte.einwilligung === "ja"}
             required
             aria-describedby={fehler.einwilligung ? `${id}-einwilligung-fehler` : undefined}
             onChange={() =>

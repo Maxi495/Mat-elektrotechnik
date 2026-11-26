@@ -128,6 +128,7 @@ export async function sendeAnfrage(_vorher: FormularStand, daten: FormData): Pro
     telefon: einzeilig(text(daten, "telefon", 40)),
     email: einzeilig(text(daten, "email", 160)),
     ort: einzeilig(text(daten, "ort", 80)),
+    einwilligung: daten.get("einwilligung") === "ja" ? "ja" : "",
   };
 
   // Falle für automatische Einsendungen: Das Feld sieht kein Mensch. Ist es gefüllt, tun wir so, als sei alles gut.
@@ -152,7 +153,7 @@ export async function sendeAnfrage(_vorher: FormularStand, daten: FormData): Pro
       fehler.email = "Bitte prüfen Sie die E-Mail-Adresse, zum Beispiel name@beispiel.de.";
     }
   }
-  if (daten.get("einwilligung") !== "ja") {
+  if (werte.einwilligung !== "ja") {
     fehler.einwilligung = "Bitte stimmen Sie der Verarbeitung Ihrer Angaben zu.";
   }
 
@@ -201,6 +202,7 @@ export async function sendeBewerbung(_vorher: FormularStand, daten: FormData): P
     telefon: einzeilig(text(daten, "telefon", 40)),
     email: einzeilig(text(daten, "email", 160)),
     nachricht: text(daten, "nachricht"),
+    einwilligung: daten.get("einwilligung") === "ja" ? "ja" : "",
   };
 
   if (text(daten, "firma_webseite") !== "") {
@@ -220,7 +222,7 @@ export async function sendeBewerbung(_vorher: FormularStand, daten: FormData): P
       fehler.email = "Bitte prüfen Sie die E-Mail-Adresse, zum Beispiel name@beispiel.de.";
     }
   }
-  if (daten.get("einwilligung") !== "ja") {
+  if (werte.einwilligung !== "ja") {
     fehler.einwilligung = "Bitte stimmen Sie der Verarbeitung Ihrer Angaben zu.";
   }
 

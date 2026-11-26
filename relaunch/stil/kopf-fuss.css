@@ -324,7 +324,11 @@
   }
 }
 
-.hat-menue:focus-within > .aufklapp,
+/*
+ * Mit Skript öffnet der Knopf das Menü (Klick, Enter, Leertaste). Solange es zu ist, liegen seine Links
+ * nicht in der Tab-Reihenfolge. Ohne Skript öffnet es sich, sobald der Fokus im Menüpunkt steht.
+ */
+html:not(.js) .hat-menue:focus-within > .aufklapp,
 .hat-menue[data-offen="true"] > .aufklapp {
   visibility: visible;
   opacity: 1;
@@ -441,7 +445,7 @@
 }
 
 .hat-menue:hover .aufklapp__liste > li,
-.hat-menue:focus-within .aufklapp__liste > li,
+html:not(.js) .hat-menue:focus-within .aufklapp__liste > li,
 .hat-menue[data-offen="true"] .aufklapp__liste > li {
   opacity: 1;
   transform: none;
