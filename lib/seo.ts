@@ -17,13 +17,17 @@ export function seitenMeta({
   beschreibung,
   pfad,
   index = true,
+  vorschau,
 }: {
   titel: string;
   beschreibung: string;
   pfad: string;
   /** false für Seiten, die nie in Suchmaschinen stehen sollen (Danke-Seite). */
   index?: boolean;
+  /** Eigenes Vorschaubild der Seite, zum Beispiel einer Leistung. Ohne Angabe gilt das allgemeine. */
+  vorschau?: { pfad: string; alt: string };
 }): Metadata {
+  const bild = vorschau ?? { pfad: "/opengraph-image", alt: vorschauAlt };
   return {
     title: { absolute: titel },
     description: beschreibung,
@@ -36,14 +40,13 @@ export function seitenMeta({
       siteName: firma.name,
       locale: "de_DE",
       type: "website",
-      // Allgemeines Vorschaubild. Seiten mit eigener Datei opengraph-image (Startseite, Leistungen) nutzen ihre eigene.
-      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: vorschauAlt }],
+      images: [{ url: bild.pfad, width: 1200, height: 630, alt: bild.alt }],
     },
     twitter: {
       card: "summary_large_image",
       title: titel,
       description: beschreibung,
-      images: ["/opengraph-image"],
+      images: [bild.pfad],
     },
   };
 }

@@ -40,7 +40,13 @@ export async function generateMetadata({
   const { leistung: slug } = await params;
   const l = leistungNachSlug(slug);
   if (!l) return {};
-  return seitenMeta({ titel: l.seo.titel, beschreibung: l.seo.beschreibung, pfad: l.pfad });
+  return seitenMeta({
+    titel: l.seo.titel,
+    beschreibung: l.seo.beschreibung,
+    pfad: l.pfad,
+    // Jede Leistung hat ihr eigenes Vorschaubild mit der Hauptüberschrift der Seite.
+    vorschau: { pfad: `${l.pfad}/opengraph-image`, alt: l.seo.h1 },
+  });
 }
 
 const reihenfolge: Gruppe[] = ["privat", "gewerbe", "hausverwaltung"];
