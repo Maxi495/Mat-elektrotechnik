@@ -17,7 +17,7 @@ import { Abschnitt, Seite } from "@/bausteine/Geruest";
 import { Referenzkarte } from "@/bausteine/Karten";
 import { KnopfLink } from "@/bausteine/Knopf";
 import { Sterne } from "@/bausteine/Zeichen";
-import { alleBewertungen } from "@/daten/bewertungen";
+import { bewertungenImLaufband } from "@/daten/bewertungen";
 import { firma } from "@/daten/firma";
 import { startReferenzen } from "@/daten/referenzen";
 import { seitenMeta } from "@/lib/seo";
@@ -154,7 +154,7 @@ export default function Startseite() {
         <div className="rahmen">
           <Gesamtnote />
         </div>
-        <Bewertungsreihe liste={alleBewertungen} />
+        <Bewertungsreihe liste={bewertungenImLaufband} />
       </Abschnitt>
 
       {/* 7. So läuft es ab */}

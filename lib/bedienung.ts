@@ -241,6 +241,22 @@ function sicherungsreihe(wurzel: ParentNode): Aufraeumen {
 
 /* ------------------------------------------------------------------ Laufband der Bewertungen */
 
+/** Tempo des Laufbands in Pixeln je Sekunde, auf jedem Bildschirm gleich. */
+const BAND_TEMPO = 28;
+/** So viele Pixel darf ein schneller Wisch zwischen zwei Bildern über die Naht hinausschießen. */
+const BAND_RESERVE = 240;
+
+/**
+ * Laufband als endlose Schleife (Design.md, 8.8). Es zieht langsam nach links und lässt sich mit Finger,
+ * Rad, Tastatur und Pfeilen in beide Richtungen endlos weiterblättern.
+ *
+ * So geht die Schleife: Vor und hinter den echten Karten stehen Kopien der letzten und der ersten Karten.
+ * Erreicht die Bahn die Kopien, springt sie um genau eine Runde. Dort sieht alles gleich aus, der Sprung
+ * ist nicht zu sehen. Die Kopien sind für Vorleseprogramme und die Tastatur unsichtbar.
+ *
+ * Von selbst läuft das Band nur ohne "reduzierte Bewegung". Es hält bei Maus darüber, Tastaturfokus,
+ * Berührung, aufgeklappter Bewertung und über den Halt-Knopf an und läuft danach weiter.
+ */
 function laufband(wurzel: ParentNode): Aufraeumen {
   const baender = Array.from(wurzel.querySelectorAll<HTMLElement>("[data-laufband]"));
   const abbau: Aufraeumen[] = [];
@@ -249,101 +265,321 @@ function laufband(wurzel: ParentNode): Aufraeumen {
     const bahn = band.querySelector<HTMLElement>(".laufband__bahn");
     if (!bahn) continue;
     const originale = Array.from(bahn.children) as HTMLElement[];
-    if (originale.length === 0) continue;
-
-    const schritt = () => {
-      const karte = bahn.firstElementChild as HTMLElement | null;
-      const luecke = Number.parseFloat(getComputedStyle(bahn).columnGap || "24") || 24;
-      return (karte?.offsetWidth ?? 320) + luecke;
-    };
+    if (originale.length < 2) continue;
 
     const zurueck = band.querySelector<HTMLButtonElement>("[data-laufband-zurueck]");
     const vor = band.querySelector<HTMLButtonElement>("[data-laufband-vor]");
-    const blaettere = (richtung: number) => {
-      pause(4000);
-      bahn.scrollBy({ left: richtung * schritt(), behavior: ruhig() ? "auto" : "smooth" });
+    const halter = band.querySelector<HTMLButtonElement>("[data-laufband-halt]");
+    const selbst = !ruhig();
+
+    let kopien: HTMLElement[] = [];
+    let schleife = false;
+    let schritt = 0; // Kartenbreite plus Lücke
+    let runde = 0; // Breite aller echten Karten samt Lücken
+    let start = 0; // Lage, bei der die erste echte Karte am Inhaltsrand steht
+    let sichtBreite = 0;
+    let lage = 0;
+    let stelle = 0; // Lage in Karten gezählt, damit nach einer Größenänderung dieselbe Karte vorn steht
+
+    const kopiere = (karte: HTMLElement) => {
+      const kopie = karte.cloneNode(true) as HTMLElement;
+      kopie.setAttribute("aria-hidden", "true");
+      kopie.dataset.kopie = "";
+      kopie.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
+      kopie.querySelectorAll<HTMLElement>("a, button, [tabindex]").forEach((el) => {
+        el.tabIndex = -1;
+        el.removeAttribute("aria-controls");
+      });
+      kopien.push(kopie);
+      return kopie;
+    };
+
+    /** Misst die Bahn und stellt die Kopien für die Schleife auf. Vorn bleibt dieselbe Karte stehen. */
+    const baue = () => {
+      kopien.forEach((k) => k.remove());
+      kopien = [];
+
+      const anzahl = originale.length;
+      sichtBreite = bahn.clientWidth;
+      schritt = originale[1].getBoundingClientRect().left - originale[0].getBoundingClientRect().left;
+      schleife = schritt > 0 && bahn.scrollWidth > sichtBreite + 1;
+      if (halter) halter.hidden = !(selbst && schleife);
+
+      if (!schleife) {
+        start = 0;
+        runde = 0;
+        delete band.dataset.schleife;
+        bahn.scrollLeft = Math.max(0, stelle * schritt);
+        lage = bahn.scrollLeft;
+        return;
+      }
+
+      const innen = Number.parseFloat(getComputedStyle(bahn).paddingLeft) || 0;
+      const vorn = Math.ceil((innen + schritt + BAND_RESERVE) / schritt);
+      const hinten = Math.ceil((sichtBreite + schritt + BAND_RESERVE) / schritt);
+      const davor = document.createDocumentFragment();
+      for (let i = 0; i < vorn; i++) {
+        davor.appendChild(kopiere(originale[(((anzahl - vorn + i) % anzahl) + anzahl) % anzahl]));
+      }
+      const danach = document.createDocumentFragment();
+      for (let i = 0; i < hinten; i++) danach.appendChild(kopiere(originale[i % anzahl]));
+      bahn.insertBefore(davor, originale[0]);
+      bahn.appendChild(danach);
+
+      // Am fertigen Aufbau messen, damit die Runde auch bei krummen Kartenbreiten genau stimmt.
+      const erste = originale[0].getBoundingClientRect().left;
+      start = erste - kopien[0].getBoundingClientRect().left;
+      runde = kopien[vorn].getBoundingClientRect().left - erste;
+      band.dataset.schleife = "true";
+      bahn.scrollLeft = start + (((stelle % anzahl) + anzahl) % anzahl) * schritt;
+      lage = bahn.scrollLeft;
+    };
+
+    /** Hält die Bahn innerhalb einer Runde. Der Sprung um eine ganze Runde ändert das Bild nicht. */
+    const ordne = () => {
+      if (!schleife) return;
+      const x = bahn.scrollLeft;
+      const rand = schritt + 32; // ein Pfeil-Schritt darf über die Naht laufen, ohne dass sie mittendrin springt
+      if (x >= start + runde + rand) bahn.scrollLeft = lage = x - runde;
+      else if (x <= start - rand) bahn.scrollLeft = lage = x + runde;
+    };
+
+    /* ---------- Anhalten und Weiterlaufen */
+
+    let maus = false;
+    let fokus = false;
+    let finger = false;
+    let sichtbar = false;
+    let offen = false;
+    let gehalten = false;
+    let ruheBis = 0;
+    let laeuft = false;
+    let bild = 0;
+    let zuletzt = 0;
+
+    /** Nach Blättern, Wischen oder Verlassen kurz warten, bevor das Band wieder anläuft. */
+    const ruhe = (dauer: number) => {
+      ruheBis = Math.max(ruheBis, performance.now() + dauer);
+    };
+
+    const darfLaufen = () =>
+      schleife && !document.hidden && !maus && !fokus && !finger && !offen && !gehalten && performance.now() >= ruheBis;
+
+    const laufe = (jetzt: number) => {
+      bild = requestAnimationFrame(laufe);
+      const vergangen = Math.min(64, jetzt - zuletzt);
+      zuletzt = jetzt;
+      const an = darfLaufen();
+      if (an !== laeuft) {
+        laeuft = an;
+        band.dataset.laeuft = String(an);
+        if (an) lage = bahn.scrollLeft;
+      }
+      if (!an) return;
+      lage += (BAND_TEMPO * vergangen) / 1000;
+      if (lage >= start + runde) lage -= runde;
+      bahn.scrollLeft = lage;
+    };
+
+    // Das Band rechnet nur, solange es zu sehen ist.
+    const waechter = new IntersectionObserver(([e]) => {
+      sichtbar = e.isIntersecting;
+      cancelAnimationFrame(bild);
+      if (sichtbar && selbst) {
+        zuletzt = performance.now();
+        bild = requestAnimationFrame(laufe);
+      } else {
+        laeuft = false;
+        band.dataset.laeuft = "false";
+      }
+    });
+
+    const mausRein = (e: PointerEvent) => {
+      if (e.pointerType === "mouse") maus = true;
+    };
+    const mausRaus = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      maus = false;
+      ruhe(900);
+    };
+    // Nur Tastaturfokus hält an. Ein Mausklick auf einen Pfeil soll das Band nicht für immer stoppen.
+    const fokusWechsel = () => {
+      window.setTimeout(() => {
+        const vorher = fokus;
+        fokus = band.querySelector(":focus-visible") !== null;
+        if (vorher && !fokus) ruhe(900);
+      }, 0);
+    };
+    const fingerAuf = () => {
+      finger = true;
+    };
+    const fingerAb = (e: TouchEvent) => {
+      if (e.touches.length > 0) return;
+      finger = false;
+      ruhe(2500);
+    };
+    const rollt = () => {
+      ordne();
+      // Die Stelle nur merken, solange die Maße noch stimmen. Sonst steht ein Neuaufbau an.
+      if (schritt > 0 && bahn.clientWidth === sichtBreite) stelle = (bahn.scrollLeft - start) / schritt;
+      // Rollt die Bahn, ohne dass das Band selbst läuft, blättert gerade jemand: erst danach weiter.
+      if (!laeuft) ruhe(1200);
+    };
+    const aufgeklappt = () => {
+      offen = band.querySelector('[data-offen="true"]') !== null;
+    };
+    const halte = () => {
+      gehalten = !gehalten;
+      if (!halter) return;
+      halter.dataset.gehalten = String(gehalten);
+      halter.setAttribute("aria-label", gehalten ? "Laufband fortsetzen" : "Laufband anhalten");
+    };
+
+    /* ---------- Blättern mit den Pfeilen: immer genau bis zur nächsten Kartenkante */
+
+    let ziel: number | null = null;
+    let zielZeit = 0;
+
+    const blaettere = (richtung: 1 | -1) => {
+      ruhe(4000);
+      const art: ScrollBehavior = ruhig() ? "auto" : "smooth";
+      if (!schleife) {
+        bahn.scrollBy({ left: richtung * (schritt || 320), behavior: art });
+        return;
+      }
+      let x = bahn.scrollLeft;
+      const unterwegs = ziel !== null && performance.now() - zielZeit < 700;
+      let basis = unterwegs && ziel !== null ? ziel : x;
+      // Erst zurück in die Runde, damit der Schritt selbst nicht über die Naht hinausläuft.
+      if (richtung > 0 && x >= start + runde) {
+        x -= runde;
+        basis -= runde;
+        bahn.scrollLeft = x;
+      } else if (richtung < 0 && x <= start) {
+        x += runde;
+        basis += runde;
+        bahn.scrollLeft = x;
+      }
+      const stelle = (basis - start) / schritt;
+      const naechste = richtung > 0 ? Math.floor(stelle + 0.02) + 1 : Math.ceil(stelle - 0.02) - 1;
+      ziel = Math.min(start + runde + schritt, Math.max(start - schritt, start + naechste * schritt));
+      zielZeit = performance.now();
+      bahn.scrollTo({ left: ziel, behavior: art });
     };
     const klickZurueck = () => blaettere(-1);
     const klickVor = () => blaettere(1);
+
+    // Ändert sich die Breite, werden Kartenbreite und Zahl der Kopien neu bestimmt.
+    let neuBauen = 0;
+    const groesse = new ResizeObserver(() => {
+      if (bahn.clientWidth === sichtBreite) return;
+      cancelAnimationFrame(neuBauen);
+      neuBauen = requestAnimationFrame(baue);
+    });
+
+    baue();
+    waechter.observe(band);
+    groesse.observe(bahn);
+    bahn.addEventListener("scroll", rollt, { passive: true });
+    band.addEventListener("pointerenter", mausRein);
+    band.addEventListener("pointerleave", mausRaus);
+    band.addEventListener("focusin", fokusWechsel);
+    band.addEventListener("focusout", fokusWechsel);
+    band.addEventListener("touchstart", fingerAuf, { passive: true });
+    band.addEventListener("touchend", fingerAb, { passive: true });
+    band.addEventListener("touchcancel", fingerAb, { passive: true });
+    band.addEventListener("mat-bewertung", aufgeklappt);
     zurueck?.addEventListener("click", klickZurueck);
     vor?.addEventListener("click", klickVor);
-
-    let bild = 0;
-    let angehalten = false;
-    let sichtbar = false;
-    let weiter = 0;
-    let lage = 0;
-    const kopien: HTMLElement[] = [];
-
-    function pause(dauer: number) {
-      angehalten = true;
-      band.dataset.laeuft = "false";
-      window.clearTimeout(weiter);
-      if (dauer > 0) weiter = window.setTimeout(fortsetzen, dauer);
-    }
-
-    function fortsetzen() {
-      if (band.matches(":hover") || band.contains(document.activeElement)) return;
-      angehalten = false;
-      lage = bahn!.scrollLeft;
-      band.dataset.laeuft = "true";
-    }
-
-    if (!ruhig() && bahn.scrollWidth > bahn.clientWidth) {
-      // Zweiter Satz Karten, damit das Band ohne Sprung weiterläuft. Für Vorleseprogramme unsichtbar.
-      for (const karte of originale) {
-        const kopie = karte.cloneNode(true) as HTMLElement;
-        kopie.setAttribute("aria-hidden", "true");
-        kopie.setAttribute("inert", "");
-        bahn.appendChild(kopie);
-        kopien.push(kopie);
-      }
-      band.dataset.laeuft = "true";
-
-      const laufe = () => {
-        bild = requestAnimationFrame(laufe);
-        if (angehalten || !sichtbar || document.hidden) return;
-        const halb = kopien[0].offsetLeft - originale[0].offsetLeft;
-        lage += 0.45;
-        if (lage >= halb) lage -= halb;
-        bahn.scrollLeft = lage;
-      };
-
-      const waechter = new IntersectionObserver(([e]) => {
-        sichtbar = e.isIntersecting;
-      });
-      waechter.observe(band);
-
-      const halt = () => pause(0);
-      const los = () => pause(1200);
-      const beruehrt = () => pause(5000);
-      band.addEventListener("pointerenter", halt);
-      band.addEventListener("pointerleave", los);
-      band.addEventListener("focusin", halt);
-      band.addEventListener("focusout", los);
-      band.addEventListener("touchstart", beruehrt, { passive: true });
-      bild = requestAnimationFrame(laufe);
-
-      abbau.push(() => {
-        cancelAnimationFrame(bild);
-        window.clearTimeout(weiter);
-        waechter.disconnect();
-        band.removeEventListener("pointerenter", halt);
-        band.removeEventListener("pointerleave", los);
-        band.removeEventListener("focusin", halt);
-        band.removeEventListener("focusout", los);
-        band.removeEventListener("touchstart", beruehrt);
-        kopien.forEach((k) => k.remove());
-        delete band.dataset.laeuft;
-      });
-    }
+    halter?.addEventListener("click", halte);
 
     abbau.push(() => {
+      cancelAnimationFrame(bild);
+      cancelAnimationFrame(neuBauen);
+      waechter.disconnect();
+      groesse.disconnect();
+      bahn.removeEventListener("scroll", rollt);
+      band.removeEventListener("pointerenter", mausRein);
+      band.removeEventListener("pointerleave", mausRaus);
+      band.removeEventListener("focusin", fokusWechsel);
+      band.removeEventListener("focusout", fokusWechsel);
+      band.removeEventListener("touchstart", fingerAuf);
+      band.removeEventListener("touchend", fingerAb);
+      band.removeEventListener("touchcancel", fingerAb);
+      band.removeEventListener("mat-bewertung", aufgeklappt);
       zurueck?.removeEventListener("click", klickZurueck);
       vor?.removeEventListener("click", klickVor);
+      halter?.removeEventListener("click", halte);
+      kopien.forEach((k) => k.remove());
+      kopien = [];
+      delete band.dataset.schleife;
+      delete band.dataset.laeuft;
+      if (halter) {
+        halter.hidden = true;
+        delete halter.dataset.gehalten;
+      }
     });
   }
   return () => abbau.forEach((a) => a());
+}
+
+/* ------------------------------------------------------------------ Bewertungen: lange Texte aufklappen */
+
+/**
+ * Lange Bewertungen zeigen sechs Zeilen (stil/bausteine.css) und den Knopf "Mehr", wie bei Google.
+ * Der Knopf erscheint nur, wo wirklich Text abgeschnitten ist. Kopien im Laufband schalten mit um.
+ */
+function bewertungen(wurzel: ParentNode): Aufraeumen {
+  if (!wurzel.querySelector("[data-bewertung]")) return () => {};
+
+  const pruefe = () => {
+    const karten = Array.from(wurzel.querySelectorAll<HTMLElement>("[data-bewertung]"));
+    // Erst alles messen, dann schreiben.
+    const zuLang = karten.map((karte) => {
+      if (karte.dataset.offen === "true") return true;
+      const text = karte.querySelector<HTMLElement>(".bewertung__text p");
+      return text !== null && text.scrollHeight > text.clientHeight + 1;
+    });
+    karten.forEach((karte, i) => {
+      const knopf = karte.querySelector<HTMLButtonElement>(".bewertung__mehr");
+      if (knopf) knopf.hidden = !zuLang[i];
+    });
+  };
+
+  const klick = (e: MouseEvent) => {
+    const knopf = e.target instanceof Element ? e.target.closest(".bewertung__mehr") : null;
+    const karte = knopf?.closest<HTMLElement>("[data-bewertung]");
+    if (!knopf || !karte) return;
+    const auf = karte.dataset.offen !== "true";
+    const kennung = CSS.escape(karte.dataset.bewertung ?? "");
+    // Original und Kopie derselben Bewertung zeigen denselben Zustand.
+    for (const k of wurzel.querySelectorAll<HTMLElement>(`[data-bewertung="${kennung}"]`)) {
+      k.dataset.offen = String(auf);
+      const b = k.querySelector<HTMLButtonElement>(".bewertung__mehr");
+      if (!b) continue;
+      b.textContent = auf ? "Weniger" : "Mehr";
+      b.setAttribute("aria-expanded", String(auf));
+    }
+    karte.dispatchEvent(new CustomEvent("mat-bewertung", { bubbles: true }));
+  };
+
+  let bild = 0;
+  const neuPruefen = () => {
+    cancelAnimationFrame(bild);
+    bild = requestAnimationFrame(pruefe);
+  };
+
+  pruefe();
+  // Mit der geladenen Schrift können sich Zeilen verschieben.
+  document.fonts?.ready.then(neuPruefen);
+  window.addEventListener("resize", neuPruefen, { passive: true });
+  document.addEventListener("click", klick);
+
+  return () => {
+    cancelAnimationFrame(bild);
+    window.removeEventListener("resize", neuPruefen);
+    document.removeEventListener("click", klick);
+  };
 }
 
 /* ------------------------------------------------------------------ Zahlen zählen einmal hoch */
@@ -514,7 +750,14 @@ export function starteSeiteLeicht(): Aufraeumen {
 
 /** Alles, was zu einer Seite gehört. Läuft bei jedem Seitenwechsel neu. */
 export function richteSeiteEin(wurzel: ParentNode = document): Aufraeumen {
-  const abbau = [erscheinen(wurzel), licht(wurzel), sicherungsreihe(wurzel), laufband(wurzel), zaehler(wurzel)];
+  const abbau = [
+    erscheinen(wurzel),
+    licht(wurzel),
+    sicherungsreihe(wurzel),
+    laufband(wurzel),
+    bewertungen(wurzel),
+    zaehler(wurzel),
+  ];
   return () => abbau.forEach((a) => a());
 }
 

@@ -5,7 +5,7 @@ import { Offen } from "@/bausteine/Fliesstext";
 import { Abschnitt, Seite, Seitenkopf } from "@/bausteine/Geruest";
 import { Referenzkarte } from "@/bausteine/Karten";
 import { Referenzfilter } from "@/bausteine/Referenzfilter";
-import { alleBewertungen } from "@/daten/bewertungen";
+import { bewertungenImLaufband } from "@/daten/bewertungen";
 import { firma } from "@/daten/firma";
 import { gruppenNamen, leistungen, type Gruppe } from "@/daten/leistungen";
 import { referenzen } from "@/daten/referenzen";
@@ -51,8 +51,8 @@ export default function Referenzen() {
       </Abschnitt>
 
       {/* 4. Bewertungen */}
-      <Abschnitt titel="Das sagen unsere Kunden">
-        <Bewertungsreihe liste={alleBewertungen} laufband={false} />
+      <Abschnitt titel="Das sagen unsere Kunden" ohneRahmen>
+        <Bewertungsreihe liste={bewertungenImLaufband} />
       </Abschnitt>
 
       {/* 5. Anfrage */}

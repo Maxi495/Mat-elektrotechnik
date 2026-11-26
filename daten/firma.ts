@@ -58,10 +58,9 @@ export const firma = {
     note: 4.9,
     noteAnzeige: "4,9",
     anzahl: 67,
-    stand: "2026-11-25",
-    /** Suche nach dem Firmenprofil. Der direkte Link zum Profil fehlt noch. */
-    profil:
-      "https://www.google.com/maps/search/?api=1&query=Mat-Elektrotechnik+GmbH+Industriestra%C3%9Fe+12+Germering",
+    stand: "2026-11-26",
+    /** Direkter Link zum Firmenprofil bei Google Maps (Kennung des Eintrags). */
+    profil: "https://www.google.com/maps?cid=13594713047195406870",
   },
 
   routenplaner:

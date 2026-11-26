@@ -6,7 +6,7 @@ import type { Bewertung } from "@/daten/bewertungen";
 import type { Teammitglied } from "@/daten/team";
 import { offen } from "@/daten/firma";
 import { nr } from "./Geruest";
-import { Sterne, Zeichen } from "./Zeichen";
+import { Zeichen } from "./Zeichen";
 
 /** Leistungskarte (Design.md, 9.6): Schaltzeichen, Name, zwei Zeilen Text, Link. */
 export function Leistungskarte({ leistung, i = 0 }: { leistung: Leistung; i?: number }) {
@@ -105,28 +105,46 @@ export function Referenzkarte({
   );
 }
 
-const datum = new Intl.DateTimeFormat("de-DE", { month: "long", year: "numeric" });
-
-/** Bewertungskarte (Design.md, 9.9). Sterne nur, wenn die Bewertung welche hat. */
+/**
+ * Bewertungskarte (Design.md, 9.9), aufgebaut wie eine Rezension bei Google:
+ * Profilbild, Name, fünf Sterne, Wortlaut, Google-Zeichen als Quelle.
+ *
+ * Hat der Verfasser kein eigenes Profilbild, steht wie bei Google sein Anfangsbuchstabe auf Farbe.
+ * Lange Texte zeigen mit Skript sechs Zeilen und den Knopf "Mehr" (lib/bedienung.ts).
+ * Ohne Skript steht der ganze Text da. Im Quelltext steht er immer vollständig.
+ */
 export function Bewertungskarte({ bewertung: b }: { bewertung: Bewertung }) {
-  const quelle =
-    b.quelle === "google"
-      ? `Google${b.datum ? `, ${datum.format(new Date(b.datum))}` : ""}`
-      : "Kundenstimme";
+  const textId = `bewertung-${b.id}`;
   return (
-    <figure className="bewertung">
-      {b.sterne ? <Sterne wert={b.sterne} text={`${b.sterne} von 5 Sternen`} /> : null}
-      {b.sinngemaess ? (
-        <p className="bewertung__text">{b.text}</p>
-      ) : (
-        <blockquote className="bewertung__text">
-          <p>„{b.text}“</p>
-        </blockquote>
-      )}
-      <figcaption>
-        <span className="bewertung__name">{b.name}</span>
-        <span className="klein">{quelle}</span>
+    <figure className="bewertung" data-bewertung={b.id}>
+      <figcaption className="bewertung__kopf">
+        {b.bild ? (
+          <Image className="bewertung__bild" src={b.bild} alt="" width={44} height={44} unoptimized />
+        ) : (
+          <span
+            className="bewertung__bild bewertung__bild--buchstabe"
+            style={{ backgroundColor: b.farbe ?? undefined }}
+            aria-hidden="true"
+          >
+            {b.name.trim().charAt(0)}
+          </span>
+        )}
+        <span className="bewertung__wer">
+          <span className="bewertung__name">{b.name}</span>
+          <span className="sternreihe" role="img" aria-label="5 von 5 Sternen" />
+        </span>
+        <span className="bewertung__google" role="img" aria-label="Bewertung bei Google" />
       </figcaption>
+      <blockquote className="bewertung__text" id={textId}>
+        <p>{b.text}</p>
+      </blockquote>
+      {b.uebersetzt ? <p className="bewertung__hinweis">Übersetzt von Google</p> : null}
+      {/* Eine übersetzte Kurzbewertung braucht den Knopf nicht, ihr Hinweis füllt dieselbe Zeile. */}
+      {b.uebersetzt && b.text.length < 200 ? null : (
+        <button type="button" className="bewertung__mehr" aria-expanded="false" aria-controls={textId} hidden>
+          Mehr
+        </button>
+      )}
     </figure>
   );
 }

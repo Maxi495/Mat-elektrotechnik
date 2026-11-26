@@ -26,7 +26,9 @@ export type WeiteresZeichen =
   | "extern"
   | "siegel"
   | "pokal"
-  | "team";
+  | "team"
+  | "pause"
+  | "weiter";
 
 export type ZeichenArt = ZeichenName | WeiteresZeichen;
 
@@ -153,6 +155,9 @@ const zeichen: Record<ZeichenArt, ReactNode> = {
     <circle key="b" cx="16.8" cy="9.5" r="2.4" pathLength={1} />,
     L("M16.4 14.4a4.6 4.6 0 0 1 4.3 5.1"),
   ],
+  // Laufband anhalten und weiterlaufen lassen
+  pause: [L("M9 6v12"), L("M15 6v12")],
+  weiter: [L("M8.5 5.5v13l10-6.5z")],
 };
 
 export function Zeichen({

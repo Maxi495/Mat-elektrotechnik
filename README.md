@@ -50,14 +50,14 @@ Zugangsdaten stehen nie im Code.
 | `bausteine/` | Bausteine nach `Design.md`, Abschnitt 9 |
 | `stil/` | Gestaltung. `werte.css` enthält die zentralen Variablen aus `Design.md`, Abschnitt 12 |
 | `lib/` | Bewegung, Bedienung, SEO, Umgebung |
-| `bilder/` | Fotos von der bisherigen Webseite |
+| `bilder/` | Fotos von der bisherigen Webseite. `bilder/bewertungen/`: Profilbilder zu den Google-Bewertungen |
 | `schriften/` | Bricolage Grotesque und Figtree als variable Dateien, mit Lizenz |
 
 ## Inhalte pflegen
 
 - **Neue Leistung, neues Projekt, neue Stelle:** Eintrag in der passenden Datei unter `daten/`. Menü, Kacheln, Formular, Sitemap und Seiten übernehmen ihn.
 - **Fehlende Inhalte:** stehen auf der Seite sichtbar als `[OFFEN: ...]`. Suche im Code nach `OFFEN` oder `offen(`.
-- **Google-Bewertungen:** in `daten/bewertungen.ts` in die Liste `googleBewertungen` eintragen. Sie ist absichtlich leer.
+- **Google-Bewertungen:** stehen in `daten/bewertungen.ts` in der Liste `googleBewertungen`, im Wortlaut aus dem Google-Profil (Stand in `daten/firma.ts`, `google.stand`). Die Seite holt nichts von Google nach. Eine neue Bewertung kommt von Hand dazu: Name und Text unverändert übernehmen, Leistung zuordnen, das Profilbild als WebP mit 96 × 96 px nach `bilder/bewertungen/` legen. Ohne eigenes Bild `bild: null` und bei `farbe` den Farbton des Buchstaben-Bilds eintragen. Danach `google.anzahl`, `google.note` und `google.stand` anpassen.
 
 ## Schalter in `daten/firma.ts`
 

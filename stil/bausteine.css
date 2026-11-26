@@ -817,12 +817,15 @@ html:not(.js) .licht img {
   color: var(--rot-dunkel);
 }
 
-/* Bewertungskarte (9.9) */
+/*
+ * Bewertungskarte (9.9), aufgebaut wie eine Rezension bei Google: Profilbild, Name, fünf Sterne, Wortlaut.
+ * Abweichung von Design.md: Die Sterne sind gelb wie bei Google statt rot (--stern-gelb in werte.css).
+ */
 .bewertung {
   display: flex;
   flex-direction: column;
   gap: var(--a-4);
-  padding: var(--a-6);
+  padding: var(--a-5);
   border-radius: var(--r-mittel);
   background: var(--f-karte);
   transition: transform var(--d-ruhig) var(--k-schalter), box-shadow var(--d-ruhig) var(--k-schalter);
@@ -834,21 +837,126 @@ html:not(.js) .licht img {
   border: 1px solid var(--f-linie);
 }
 
-.bewertung blockquote {
-  flex: 1;
-  color: var(--f-titel);
-  font-size: 1.125rem;
-  line-height: 1.5;
+.bewertung__kopf {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--a-3);
 }
 
-.bewertung figcaption {
+.bewertung__bild {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--f-linie);
+}
+
+/* Ohne eigenes Profilbild: Anfangsbuchstabe auf der Farbe aus dem Google-Profil. */
+.bewertung__bild--buchstabe {
   display: grid;
-  gap: 2px;
+  place-items: center;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.bewertung__wer {
+  display: grid;
+  gap: var(--a-1);
+  min-width: 0;
 }
 
 .bewertung__name {
+  overflow: hidden;
   color: var(--f-titel);
   font-weight: 600;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Fünf Sterne als eine Fläche: Der Stern ist die Maske, die Farbe kommt aus der Variablen. */
+.sternreihe {
+  --stern-maske: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3.6l2.6 5.3 5.8.9-4.2 4.1 1 5.8L12 17l-5.2 2.7 1-5.8-4.2-4.1 5.8-.9z' stroke='%23000' stroke-width='1.25' stroke-linejoin='round'/%3E%3C/svg%3E");
+  display: block;
+  width: 90px;
+  height: 18px;
+  background: var(--stern-gelb);
+  -webkit-mask-image: var(--stern-maske);
+  mask-image: var(--stern-maske);
+  -webkit-mask-size: 18px 18px;
+  mask-size: 18px 18px;
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+}
+
+/* Quelle der Bewertung: das Zeichen von Google. */
+.bewertung__google {
+  align-self: start;
+  width: 22px;
+  height: 22px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.bewertung__text {
+  color: var(--f-text);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+/* Zeilenumbrüche stehen wie in der Bewertung bei Google. */
+.bewertung__text p {
+  white-space: pre-line;
+  overflow-wrap: break-word;
+}
+
+/* Mit Skript zeigen lange Bewertungen sechs Zeilen und "Mehr". Ohne Skript steht der ganze Text da. */
+.js .bewertung:not([data-offen="true"]) .bewertung__text p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
+  overflow: hidden;
+}
+
+.bewertung__mehr,
+.bewertung__hinweis {
+  margin-top: calc(var(--a-2) * -1);
+  font-size: var(--gr-klein);
+  line-height: 1.6;
+}
+
+.bewertung__hinweis {
+  color: var(--f-leise);
+}
+
+.bewertung__mehr {
+  position: relative;
+  align-self: flex-start;
+  color: var(--f-verweis);
+  font-weight: 600;
+}
+
+/* Tippfläche von 48 px, ohne dass die Karte höher wird. */
+.bewertung__mehr::after {
+  content: "";
+  position: absolute;
+  inset: -12px -16px;
+}
+
+@media (hover: hover) {
+  .bewertung__mehr:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+}
+
+.bewertung__mehr:active {
+  color: var(--rot-dunkel);
 }
 
 .sterne {
@@ -864,22 +972,32 @@ html:not(.js) .licht img {
   stroke-width: 1.25;
 }
 
+/* Die Gesamtnote steht bei den Bewertungen und trägt dasselbe Gelb. */
+.gesamtnote .sterne {
+  color: var(--stern-gelb);
+}
+
 @media (hover: hover) {
   .bewertung:hover {
     transform: translateY(-4px);
     box-shadow: var(--schein-rot);
   }
+}
 
-  .bewertung:hover .sterne .zeichen {
-    animation: stern-fuellen 320ms var(--k-schalter) backwards;
-    animation-delay: calc(var(--i, 0) * 60ms);
+/* Die Sterne füllen sich nacheinander neu (Design.md, 8.6). */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .bewertung:hover .sternreihe {
+    animation: sterne-fuellen 400ms steps(5, end) backwards;
   }
 }
 
-@keyframes stern-fuellen {
+@keyframes sterne-fuellen {
   from {
-    fill: transparent;
-    transform: scale(0.7);
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0);
   }
 }
 
@@ -913,6 +1031,8 @@ html:not(.js) .licht img {
 
 .laufband__bahn {
   display: flex;
+  /* Jede Karte wächst für sich, wenn ihre Bewertung aufklappt. */
+  align-items: flex-start;
   gap: var(--spalte);
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -932,13 +1052,69 @@ html:not(.js) .licht img {
   scroll-snap-align: start;
 }
 
-.laufband[data-laeuft="true"] .laufband__bahn {
+/* Als endlose Schleife rastet die Bahn nicht ein: Sie läuft frei und springt an der Naht um eine ganze Runde. */
+.laufband[data-schleife="true"] .laufband__bahn {
   scroll-snap-type: none;
+}
+
+/*
+ * Ab Laptop läuft links die Leitung. Die Karten blenden am Inhaltsrand aus, bevor sie die Leitung erreichen.
+ * So kreuzt keine Karte die Leitung, und der linke Rand bleibt frei wie in jedem anderen Abschnitt.
+ */
+@media (min-width: 1024px) {
+  .laufband[data-schleife="true"] .laufband__bahn {
+    --ausblenden: linear-gradient(to right, transparent calc(var(--leitung-x) + 12px), #000 var(--inhalt-links));
+    -webkit-mask-image: var(--ausblenden);
+    mask-image: var(--ausblenden);
+  }
+
+  /* Die Maske schneidet einen Fokusrahmen außerhalb der Bahn ab, deshalb liegt er innen. */
+  .laufband[data-schleife="true"] .laufband__bahn:focus-visible {
+    outline-offset: -4px;
+  }
+}
+
+/* Im Laufband sind alle Karten gleich hoch: Platz für sechs Zeilen und für die Zeile mit "Mehr", auch wenn sie leer bleibt. */
+.js .laufband .bewertung__text {
+  min-height: calc(6 * 1.55em);
+}
+
+.js .laufband .bewertung__mehr[hidden] {
+  display: block;
+  visibility: hidden;
+}
+
+.laufband__fuss {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-5);
+  align-items: center;
+  justify-content: space-between;
 }
 
 .laufband__pfeile {
   display: flex;
   gap: var(--a-3);
+  margin-left: auto;
+}
+
+/* Ohne Skript blättert man mit Finger, Rad oder Tastatur. Die Pfeile könnten dann nichts tun. */
+:root:not(.js) .laufband__pfeile {
+  display: none;
+}
+
+/* Halt-Knopf: zeigt "anhalten", solange das Band läuft, und "weiter", wenn es steht. */
+.rundknopf[hidden] {
+  display: none;
+}
+
+.rundknopf--halt .zeichen + .zeichen,
+.rundknopf--halt[data-gehalten="true"] .zeichen:first-child {
+  display: none;
+}
+
+.rundknopf--halt[data-gehalten="true"] .zeichen + .zeichen {
+  display: block;
 }
 
 .rundknopf {

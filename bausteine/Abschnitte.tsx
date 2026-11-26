@@ -4,7 +4,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { adresszeile, erreichbarkeitText, firma, offen } from "@/daten/firma";
 import { ablaufDauerHinweis, leistungen, leistungNachId, type Leistung } from "@/daten/leistungen";
 import { kernort, muenchenWest, orte, umkreis } from "@/daten/orte";
-import { googleBewertungen, type Bewertung } from "@/daten/bewertungen";
+import type { Bewertung } from "@/daten/bewertungen";
 import { teamgroesse } from "@/daten/team";
 import { zielgruppen } from "@/daten/zielgruppen";
 import { Anfrageformular } from "./Anfrageformular";
@@ -177,17 +177,16 @@ export function Gesamtnote() {
 }
 
 /**
- * Bewertungen (Design.md, 8.8 und 9.9).
- * Als Laufband zieht die Reihe langsam nach links und hält bei Maus, Fokus oder Berührung an.
- * Ohne Skript und bei reduzierter Bewegung ist sie eine Reihe zum Blättern.
+ * Bewertungen (Design.md, 8.8 und 9.9): Bewertungen aus dem Google-Profil, Karten im Aufbau einer Google-Rezension.
+ * Als Laufband zieht die Reihe langsam nach links und läuft endlos im Kreis, auch beim Blättern von Hand.
+ * Sie hält bei Maus, Tastaturfokus, Berührung, aufgeklappter Bewertung und über den Halt-Knopf an.
+ * Ohne Skript ist sie eine Reihe zum Blättern. Bei reduzierter Bewegung läuft sie nicht von selbst.
  */
 export function Bewertungsreihe({ liste, laufband = true }: { liste: Bewertung[]; laufband?: boolean }) {
-  const hinweise = (
-    <p className="klein" style={{ display: "grid", gap: "var(--a-2)", justifyItems: "start" }}>
-      {liste.some((b) => b.sinngemaess) ? (
-        <Offen>Originalwortlaut der Kundenstimmen. Sie stehen hier sinngemäß</Offen>
-      ) : null}
-      {googleBewertungen.length === 0 ? <Offen>Google-Bewertungen im Wortlaut eintragen</Offen> : null}
+  const hinweis = (
+    <p className="klein">
+      Bewertungen mit fünf Sternen aus unserem Google-Profil, im Wortlaut (Stand{" "}
+      {standDatum.format(new Date(firma.google.stand))}).
     </p>
   );
 
@@ -199,25 +198,46 @@ export function Bewertungsreihe({ liste, laufband = true }: { liste: Bewertung[]
             <Bewertungskarte bewertung={b} key={b.id} />
           ))}
         </div>
-        <div style={{ marginTop: "var(--a-5)" }}>{hinweise}</div>
+        <div style={{ marginTop: "var(--a-5)" }}>{hinweis}</div>
       </>
     );
   }
 
   return (
     <div className="laufband" data-laufband>
-      <div className="laufband__bahn" tabIndex={0} role="group" aria-label="Kundenstimmen, seitlich blätterbar">
+      <div
+        className="laufband__bahn"
+        tabIndex={0}
+        role="group"
+        aria-label="Bewertungen bei Google, seitlich blätterbar"
+      >
         {liste.map((b) => (
           <Bewertungskarte bewertung={b} key={b.id} />
         ))}
       </div>
-      <div className="rahmen" style={{ display: "flex", flexWrap: "wrap", gap: "var(--a-5)", justifyContent: "space-between", alignItems: "center" }}>
-        {hinweise}
+      <div className="rahmen laufband__fuss">
+        {hinweis}
         <div className="laufband__pfeile">
-          <button type="button" className="rundknopf rundknopf--zurueck" data-laufband-zurueck aria-label="Vorherige Kundenstimme">
+          {/* Erscheint nur, wenn das Band von selbst läuft (lib/bedienung.ts). */}
+          <button
+            type="button"
+            className="rundknopf rundknopf--halt"
+            data-laufband-halt
+            aria-label="Laufband anhalten"
+            hidden
+          >
+            <Zeichen name="pause" />
+            <Zeichen name="weiter" />
+          </button>
+          <button
+            type="button"
+            className="rundknopf rundknopf--zurueck"
+            data-laufband-zurueck
+            aria-label="Vorherige Bewertung"
+          >
             <Zeichen name="pfeil" />
           </button>
-          <button type="button" className="rundknopf" data-laufband-vor aria-label="Nächste Kundenstimme">
+          <button type="button" className="rundknopf" data-laufband-vor aria-label="Nächste Bewertung">
             <Zeichen name="pfeil" />
           </button>
         </div>
