@@ -1,0 +1,611 @@
+/*
+ * 3D-Haus auf /haus (bausteine/Haus3D.tsx, lib/haus3d/).
+ * Die Bühne ist kein gerahmtes Bild: Sie reicht von Rand zu Rand, das Haus steht frei auf Anthrazit (Design.md, Abschnitt 11).
+ */
+
+.haus3d {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 62% 58% at 62% 60%, #2b3038 0%, rgb(43 48 56 / 0) 100%),
+    var(--anthrazit);
+  color: var(--f-text);
+}
+
+.haus3d__kopf {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: var(--a-5);
+  padding-top: var(--a-5);
+  padding-bottom: var(--a-6);
+  /* Der Text liegt über der Bühne: Ziehen und Klicken gehen durch ihn hindurch ans Haus */
+  pointer-events: none;
+}
+
+.haus3d__kopf :is(a, button) {
+  pointer-events: auto;
+}
+
+.haus3d__kopf h1 {
+  max-width: 11ch;
+  margin-top: var(--a-4);
+  color: #fff;
+}
+
+.haus3d__kopf .vorspann {
+  max-width: 34ch;
+  color: var(--text-dunkel);
+}
+
+/* ---------- Spielfläche: Bühne, Tafel, Auswahl ---------- */
+
+.haus3d__spiel {
+  position: relative;
+  height: min(78svh, 620px);
+}
+
+.haus3d__voll {
+  position: absolute;
+  inset: 0;
+}
+
+.haus3d__buehne {
+  position: absolute;
+  inset: 0;
+  /* Wischen und Ziehen auf der Bühne bewegen das Haus, nicht die Seite */
+  touch-action: none;
+}
+
+.haus3d__flaeche {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity var(--d-gross) var(--k-strom);
+}
+
+.haus3d__flaeche:active {
+  cursor: grabbing;
+}
+
+.haus3d[data-zustand="bereit"] .haus3d__flaeche {
+  opacity: 1;
+}
+
+.haus3d__flaeche:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -6px;
+}
+
+/* Das Standbild steht dort, wo später das Haus erscheint: in der freien Fläche neben Text und über der Auswahl */
+.haus3d__standbild {
+  position: absolute;
+  left: 4%;
+  top: 4%;
+  width: 92%;
+  height: 80%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity var(--d-gross) var(--k-strom);
+}
+
+.haus3d[data-zustand="bereit"] .haus3d__standbild {
+  opacity: 0;
+}
+
+/* ---------- Punkte im Haus: rote Knoten wie an der Leitung ---------- */
+
+.haus3d__punkte {
+  position: absolute;
+  inset: 0;
+  /* über der Zeichenfläche, die erst nach dem Laden in die Bühne kommt */
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.haus3d[data-zustand]:not([data-zustand="bereit"]) .haus3d__punkte {
+  display: none;
+}
+
+.haus3d__punkt {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: var(--antippen);
+  height: var(--antippen);
+  margin: -24px 0 0 -24px;
+  border-radius: 50%;
+  color: #fff;
+  pointer-events: auto;
+  cursor: pointer;
+  visibility: hidden;
+  will-change: transform;
+  touch-action: none;
+}
+
+.haus3d__punkt::before {
+  content: "";
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--rot);
+  background: rgb(21 24 29 / 0.82);
+  transition:
+    background-color var(--d-schnell) linear,
+    scale var(--d-schnell) var(--k-feder);
+}
+
+.haus3d__punkt .zeichen {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
+
+.haus3d__punktname {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 2px);
+  translate: -50% 4px;
+  padding: 5px 10px;
+  border-radius: var(--r-klein);
+  background: #fff;
+  color: #000;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--d-sofort) linear,
+    translate var(--d-schnell) var(--k-schalter);
+}
+
+@media (hover: hover) {
+  .haus3d__punkt:hover::before {
+    background: var(--rot);
+    scale: 1.12;
+  }
+
+  .haus3d__punkt:hover .haus3d__punktname {
+    opacity: 1;
+    translate: -50% 0;
+  }
+}
+
+.haus3d__punkt[data-aktiv]::before {
+  background: var(--rot);
+  scale: 1.18;
+}
+
+.haus3d__punkt[data-aktiv] .haus3d__punktname {
+  opacity: 1;
+  translate: -50% 0;
+}
+
+.haus3d__punkt:active::before {
+  background: var(--rot-dunkel);
+  scale: 0.96;
+}
+
+/* ---------- Tafel zum Punkt ---------- */
+
+/* Tafel und Auswahl stehen gemeinsam am unteren Rand der Bühne */
+.haus3d__unten {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: grid;
+  gap: var(--a-2);
+  pointer-events: none;
+}
+
+.haus3d__tafel {
+  padding-inline: var(--rand);
+  pointer-events: none;
+}
+
+.haus3d__karte {
+  display: grid;
+  gap: var(--a-3);
+  width: min(100%, 400px);
+  padding: var(--a-5);
+  border-radius: var(--r-mittel);
+  background: #fff;
+  color: #3d3d3d;
+  box-shadow: 0 24px 60px -24px rgb(0 0 0 / 0.6);
+  pointer-events: auto;
+  /* Die Tafel steht auf Weiß, auch im dunklen Abschnitt */
+  --f-titel: #000;
+  --f-text: #3d3d3d;
+  --f-leise: #595959;
+  --f-verweis: var(--rot);
+  animation: haus3d-tafel var(--d-ruhig) var(--k-schalter) both;
+}
+
+@keyframes haus3d-tafel {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+
+.haus3d__karte h3 {
+  color: #000;
+}
+
+.haus3d__ort {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  color: #595959;
+  font-size: var(--gr-klein);
+  line-height: 1.35;
+}
+
+.haus3d__nummer {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--rot);
+  color: #000;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.haus3d__kartenkopf {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--a-4);
+}
+
+.haus3d__blaettern {
+  display: flex;
+  flex: none;
+  gap: var(--a-2);
+  margin: -6px -6px 0 0;
+}
+
+.haus3d__ort {
+  padding-top: 4px;
+}
+
+/* ---------- Auswahl unter dem Haus ---------- */
+
+.haus3d__leiste {
+  display: flex;
+  pointer-events: auto;
+  gap: 6px;
+  padding: var(--a-3) var(--rand) var(--a-4);
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.haus3d__leiste::-webkit-scrollbar {
+  display: none;
+}
+
+.haus3d__wahl {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--a-2);
+  flex: none;
+  min-height: var(--antippen);
+  padding: 0 16px 0 12px;
+  border-radius: var(--r-rund);
+  background: rgb(35 39 46 / 0.86);
+  box-shadow: inset 0 0 0 1px var(--linie-auf-dunkel);
+  color: var(--text-dunkel);
+  font-size: var(--gr-klein);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition:
+    background-color var(--d-sofort) linear,
+    box-shadow var(--d-sofort) linear,
+    color var(--d-sofort) linear,
+    scale var(--d-sofort) var(--k-schalter);
+}
+
+.haus3d__wahl .zeichen {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.9;
+  color: var(--rot);
+  transition: color var(--d-sofort) linear;
+}
+
+@media (hover: hover) {
+  .haus3d__wahl:hover {
+    background: var(--linie-auf-dunkel);
+    box-shadow: inset 0 0 0 1px #4a505a;
+  }
+}
+
+.haus3d__wahl--haus {
+  box-shadow: inset 0 0 0 1.5px #6a717c;
+}
+
+.haus3d__wahl--haus .zeichen {
+  color: currentColor;
+}
+
+.haus3d__wahl[aria-pressed="true"] {
+  background: var(--rot);
+  box-shadow: inset 0 0 0 1px var(--rot);
+  color: #fff;
+}
+
+.haus3d__wahl[aria-pressed="true"] .zeichen {
+  color: #fff;
+}
+
+.haus3d__wahl:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.haus3d__wahl:active {
+  scale: 0.97;
+}
+
+.haus3d__wahl[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Ohne Skript gibt es nichts zu wählen: Die Liste unter der Bühne übernimmt */
+html:not(.js) :is(.haus3d__leiste, .haus3d__werkzeug, .haus3d__hinweis) {
+  display: none;
+}
+
+/* ---------- Werkzeug: Zoom, Schließen ---------- */
+
+.haus3d__werkzeug {
+  position: absolute;
+  right: var(--rand);
+  top: var(--a-4);
+  z-index: 3;
+  display: grid;
+  gap: var(--a-2);
+}
+
+.haus3d__werkzeug .rundknopf {
+  background: rgb(35 39 46 / 0.86);
+  box-shadow: inset 0 0 0 1px var(--linie-auf-dunkel);
+  backdrop-filter: blur(8px);
+}
+
+.haus3d__hinweis,
+.haus3d__meldung {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 2;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: var(--r-rund);
+  background: rgb(35 39 46 / 0.86);
+  color: var(--text-dunkel);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.haus3d__hinweis {
+  top: var(--a-4);
+  transition: opacity var(--d-ruhig) linear;
+}
+
+.haus3d__hinweis[data-weg] {
+  opacity: 0;
+}
+
+.haus3d__meldung {
+  top: var(--a-4);
+  white-space: normal;
+  text-align: center;
+  max-width: min(80%, 420px);
+}
+
+/* Kein 3D auf diesem Gerät: Das Standbild bleibt, Auswahl und Werkzeug verschwinden, der Hinweis steht unten */
+.haus3d[data-zustand="fehler"] :is(.haus3d__unten, .haus3d__werkzeug, .haus3d__start) {
+  display: none;
+}
+
+.haus3d[data-zustand="fehler"] .haus3d__meldung {
+  top: auto;
+  bottom: var(--a-5);
+  padding: 12px 18px;
+  border-radius: var(--r-mittel);
+  font-size: var(--gr-klein);
+}
+
+.haus3d__start {
+  position: absolute;
+  left: 50%;
+  bottom: var(--a-6);
+  translate: -50% 0;
+  z-index: 3;
+}
+
+/* ---------- Am Rechner: Bühne füllt den ersten Bildschirm, der Text liegt links darüber ---------- */
+
+@media (min-width: 1024px) {
+  .haus3d {
+    height: clamp(620px, 100svh - var(--kopf-hoehe), 940px);
+  }
+
+  .haus3d__kopf {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding-top: var(--a-5);
+  }
+
+  .haus3d__spiel {
+    position: absolute;
+    inset: 0;
+    height: auto;
+  }
+
+  .haus3d__standbild {
+    left: calc(min(36%, 560px) - 24px);
+    top: 14px;
+    width: calc(100% - min(36%, 560px) + 12px);
+    height: calc(100% - 96px);
+  }
+
+  .haus3d__tafel {
+    padding-left: var(--inhalt-links);
+  }
+
+  /* Ist eine Leistung gewählt oder die Kamera nah am Haus, macht der Text der Szene Platz */
+  .haus3d__kopf {
+    transition: opacity var(--d-ruhig) linear;
+  }
+
+  .haus3d[data-nah] .haus3d__kopf:not(:focus-within) {
+    opacity: 0;
+  }
+
+  .haus3d[data-nah] .haus3d__kopf:not(:focus-within) :is(a, button) {
+    pointer-events: none;
+  }
+
+  .haus3d__leiste {
+    justify-content: center;
+    flex-wrap: wrap;
+    padding-inline: var(--rand);
+    padding-bottom: var(--a-5);
+    overflow: visible;
+  }
+
+  .haus3d__werkzeug {
+    top: var(--a-6);
+    right: calc(var(--aussen) + var(--rand));
+  }
+
+  .haus3d__hinweis {
+    top: var(--a-6);
+    left: auto;
+    right: calc(var(--aussen) + var(--rand) + 64px);
+    translate: none;
+  }
+}
+
+/* ---------- Am Handy: erst das Standbild mit Knopf, geöffnet füllt das Haus den Bildschirm ---------- */
+
+/* Solange das Haus nicht geöffnet ist, bleibt die Bühne ein Bild: Wischen scrollt die Seite */
+.haus3d[data-tasten]:not([data-offen]) :is(.haus3d__flaeche, .haus3d__punkte, .haus3d__unten, .haus3d__werkzeug, .haus3d__hinweis) {
+  display: none;
+}
+
+.haus3d[data-tasten]:not([data-offen]) .haus3d__standbild {
+  opacity: 1;
+}
+
+.haus3d[data-tasten]:not([data-offen]) .haus3d__buehne,
+html:not(.js) .haus3d__buehne {
+  touch-action: auto;
+}
+
+.haus3d[data-tasten]:not([data-offen]) .haus3d__spiel {
+  height: min(64svh, 520px);
+}
+
+/* Über Kopfzeile und Handyleiste der Seite */
+.haus3d[data-offen] {
+  z-index: 120;
+}
+
+.haus3d[data-offen] .haus3d__voll {
+  position: fixed;
+  /* über dem Kopf mit Überschrift */
+  z-index: 5;
+  background:
+    radial-gradient(ellipse 90% 46% at 50% 42%, #2b3038 0%, rgb(43 48 56 / 0) 100%),
+    var(--anthrazit);
+  overscroll-behavior: contain;
+}
+
+.haus3d[data-offen] .haus3d__unten {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.haus3d[data-offen] .haus3d__werkzeug {
+  top: calc(var(--a-3) + env(safe-area-inset-top));
+  right: var(--a-3);
+  grid-auto-flow: column;
+}
+
+/* Schließen steht als Erstes und fällt auf */
+.haus3d__zu {
+  order: -1;
+  background: #fff !important;
+  color: #000 !important;
+  box-shadow: none !important;
+}
+
+/* Am Handy steht der Hinweis mittig über Tafel und Auswahl */
+.haus3d[data-offen] .haus3d__hinweis {
+  top: auto;
+  bottom: calc(92px + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 1023px) {
+  .haus3d__tafel {
+    padding-inline: var(--a-3);
+  }
+
+  .haus3d__karte {
+    width: 100%;
+    gap: var(--a-2);
+    padding: var(--a-4);
+  }
+
+  .haus3d__karte h3 {
+    font-size: 1.25rem;
+  }
+
+  .haus3d__karte p {
+    font-size: var(--gr-klein);
+    line-height: 1.45;
+  }
+
+  .haus3d__leiste {
+    padding-inline: var(--a-3);
+    scroll-padding-inline: var(--a-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .haus3d__karte {
+    animation: none;
+  }
+}

@@ -11,6 +11,7 @@ import "@/stil/leitung.css";
 import "@/stil/seiten.css";
 import "@/stil/karte.css";
 import "@/stil/schauhaus.css";
+import "@/stil/haus3d.css";
 import "@/stil/bewegung.css";
 
 import { Bedienung } from "@/bausteine/Bedienung";

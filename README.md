@@ -113,4 +113,27 @@ Die Vorschaubilder für soziale Netzwerke entstehen beim Bau (`lib/vorschaubild.
 
 ## 3D-Haus
 
-`app/haus/page.tsx` hält den Platz frei. Das Element mit `data-haus-buehne` ist die Bühne für das spätere 3D-Haus. Bis dahin stehen dort ein gezeichnetes Standbild und darunter die normale Leistungsübersicht.
+Die Seite `/haus` zeigt alle neun Leistungen an einem Haus in 3D (Informationsarchitektur.md, Abschnitt 9; Design.md, Abschnitt 11). Das Haus lässt sich drehen, kippen und zoomen. Wer nah heranfährt, geht durch die Türen hinein.
+
+| Teil | Wo |
+|---|---|
+| Bühne, Auswahl, Tafel, Laden, Handy-Ansicht | `bausteine/Haus3D.tsx`, `stil/haus3d.css` |
+| Szene: Bild, Licht, Takt, Auswahl, Türen, Raumlicht | `lib/haus3d/szene.ts` |
+| Hausmodell in Metern: Grundstück, drei Geschosse, Räume, Möbel | `lib/haus3d/haus.ts`, Baukasten in `lib/haus3d/bau.ts` |
+| Die neun Geräte mit ihrer Bewegung | `lib/haus3d/dinge.ts` |
+| Orte der neun Punkte, Blickwinkel, Verlauf der Leitung, Wegpunkte | `lib/haus3d/orte.ts` |
+| Kamera und Kamerafahrten | `lib/haus3d/kamera.ts`, `lib/haus3d/wege.ts` |
+| Rote Leitung vom Zählerschrank zum Punkt | `lib/haus3d/leitung.ts` |
+| Türen, Garagentor, Jalousien | `lib/haus3d/teile.ts` |
+| Werkstoffe und Raumlicht | `lib/haus3d/stoffe.ts` |
+| Standbild | `bilder/haus-3d-standbild.webp` |
+
+- **Technik:** Three.js (MIT-Lizenz), vom eigenen Server. Es gibt keine Modell- und keine Texturdateien: Das Haus entsteht beim Start aus Maßen im Code. Die Szene lädt als eigene Datei (rund 165 KB) und nur auf `/haus`.
+- **Laden:** Am Rechner lädt die Szene, sobald die Bühne im Bild ist. Am Handy erst nach dem Knopf "3D-Haus öffnen", dann bildschirmfüllend (SEO-Optimierung.md, 11.3). Bis dahin, ohne Skript und ohne 3D-Unterstützung steht das Standbild. Alle Texte und Links stehen zusätzlich als Liste unter der Bühne.
+- **Bedienung:** Ziehen dreht, Mausrad oder zwei Finger zoomen auf die Stelle unter dem Zeiger, rechte Maustaste oder Umschalt und Ziehen verschiebt. Auf der Zeichenfläche drehen die Pfeiltasten, Plus und Minus zoomen, W, A, S und D gehen. Ist das Haus ganz zu sehen, scrollt das Mausrad die Seite weiter.
+- **Leistung wählen:** über die Knöpfe unter dem Haus, die roten Punkte oder ein Klick auf das Gerät. Die Kamera fährt hin (innen durch Haustür oder Terrassentür), die Leitung leuchtet vom Zählerschrank bis zum Punkt, das Licht im Raum geht an, das Gerät bewegt sich. Ein zweiter Klick auf dasselbe Gerät oder der Link der Tafel führt zur Leistungsseite.
+- **Neuer Ort für eine Leistung:** Eintrag in `lib/haus3d/orte.ts` ändern (Punkt, Standort der Kamera, Blickpunkt, Verlauf der Leitung). Das Gerät selbst steht in `lib/haus3d/dinge.ts`.
+- **Standbild erneuern:** nach Änderungen am Modell die Szene im Entwicklungsmodus öffnen und `window.__haus3d.foto(2600, 1700)` aufrufen. Das liefert das Haus auf durchsichtigem Grund als PNG-Daten. Rand abschneiden, auf 1400 Pixel Breite bringen, als WebP mit Durchsicht ablegen.
+- **"Weniger Bewegung":** keine Kamerafahrt (harter Schnitt), kein Drehen von selbst, die Geräte stehen im fertigen Zustand.
+- **Abweichungen von `Design.md`, Abschnitt 11:** Kamerafahrten dauern 1200 ms nur im Freien. Führt der Weg durch Türen ins Haus, dauert die Fahrt länger, weil der Auftraggeber am 27.11.2026 wollte, dass man wirklich zu den Leistungen hingeht. Der Zählerschrank steht im Hausanschlussraum im Erdgeschoss, das Haus hat keinen Keller.
+- **Nicht verwendet:** der Ordner `elektrotechnik-haus/` (ein früherer 3D-Rundgang mit zehn allgemeinen Stationen, 7 MB Texturen und Schriften von Google). Er ist nicht Teil der Seite und nicht im Repo.
