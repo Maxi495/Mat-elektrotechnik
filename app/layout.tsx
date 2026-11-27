@@ -10,6 +10,7 @@ import "@/stil/kopf-fuss.css";
 import "@/stil/leitung.css";
 import "@/stil/seiten.css";
 import "@/stil/karte.css";
+import "@/stil/schauhaus.css";
 import "@/stil/bewegung.css";
 
 import { Bedienung } from "@/bausteine/Bedienung";

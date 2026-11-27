@@ -74,7 +74,7 @@ function erscheinen(wurzel: ParentNode): Aufraeumen {
     wurzel.querySelectorAll<HTMLElement>(
       "main [data-zeilen], main .bildrahmen, main [data-reihe], main [data-erscheint], main .zeichen[data-zeichnet], main [data-erscheint-kopf]",
     ),
-  ).filter((el) => !el.closest(".start-kopf, .seitenkopf, .sicherung, .raumbild"));
+  ).filter((el) => !el.closest(".start-kopf, .seitenkopf, .sicherung"));
 
   if (ruhig() || !("IntersectionObserver" in window)) {
     kandidaten.forEach((el) => el.classList.add("ist-da", "ruht"));

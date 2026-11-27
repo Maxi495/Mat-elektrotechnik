@@ -1,0 +1,795 @@
+/*
+ * Schauhaus der Smart-Home-Seite (bausteine/Schauhaus.tsx): gezeichnetes Haus mit vier Schaltern.
+ * Alles Schalten steht hier und braucht kein Skript: Die Schalter sind Kontrollkästchen, :has liest ihren Zustand.
+ *
+ * Aufbau der Zeichnung in drei Schichten:
+ *   1. Szene: Grundstück, Haus, Garten. Wird von der Abendstimmung abgedunkelt.
+ *   2. Abendstimmung: eine blaue Fläche, die alles darunter abdunkelt (multiply).
+ *   3. Lichter, Jalousien, Garagentor: liegen darüber und tragen eigene Farben für Tag und Abend.
+ */
+
+.schauhaus {
+  display: grid;
+  gap: var(--a-3);
+
+  /* ---------- Farben der Szene am Tag ---------- */
+  --putz-vorn: #f6f4f0;
+  --putz-rechts: #dedad3;
+  --holz-vorn: #d9b68e;
+  --holz-rechts: #bd9a73;
+  --holz-fuge: #c39e75;
+  --holz-fuge-rechts: #a8855f;
+  --dunkel-vorn: #50565e;
+  --dunkel-rechts: #3d4249;
+  --blende-vorn: #30353b;
+  --blende-rechts: #25292e;
+  --dach: #ecece8;
+  --rasen: #d3e5c2;
+  --rasen-streifen: #c8ddb6;
+  --sockel-vorn: #bbae9c;
+  --sockel-rechts: #a09381;
+  --pflaster: #dddcd8;
+  --fuge: #c6c5c0;
+  --platte: #e9e7e2;
+  --deck-oben: #d2b18a;
+  --deck-vorn: #ba9872;
+  --deck-rechts: #a68560;
+  --diele: #bc9970;
+  --hecke-oben: #a8c799;
+  --hecke-vorn: #8fb581;
+  --hecke-rechts: #789e6c;
+  --krone-hell: #b9d6a9;
+  --krone-dunkel: #6f9c68;
+  --krone-licht: #cde4bd;
+  --krone-mittel: #8db682;
+  --stamm: #8c6e52;
+  --stamm-rechts: #74593f;
+  --rahmen: #2c3036;
+  --glas-oben: #9dbbd0;
+  --glas-unten: #d5e4ed;
+  --oeffnung: #cbc7c0;
+  --bank: #efece6;
+  --laibung-v: #bbb6ae;
+  --laibung-s: #dcd8d1;
+
+  /* ---------- Teile über der Abendstimmung: Tag ---------- */
+  --behang-v: #d9dce0;
+  --behang-s: #c2c6cb;
+  --lamelle: #a9aeb5;
+  --kasten: #2c3036;
+  --tor: #50565e;
+  --tornut: #3d4249;
+  --innen-boden: #4c5055;
+  --innen-wand: #3d4146;
+  --innen-hinten: #2f3338;
+  --auto-oben: #d4d7db;
+  --auto-haube: #c6cacf;
+  --auto-vorn: #b8bcc1;
+  --auto-rechts: #9ca1a7;
+  /* Wie stark das Licht im Freien zu sehen ist: am Tag schwach, am Abend voll */
+  --licht-frei: 0.3;
+  /* 1: Räume und Fenster schalten nacheinander. 0: alle zugleich (weniger Bewegung) */
+  --folge: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .schauhaus {
+    --folge: 0;
+  }
+}
+
+/* Abend: die Teile über der Abendstimmung werden dunkel */
+.schauhaus:has(.schauhaus__schalter--abend:checked) {
+  --behang-v: #3a425c;
+  --behang-s: #2f3750;
+  --lamelle: #252c42;
+  --kasten: #151924;
+  --tor: #262c3e;
+  --tornut: #1b2030;
+  --innen-boden: #171b27;
+  --innen-wand: #131722;
+  --innen-hinten: #0f121b;
+  --auto-oben: #4b5470;
+  --auto-haube: #454d68;
+  --auto-vorn: #3e4660;
+  --auto-rechts: #333a52;
+  --licht-frei: 1;
+}
+
+/* Licht an: Die Garage ist innen hell, am Tag wie am Abend */
+.schauhaus:has(.schauhaus__schalter--licht:checked) {
+  --innen-boden: #a59a86;
+  --innen-wand: #8f8572;
+  --innen-hinten: #776e5e;
+  --auto-oben: #f4f5f6;
+  --auto-haube: #e8eaec;
+  --auto-vorn: #dcdfe2;
+  --auto-rechts: #c0c4c9;
+}
+
+/* ---------- Bühne ---------- */
+
+.schauhaus__buehne {
+  position: relative;
+  /* Die Abendstimmung soll nur die Bühne abdunkeln, nicht die Seite dahinter */
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--r-gross);
+  background: linear-gradient(180deg, #e3edf6 0%, #f0f4f4 56%, #f5f5f1 100%);
+}
+
+.schauhaus__bild {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/*
+ * Farbwechsel der Teile über der Abendstimmung: gleiche Dauer und Kurve wie die Abendstimmung selbst,
+ * damit Tor und Jalousien im selben Takt dunkel werden wie die Wände.
+ * :where hält die Regel schwach, sonst überstimmt sie die eigenen Übergänge einzelner Teile.
+ */
+.schauhaus__bild :where(polygon, circle, ellipse, rect, path) {
+  transition: fill var(--d-gross) var(--k-strom), stroke var(--d-gross) var(--k-strom);
+}
+
+/* ---------- Szene ---------- */
+
+.sh-sockel {
+  fill: url(#sh-verlauf-sockel);
+}
+
+.sh-stop-sockel-vorn {
+  stop-color: var(--sockel-vorn);
+}
+
+.sh-stop-sockel-rechts {
+  stop-color: var(--sockel-rechts);
+}
+
+.sh-rasen {
+  fill: var(--rasen);
+}
+
+.sh-rasen-streifen {
+  fill: var(--rasen-streifen);
+}
+
+.sh-schatten {
+  fill: #26331f;
+  opacity: 0.17;
+}
+
+.sh-pflaster {
+  fill: var(--pflaster);
+}
+
+.sh-platte {
+  fill: var(--platte);
+}
+
+.sh-fuge,
+.sh-holzfuge,
+.sh-diele,
+.sh-handlauf,
+.sh-zelle,
+.sh-lamelle,
+.sh-tornut,
+.sh-kabel {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.sh-fuge {
+  stroke: var(--fuge);
+  stroke-width: 1.2;
+}
+
+.sh-hecke--oben {
+  fill: var(--hecke-oben);
+}
+
+.sh-hecke--vorn {
+  fill: var(--hecke-vorn);
+}
+
+.sh-hecke--rechts {
+  fill: var(--hecke-rechts);
+}
+
+.sh-stamm {
+  fill: var(--stamm);
+}
+
+.sh-stamm--rechts {
+  fill: var(--stamm-rechts);
+}
+
+.sh-krone {
+  fill: url(#sh-verlauf-krone);
+}
+
+.sh-stop-krone-hell {
+  stop-color: var(--krone-hell);
+}
+
+.sh-stop-krone-dunkel {
+  stop-color: var(--krone-dunkel);
+}
+
+.sh-krone--hell {
+  fill: url(#sh-verlauf-krone-hell);
+}
+
+.sh-stop-krone-licht {
+  stop-color: var(--krone-licht);
+}
+
+.sh-stop-krone-mittel {
+  stop-color: var(--krone-mittel);
+}
+
+.sh-putz--vorn {
+  fill: var(--putz-vorn);
+}
+
+.sh-putz--rechts {
+  fill: var(--putz-rechts);
+}
+
+.sh-fuss {
+  fill: #000;
+  opacity: 0.13;
+}
+
+.sh-holz--vorn {
+  fill: var(--holz-vorn);
+}
+
+.sh-holz--rechts {
+  fill: var(--holz-rechts);
+}
+
+.sh-holzfuge {
+  stroke: var(--holz-fuge);
+  stroke-width: 1;
+}
+
+.sh-holzfuge--rechts {
+  stroke: var(--holz-fuge-rechts);
+}
+
+.sh-dunkel--vorn {
+  fill: var(--dunkel-vorn);
+}
+
+.sh-dunkel--rechts {
+  fill: var(--dunkel-rechts);
+}
+
+.sh-blende--vorn {
+  fill: var(--blende-vorn);
+}
+
+.sh-blende--rechts {
+  fill: var(--blende-rechts);
+}
+
+.sh-dach {
+  fill: var(--dach);
+}
+
+.sh-modul {
+  fill: #1c2a48;
+  stroke: #e9ecf1;
+  stroke-width: 0.9;
+}
+
+.sh-zelle {
+  stroke: #3b4e7a;
+  stroke-width: 0.6;
+}
+
+.sh-kragschatten {
+  fill: #2b2318;
+  opacity: 0.14;
+}
+
+/* Fenster */
+.sh-oeffnung {
+  fill: var(--oeffnung);
+}
+
+.sh-rahmen {
+  fill: var(--rahmen);
+}
+
+.sh-glas {
+  fill: url(#sh-verlauf-glas);
+}
+
+.sh-glas--s {
+  opacity: 0.86;
+}
+
+.sh-stop-glas-oben {
+  stop-color: var(--glas-oben);
+}
+
+.sh-stop-glas-unten {
+  stop-color: var(--glas-unten);
+}
+
+.sh-spiegelung {
+  fill: #fff;
+  opacity: 0.24;
+}
+
+.sh-spiegelung--schmal {
+  opacity: 0.16;
+}
+
+.sh-bank {
+  fill: var(--bank);
+}
+
+.sh-laibung--v {
+  fill: var(--laibung-v);
+}
+
+.sh-laibung--s {
+  fill: var(--laibung-s);
+}
+
+/* Eingang */
+.sh-tuer {
+  fill: #2f343a;
+}
+
+.sh-tuerglas {
+  fill: url(#sh-verlauf-glas);
+}
+
+.sh-tuergriff {
+  fill: #c9ced3;
+}
+
+.sh-sprech {
+  fill: #eceff1;
+}
+
+.sh-stufe {
+  fill: var(--platte);
+}
+
+.sh-nischenschatten {
+  fill: #000;
+  opacity: 0.16;
+}
+
+/* Terrassen */
+.sh-deck--oben {
+  fill: var(--deck-oben);
+}
+
+.sh-deck--vorn {
+  fill: var(--deck-vorn);
+}
+
+.sh-deck--rechts {
+  fill: var(--deck-rechts);
+}
+
+.sh-diele {
+  stroke: var(--diele);
+  stroke-width: 0.9;
+}
+
+.sh-bruestung {
+  fill: #cfe5ef;
+  fill-opacity: 0.3;
+  stroke: #fff;
+  stroke-opacity: 0.55;
+  stroke-width: 0.8;
+}
+
+.sh-bruestung--nah {
+  fill-opacity: 0.24;
+}
+
+.sh-handlauf {
+  stroke: #b7bec5;
+  stroke-width: 1.7;
+}
+
+.sh-kuebel--oben {
+  fill: #5d646c;
+}
+
+.sh-kuebel--vorn {
+  fill: #4a5058;
+}
+
+.sh-kuebel--rechts {
+  fill: #3a3f47;
+}
+
+.sh-poller,
+.sh-wandleuchte {
+  fill: #3a3f47;
+}
+
+/* Liege und Tisch auf der Terrasse */
+.sh-sitz--oben {
+  fill: #5d646c;
+}
+
+.sh-sitz--vorn {
+  fill: #4a5058;
+}
+
+.sh-sitz--rechts {
+  fill: #3a3f47;
+}
+
+.sh-polster {
+  fill: #f1efea;
+}
+
+.sh-pollerkopf {
+  fill: #f2f2ee;
+}
+
+/* ---------- Abendstimmung ---------- */
+
+.sh-nacht {
+  fill: #232f5c;
+  opacity: 0;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  transition: opacity var(--d-gross) var(--k-strom);
+}
+
+.schauhaus:has(.schauhaus__schalter--abend:checked) .sh-nacht {
+  opacity: 0.88;
+}
+
+.sh-himmel {
+  fill: #fff;
+  opacity: 0;
+  transition: opacity var(--d-gross) var(--k-strom);
+}
+
+.schauhaus:has(.schauhaus__schalter--abend:checked) .sh-himmel {
+  opacity: 0.9;
+}
+
+.sh-mond {
+  fill: #fff5d8;
+  filter: drop-shadow(0 0 14px rgb(255 245 216 / 0.7));
+}
+
+/* ---------- Licht ---------- */
+
+.sh-licht {
+  opacity: 0;
+  transition: opacity var(--d-ruhig) var(--k-strom);
+  /* Die Räume gehen nacheinander an */
+  transition-delay: calc(var(--i, 0) * 70ms * var(--folge));
+}
+
+.schauhaus:has(.schauhaus__schalter--licht:checked) .sh-licht {
+  opacity: 1;
+}
+
+.schauhaus:has(.schauhaus__schalter--licht:checked) .sh-licht--frei {
+  opacity: var(--licht-frei);
+}
+
+.sh-lichtglas {
+  fill: url(#sh-verlauf-licht);
+}
+
+.sh-lichtglas--s {
+  opacity: 0.9;
+}
+
+/* Möbel als Schatten vor dem Licht */
+.sh-moebel {
+  fill: #a4670f;
+  opacity: 0.3;
+}
+
+.sh-lichtfleck {
+  fill: #ffd27a;
+  opacity: 0.55;
+}
+
+.sh-lichtwand {
+  fill: #ffd27a;
+  opacity: 0.2;
+}
+
+.sh-lichtteppich {
+  fill: url(#sh-verlauf-teppich);
+}
+
+.sh-lichthof {
+  fill: url(#sh-verlauf-hof);
+}
+
+.sh-lichthof--wand {
+  opacity: 0.8;
+}
+
+.sh-leuchtpunkt {
+  fill: #fff0c2;
+}
+
+/* ---------- Jalousien ---------- */
+
+.sh-kasten {
+  fill: var(--kasten);
+}
+
+.sh-jalousie {
+  /* Oben: um die eigene Höhe nach oben geschoben, die Fensteröffnung schneidet sie ab */
+  transform: translateY(calc(var(--hub) * -1));
+  transition: transform var(--d-szene) var(--k-strom);
+  transition-delay: calc(var(--i, 0) * 55ms * var(--folge));
+}
+
+.schauhaus:has(.schauhaus__schalter--jalousie:checked) .sh-jalousie {
+  transform: none;
+}
+
+.sh-behang--v {
+  fill: var(--behang-v);
+}
+
+.sh-behang--s {
+  fill: var(--behang-s);
+}
+
+.sh-lamelle {
+  stroke: var(--lamelle);
+  stroke-width: 1.3;
+}
+
+/* Brennt drinnen Licht, schimmert es durch die Lamellen */
+.sh-durchschein {
+  fill: #ffc65c;
+  opacity: 0;
+  transition: opacity var(--d-ruhig) linear;
+}
+
+.schauhaus:has(.schauhaus__schalter--licht:checked) .sh-durchschein {
+  opacity: 0.3;
+}
+
+/* ---------- Garage ---------- */
+
+.sh-innen--boden {
+  fill: var(--innen-boden);
+}
+
+.sh-innen--wand {
+  fill: var(--innen-wand);
+}
+
+.sh-innen--hinten {
+  fill: var(--innen-hinten);
+}
+
+.sh-innenlicht {
+  fill: #ffd27a;
+  opacity: 0;
+  transition: opacity var(--d-ruhig) linear;
+}
+
+.schauhaus:has(.schauhaus__schalter--licht:checked) .sh-innenlicht {
+  opacity: 0.28;
+}
+
+.sh-wallbox {
+  fill: #f1f2f3;
+}
+
+.sh-wallbox-blende {
+  fill: #23272c;
+}
+
+/* Die Wallbox lädt: ihr Licht pulsiert ruhig */
+.sh-wallbox-licht {
+  fill: #3ddc84;
+  animation: sh-laden 2400ms var(--k-strom) infinite alternate;
+}
+
+@keyframes sh-laden {
+  from {
+    opacity: 0.35;
+  }
+}
+
+.sh-kabel {
+  stroke: #15181d;
+  stroke-width: 2.2;
+}
+
+.sh-autoschatten {
+  fill: #000;
+  opacity: 0.28;
+}
+
+.sh-rad {
+  fill: #15181d;
+}
+
+.sh-auto--oben {
+  fill: var(--auto-oben);
+}
+
+.sh-auto--haube {
+  fill: var(--auto-haube);
+}
+
+.sh-auto--vorn {
+  fill: var(--auto-vorn);
+}
+
+.sh-auto--rechts {
+  fill: var(--auto-rechts);
+}
+
+.sh-autoglas {
+  fill: #232b36;
+}
+
+.sh-scheinwerfer {
+  fill: #f6f9fc;
+}
+
+.sh-kuehler,
+.sh-stecker {
+  fill: #23272c;
+}
+
+.sh-kennzeichen {
+  fill: #f6f9fc;
+}
+
+.sh-torlaibung {
+  fill: var(--tornut);
+}
+
+/* Steht das Tor offen und brennt Licht, fällt es auf die Einfahrt */
+.sh-torlicht {
+  fill: url(#sh-verlauf-teppich);
+  opacity: 0;
+  transition: opacity var(--d-gross) var(--k-strom);
+}
+
+.schauhaus:has(.schauhaus__schalter--garage:checked):has(.schauhaus__schalter--licht:checked) .sh-torlicht {
+  opacity: var(--licht-frei);
+  transition-delay: calc(500ms * var(--folge));
+}
+
+.sh-torblatt {
+  transition: transform calc(var(--d-szene) * 1.15) var(--k-strom);
+}
+
+.schauhaus:has(.schauhaus__schalter--garage:checked) .sh-torblatt {
+  transform: translateY(calc(var(--hub) * -1));
+}
+
+.sh-tor {
+  fill: var(--tor);
+}
+
+.sh-tornut {
+  stroke: var(--tornut);
+  stroke-width: 1.6;
+}
+
+.sh-torgriff {
+  fill: #c9ced3;
+}
+
+/* ---------- Schalter ---------- */
+
+.schauhaus__tafel {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 6px;
+  border: 0;
+  border-radius: var(--r-mittel);
+  background: var(--anthrazit);
+}
+
+.schauhaus__taste {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--a-2);
+  padding: var(--a-3) var(--a-1);
+  border-radius: 11px;
+  background: var(--anthrazit-hell);
+  color: var(--text-dunkel);
+  font-size: var(--gr-klein);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--d-sofort) linear, scale var(--d-sofort) var(--k-schalter);
+}
+
+/* Das Kontrollkästchen liegt unsichtbar über der ganzen Taste */
+.schauhaus__schalter {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  appearance: none;
+  cursor: pointer;
+}
+
+.schauhaus__taste .kippschalter {
+  width: 24px;
+  height: 38px;
+  border-radius: 8px;
+}
+
+.schauhaus__taste .kippschalter__hebel {
+  height: 17px;
+}
+
+.schauhaus__taste:has(:checked) .kippschalter__hebel {
+  transform: translateY(-11px);
+  background: var(--rot);
+  opacity: 1;
+}
+
+.schauhaus__name small {
+  display: block;
+  margin-top: 2px;
+  color: var(--leise-auf-dunkel);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.schauhaus__an,
+.schauhaus__taste:has(:checked) .schauhaus__aus {
+  display: none;
+}
+
+.schauhaus__taste:has(:checked) .schauhaus__an {
+  display: inline;
+}
+
+@media (hover: hover) {
+  .schauhaus__taste:hover {
+    background: var(--linie-auf-dunkel);
+  }
+}
+
+.schauhaus__taste:has(:focus-visible) {
+  outline: 3px solid #fff;
+  outline-offset: -3px;
+}
+
+.schauhaus__taste:active {
+  scale: 0.97;
+}
+
+/* Kopf der Smart-Home-Seite: Das Haus bekommt mehr Platz als ein Foto */
+@media (min-width: 1024px) {
+  .seitenkopf--haus .seitenkopf__raster {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+  }
+}

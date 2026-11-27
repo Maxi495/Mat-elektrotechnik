@@ -83,6 +83,22 @@ Die Karte auf Startseite, "Über uns" und Kontakt ist eine eigene Karte. Sie lä
 - **Quellenangabe:** "© OpenStreetMap" auf der Karte ist Pflicht (Lizenz ODbL) und bleibt stehen.
 - **Abweichung von `Design.md`, 8.8:** Dort ist die Karte schematisch. Am 26.11.2026 wollte der Auftraggeber eine echte, bedienbare Karte mit Adresseingabe und Fahrzeit. Die Leitung läuft weiter von Germering zu den Orten, jetzt entlang der wirklichen Strecke.
 
+## Schauhaus auf der Smart-Home-Seite
+
+Im Kopf von `/leistungen/smart-home` steht ein gezeichnetes Haus mit vier Schaltern darunter: Licht, Jalousien, Garage, Abend.
+
+| Teil | Wo |
+|---|---|
+| Modell des Hauses und Ausgabe als SVG | `bausteine/Schauhaus.tsx` |
+| Farben für Tag und Abend, alles Schalten | `stil/schauhaus.css` |
+
+- **Zeichnung:** Das Haus ist ein Modell mit Maßen in Metern. `baueSzene()` rechnet jede Fläche in die schräge Ansicht um und gibt ein SVG aus. Es gibt keine Bilddatei. Wer ein Maß ändert, ändert die Zahl im Modell, der Bildausschnitt rechnet sich neu.
+- **Schalten ohne Skript:** Die Schalter sind Kontrollkästchen. Das Stylesheet liest ihren Zustand über `:has`. Deshalb geht das Haus auch ohne JavaScript und kostet keine Ladezeit.
+- **Drei Schichten:** unten die Szene, darüber die Abendstimmung, die alles abdunkelt, ganz oben alles, was leuchtet oder sich bewegt (Fensterlicht, Jalousien, Garagentor mit Auto und Wallbox). Was ganz oben liegt, braucht eigene Farben für den Abend. Sie stehen als Variablen am Anfang von `stil/schauhaus.css`.
+- **Neues Fenster:** ein Aufruf `fenster({ ... })` mit Wand, Lage und Höhe. Licht und Jalousie kommen von selbst dazu.
+- **Foto:** Das frühere Schaubild über dem Foto des Wohnraums ist entfernt. Das Foto steht jetzt im Abschnitt "Was Ihr Smart Home kann".
+- **Abweichung von `Design.md`, 8.8:** Dort schaltet ein Bedienfeld ein Foto. Am 27.11.2026 wollte der Auftraggeber stattdessen ein gezeichnetes 3D-Haus mit Schaltern für Licht, Jalousien und Garage.
+
 ## Schalter in `daten/firma.ts`
 
 | Schalter | Wirkung |

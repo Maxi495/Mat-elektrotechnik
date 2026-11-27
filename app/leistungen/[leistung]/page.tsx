@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
 
 import { Ablauf, Anfrage, Bewertungsreihe, Fragen } from "@/bausteine/Abschnitte";
-import { Bedienfeld } from "@/bausteine/Bedienfeld";
+import { Schauhaus } from "@/bausteine/Schauhaus";
 import { Fliesstext, Offen } from "@/bausteine/Fliesstext";
 import { Abschnitt, Brotkrumen, Hakenliste, JsonLd, Seite, Seitenkopf } from "@/bausteine/Geruest";
 import { Leistungskarte, Referenzkarte } from "@/bausteine/Karten";
@@ -60,6 +61,8 @@ export default async function Leistungsseite({ params }: PageProps<"/leistungen/
   const l = leistungNachSlug(slug);
   if (!l) notFound();
 
+  // Smart Home zeigt im Kopf das Schauhaus zum Ausprobieren. Das Foto der Leistung steht dort weiter unten im Leistungsumfang.
+  const mitSchauhaus = l.id === "smart-home";
   const position = leistungen.findIndex((x) => x.id === l.id);
   const projekte = referenzenFuer(l.id, 3);
   const stimmen = bewertungenFuer(l.id, position, 2);
@@ -80,8 +83,8 @@ export default async function Leistungsseite({ params }: PageProps<"/leistungen/
   return (
     <Seite>
       {/* 1. Kopf: Überschrift mit Leistung und Ort, zwei Sätze Nutzen, Knopf, Foto aus einem echten Projekt */}
-      {l.id === "smart-home" ? (
-        <header className="seitenkopf seitenkopf--bild">
+      {mitSchauhaus ? (
+        <header className="seitenkopf seitenkopf--bild seitenkopf--haus">
           <div className="rahmen">
             <Brotkrumen krumen={krumen} />
             <div className="seitenkopf__raster">
@@ -90,7 +93,7 @@ export default async function Leistungsseite({ params }: PageProps<"/leistungen/
                 <p className="vorspann">{l.nutzen}</p>
                 {knoepfe}
               </div>
-              <Bedienfeld bild={l.bild} alt={l.bildAlt} />
+              <Schauhaus />
             </div>
           </div>
         </header>
@@ -121,7 +124,14 @@ export default async function Leistungsseite({ params }: PageProps<"/leistungen/
 
       {/* 3. Leistungsumfang in Teilabschnitten */}
       <Abschnitt titel={l.umfang.titel}>
-        <div className="umfang">
+        <div className={mitSchauhaus ? "umfang umfang--bild" : "umfang"}>
+          {mitSchauhaus ? (
+            <figure className="umfang__bild">
+              <div className="bildrahmen bildrahmen--16-10 licht" data-licht>
+                <Image src={l.bild} alt={l.bildAlt} sizes="(min-width: 900px) 45vw, 100vw" />
+              </div>
+            </figure>
+          ) : null}
           {l.umfang.teile.map((t) => (
             <div className="umfang__teil" key={t.titel}>
               <h3>{t.titel}</h3>
