@@ -85,19 +85,21 @@ Die Karte auf Startseite, "Über uns" und Kontakt ist eine eigene Karte. Sie lä
 
 ## Schauhaus auf der Smart-Home-Seite
 
-Im Kopf von `/leistungen/smart-home` steht ein gezeichnetes Haus mit vier Schaltern darunter: Licht, Jalousien, Garage, Abend.
+Im Kopf von `/leistungen/smart-home` steht ein gezeichnetes Haus mit drei Schaltern darunter: Licht, Jalousien, Garage. Das Haus steht frei auf dem Grund der Seite, ohne Rahmen und ohne eigenen Hintergrund. Unter dem Grundstück liegt nur ein weicher Schatten.
 
 | Teil | Wo |
 |---|---|
 | Modell des Hauses und Ausgabe als SVG | `bausteine/Schauhaus.tsx` |
-| Farben für Tag und Abend, alles Schalten | `stil/schauhaus.css` |
+| Farben für Tag und Abend, alles Schalten, Größe im Seitenkopf | `stil/schauhaus.css` |
 
 - **Zeichnung:** Das Haus ist ein Modell mit Maßen in Metern. `baueSzene()` rechnet jede Fläche in die schräge Ansicht um und gibt ein SVG aus. Es gibt keine Bilddatei. Wer ein Maß ändert, ändert die Zahl im Modell, der Bildausschnitt rechnet sich neu.
 - **Schalten ohne Skript:** Die Schalter sind Kontrollkästchen. Das Stylesheet liest ihren Zustand über `:has`. Deshalb geht das Haus auch ohne JavaScript und kostet keine Ladezeit.
-- **Drei Schichten:** unten die Szene, darüber die Abendstimmung, die alles abdunkelt, ganz oben alles, was leuchtet oder sich bewegt (Fensterlicht, Jalousien, Garagentor mit Auto und Wallbox). Was ganz oben liegt, braucht eigene Farben für den Abend. Sie stehen als Variablen am Anfang von `stil/schauhaus.css`.
+- **Tag und Abend:** Jede Farbe der Zeichnung ist eine Variable am Anfang von `stil/schauhaus.css` und steht dort zweimal: für den Tag und für den Abend. Der Abend gilt bei "Licht aus" (Lichtschalter in der Fußzeile), weil die Seite dann dunkel ist. Einen eigenen Schalter für den Abend gibt es nicht mehr. Die Abendwerte von Grundstück und Haus sind die Tagwerte, je Farbkanal mal 0,241 / 0,282 / 0,437. Wer eine Tagfarbe ändert, rechnet ihren Abendwert so nach.
+- **Zwei Schichten:** unten Grundstück, Haus und Garten, darüber alles, was leuchtet oder sich bewegt (Fensterlicht, Jalousien, Garagentor mit Auto und Wallbox).
+- **Größe:** Am Rechner ragt das Haus rechts ein Stück in den Seitenrand. Auf niedrigen Bildschirmen wird es kleiner, damit die Schalter ohne Scrollen zu sehen sind. Am Rechner ist die Schalterleiste flach, am Handy und Tablet stehen Schalter und Name untereinander.
 - **Neues Fenster:** ein Aufruf `fenster({ ... })` mit Wand, Lage und Höhe. Licht und Jalousie kommen von selbst dazu.
 - **Foto:** Das frühere Schaubild über dem Foto des Wohnraums ist entfernt. Das Foto steht jetzt im Abschnitt "Was Ihr Smart Home kann".
-- **Abweichung von `Design.md`, 8.8:** Dort schaltet ein Bedienfeld ein Foto. Am 27.11.2026 wollte der Auftraggeber stattdessen ein gezeichnetes 3D-Haus mit Schaltern für Licht, Jalousien und Garage.
+- **Abweichung von `Design.md`, 8.8:** Dort schaltet ein Bedienfeld ein Foto. Am 27.11.2026 wollte der Auftraggeber stattdessen ein gezeichnetes 3D-Haus mit Schaltern für Licht, Jalousien und Garage. Am 28.11.2026 wollte er das Haus ohne Kasten direkt auf der Seite und ohne den Schalter für den Abend.
 
 ## Schalter in `daten/firma.ts`
 

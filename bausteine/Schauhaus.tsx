@@ -2,9 +2,12 @@ import type { CSSProperties, ReactNode } from "react";
 import { Kippschalter } from "./Zeichen";
 
 /**
- * Schauhaus für die Smart-Home-Seite: ein gezeichnetes Haus in 3D-Ansicht mit vier Schaltern darunter.
- * Licht, Jalousien, Garagentor und Abendstimmung lassen sich schalten. Der Besucher probiert Smart Home aus,
+ * Schauhaus für die Smart-Home-Seite: ein gezeichnetes Haus in 3D-Ansicht mit drei Schaltern darunter.
+ * Licht, Jalousien und Garagentor lassen sich schalten. Der Besucher probiert Smart Home aus,
  * statt darüber zu lesen (Design.md, 8.8).
+ *
+ * Das Haus steht frei auf dem Grund der Seite, ohne Rahmen und ohne eigenen Himmel. Bei "Licht aus"
+ * (Lichtschalter in der Fußzeile) ist die Seite dunkel, dann zeigt sich das Haus am Abend.
  *
  * Das Haus ist ein Modell aus echten Maßen in Metern. Diese Datei rechnet jede Fläche aus dem Raum
  * in die Zeichenebene um (schräge Ansicht von vorn rechts oben, ohne Fluchtpunkt) und gibt ein SVG aus.
@@ -127,8 +130,8 @@ function baueSzene() {
     );
   };
 
-  const unten: ReactNode[] = []; // alles, was die Abendstimmung abdunkelt
-  const oben: ReactNode[] = []; // Licht, Jalousien und Tor: liegen über der Abendstimmung und färben sich selbst
+  const unten: ReactNode[] = []; // Grundstück, Haus, Garten
+  const oben: ReactNode[] = []; // alles, was leuchtet oder sich bewegt: Licht, Jalousien, Tor mit Garage
   const ausschnitte: ReactNode[] = []; // Fensteröffnungen als Zuschnitt
 
   /* ------------------------------------------------------------ Grundstück */
@@ -274,6 +277,8 @@ function baueSzene() {
   const KRAG = 7.95; // Vorderwand des Obergeschosses, kragt aus
 
   unten.push(F("sh-putz sh-putz--rechts", seite(X1, 0, Y1, 0, 3)), F("sh-putz sh-putz--vorn", vorn(Y1, 0, X1, 0, 3)));
+  // Feine Linie an der linken Hauskante: Dort steht der helle Putz vor dem Grund der Seite und braucht einen Rand
+  unten.push(L("sh-hauskante", [[[0, Y1, 0.1], [0, Y1, 3]]]));
   // Dunkler Strich am Boden: lässt das Haus stehen statt schweben
   unten.push(F("sh-fuss", vorn(Y1 + 0.001, 0, X1, 0, 0.1)), F("sh-fuss", seite(X1 + 0.001, 0, Y1, 0, 0.1)));
 
@@ -533,7 +538,7 @@ function baueSzene() {
   // Wandleuchte zwischen Garage und Eingang
   unten.push(F("sh-wandleuchte", vorn(Y1 + 0.005, 4.14, 4.26, 1.8, 2.15)));
 
-  /* ------------------------------------------------------------ Licht im Freien: über der Abendstimmung */
+  /* ------------------------------------------------------------ Licht im Freien */
 
   const frei: ReactNode[] = [];
   // Lichtschein aus dem Wohnzimmer auf die Terrasse
@@ -572,87 +577,90 @@ function baueSzene() {
     minY: Math.min(...umriss.map((q) => q[1])),
     maxY: Math.max(...umriss.map((q) => q[1])),
   };
-  return { unten, oben, ausschnitte, kasten };
+
+  /*
+   * Schatten des Grundstücks auf dem Grund der Seite. Das Grundstück ist in der Zeichnung eine Raute,
+   * ihre Ecken liegen auf einer Ellipse. Der Schatten ist diese Ellipse, etwas größer und nach unten versetzt,
+   * und läuft zum Rand hin aus: Unter den vorderen Kanten quillt er weich hervor.
+   */
+  const [mx, my] = p2([(G.x0 + G.x1) / 2, (G.y0 + G.y1) / 2, -0.55]);
+  const halb = (G.x1 - G.x0 + G.y1 - G.y0) / 2;
+  const bodenschatten = {
+    cx: mx.toFixed(1),
+    cy: (my + 30).toFixed(1),
+    rx: (halb * KX * 1.04).toFixed(1),
+    ry: (halb * KY * 1.04).toFixed(1),
+  };
+  return { unten, oben, ausschnitte, kasten, bodenschatten };
 }
 
-const SCHALTER: { art: "licht" | "jalousie" | "garage" | "abend"; name: string; an: string; aus: string; anfangs?: boolean }[] = [
+const SCHALTER: { art: "licht" | "jalousie" | "garage"; name: string; an: string; aus: string; anfangs?: boolean }[] = [
   { art: "licht", name: "Licht", an: "an", aus: "aus", anfangs: true },
   { art: "jalousie", name: "Jalousien", an: "unten", aus: "oben" },
   { art: "garage", name: "Garage", an: "offen", aus: "zu" },
-  { art: "abend", name: "Abend", an: "an", aus: "aus" },
 ];
 
 export function Schauhaus() {
-  const { unten, oben, ausschnitte, kasten } = baueSzene();
-  const rand = 22;
+  const { unten, oben, ausschnitte, kasten, bodenschatten } = baueSzene();
+  // Der Ausschnitt liegt eng um die Zeichnung: So stimmen Mitte und Abstände im Seitenraster.
+  // Was darüber hinausragt (der Schatten auf dem Seitengrund), bleibt trotzdem sichtbar.
+  const rand = 4;
   const x = kasten.minX - rand;
-  const y = kasten.minY - rand * 1.8;
+  const y = kasten.minY - rand;
   const breite = kasten.maxX - kasten.minX + rand * 2;
-  const hoehe = kasten.maxY - kasten.minY + rand * 2.9;
-
-  // Sterne und Mond im freien Himmel links und rechts über dem Haus
-  const sterne: [number, number, number][] = [
-    [0.06, 0.1, 1.4], [0.13, 0.22, 1], [0.2, 0.07, 1.2], [0.27, 0.17, 0.9], [0.09, 0.33, 0.9], [0.34, 0.05, 1],
-    [0.72, 0.06, 1], [0.8, 0.16, 1.3], [0.9, 0.09, 1], [0.95, 0.24, 0.9], [0.86, 0.3, 1.1], [0.66, 0.13, 0.8],
-  ];
+  const hoehe = kasten.maxY - kasten.minY + rand * 2;
 
   return (
-    <div className="schauhaus">
-      <div className="schauhaus__buehne">
-        <svg
-          className="schauhaus__bild"
-          viewBox={`${x.toFixed(0)} ${y.toFixed(0)} ${breite.toFixed(0)} ${hoehe.toFixed(0)}`}
-          role="img"
-          aria-label="Gezeichnetes Haus mit drei Geschossen, Garage, Dachterrasse und Photovoltaik auf dem Dach. Die Schalter darunter schalten Licht, Jalousien, Garagentor und Abendstimmung."
-        >
-          <defs>
-            {ausschnitte}
-            <linearGradient id="sh-verlauf-glas" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" className="sh-stop-glas-oben" />
-              <stop offset="1" className="sh-stop-glas-unten" />
-            </linearGradient>
-            <linearGradient id="sh-verlauf-licht" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#FFF3CF" />
-              <stop offset="1" stopColor="#FFC65C" />
-            </linearGradient>
-            <linearGradient id="sh-verlauf-sockel" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" className="sh-stop-sockel-vorn" />
-              <stop offset="0.52" className="sh-stop-sockel-vorn" />
-              <stop offset="0.6" className="sh-stop-sockel-rechts" />
-              <stop offset="1" className="sh-stop-sockel-rechts" />
-            </linearGradient>
-            <radialGradient id="sh-verlauf-krone" cx="0.36" cy="0.3" r="0.75">
-              <stop offset="0" className="sh-stop-krone-hell" />
-              <stop offset="1" className="sh-stop-krone-dunkel" />
-            </radialGradient>
-            <radialGradient id="sh-verlauf-krone-hell" cx="0.36" cy="0.3" r="0.75">
-              <stop offset="0" className="sh-stop-krone-licht" />
-              <stop offset="1" className="sh-stop-krone-mittel" />
-            </radialGradient>
-            <radialGradient id="sh-verlauf-hof">
-              <stop offset="0" stopColor="#FFD27A" stopOpacity="0.85" />
-              <stop offset="1" stopColor="#FFD27A" stopOpacity="0" />
-            </radialGradient>
-            <linearGradient id="sh-verlauf-teppich" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#FFD27A" stopOpacity="0.7" />
-              <stop offset="1" stopColor="#FFD27A" stopOpacity="0" />
-            </linearGradient>
-          </defs>
+    <div className="schauhaus" style={{ "--seiten": (breite / hoehe).toFixed(3) } as CSSProperties}>
+      <svg
+        className="schauhaus__bild"
+        viewBox={`${x.toFixed(0)} ${y.toFixed(0)} ${breite.toFixed(0)} ${hoehe.toFixed(0)}`}
+        role="img"
+        aria-label="Gezeichnetes Haus mit drei Geschossen, Garage, Dachterrasse und Photovoltaik auf dem Dach. Die Schalter darunter schalten Licht, Jalousien und Garagentor."
+      >
+        <defs>
+          {ausschnitte}
+          <radialGradient id="sh-verlauf-boden">
+            <stop offset="0.5" className="sh-stop-boden" />
+            <stop offset="0.72" className="sh-stop-boden sh-stop-boden--mitte" />
+            <stop offset="1" className="sh-stop-boden sh-stop-boden--rand" />
+          </radialGradient>
+          <linearGradient id="sh-verlauf-glas" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" className="sh-stop-glas-oben" />
+            <stop offset="1" className="sh-stop-glas-unten" />
+          </linearGradient>
+          <linearGradient id="sh-verlauf-licht" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#FFF3CF" />
+            <stop offset="1" stopColor="#FFC65C" />
+          </linearGradient>
+          <linearGradient id="sh-verlauf-sockel" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" className="sh-stop-sockel-vorn" />
+            <stop offset="0.52" className="sh-stop-sockel-vorn" />
+            <stop offset="0.6" className="sh-stop-sockel-rechts" />
+            <stop offset="1" className="sh-stop-sockel-rechts" />
+          </linearGradient>
+          <radialGradient id="sh-verlauf-krone" cx="0.36" cy="0.3" r="0.75">
+            <stop offset="0" className="sh-stop-krone-hell" />
+            <stop offset="1" className="sh-stop-krone-dunkel" />
+          </radialGradient>
+          <radialGradient id="sh-verlauf-krone-hell" cx="0.36" cy="0.3" r="0.75">
+            <stop offset="0" className="sh-stop-krone-licht" />
+            <stop offset="1" className="sh-stop-krone-mittel" />
+          </radialGradient>
+          <radialGradient id="sh-verlauf-hof">
+            <stop offset="0" stopColor="#FFD27A" stopOpacity="0.85" />
+            <stop offset="1" stopColor="#FFD27A" stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id="sh-verlauf-teppich" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#FFD27A" stopOpacity="0.7" />
+            <stop offset="1" stopColor="#FFD27A" stopOpacity="0" />
+          </linearGradient>
+        </defs>
 
-          <g className="schauhaus__szene">{unten}</g>
-
-          {/* Abendstimmung: dunkelt alles darunter ab, auch den Himmel der Bühne */}
-          <rect className="sh-nacht" x={x} y={y} width={breite} height={hoehe} />
-          <g className="sh-himmel">
-            {sterne.map(([sx, sy, r], i) => (
-              <circle key={i} cx={(x + sx * breite).toFixed(0)} cy={(y + sy * hoehe).toFixed(0)} r={r * 1.6} />
-            ))}
-            <circle className="sh-mond" cx={(x + breite * 0.88).toFixed(0)} cy={(y + hoehe * 0.11).toFixed(0)} r="15" />
-          </g>
-
-          <g className="schauhaus__lichter">{oben}</g>
-        </svg>
-      </div>
+        <ellipse className="sh-bodenschatten" {...bodenschatten} />
+        <g className="schauhaus__szene">{unten}</g>
+        <g className="schauhaus__lichter">{oben}</g>
+      </svg>
 
       <fieldset className="schauhaus__tafel">
         <legend className="nur-vorlesen">Smart Home ausprobieren</legend>
