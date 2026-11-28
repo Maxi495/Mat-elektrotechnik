@@ -77,6 +77,9 @@ export default function Grundgeruest({ children }: { children: ReactNode }) {
       lang="de"
       className={`${bricolage.variable} ${figtree.variable}`}
       data-licht="an"
+      // Beim Seitenwechsel springt die neue Seite sofort an den Anfang, statt weich von unten hochzufahren.
+      // Das weiche Scrollen aus grund.css gilt weiter für Sprünge innerhalb einer Seite.
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <head>
